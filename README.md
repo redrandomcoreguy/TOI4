@@ -1,8 +1,9 @@
 # TOI4
 
+![Home Screen](home-screen.png)
+
 A offline-vibecoded terminal Hearts Of Iron IV copy
 
-![Demo gif](TOI4-demo.gif)
 
 ## 𝗣𝗿𝗲𝗿𝗲𝗾𝘂𝗶𝘀𝗶𝘁𝗲𝘀
 * For compatibility its recommended to use **Linux** but it will work for any operating system **with a working Python 3 install**. (Including **Windows**) .
@@ -12,6 +13,9 @@ A offline-vibecoded terminal Hearts Of Iron IV copy
 * For your terminal its very recommended to use one with 256 colors like [Kitty](https://github.com/kovidgoyal/kitty) etc.
 
 * It has not been tested to work with older Python versions so use the **Latest Python package**.
+
+
+![Demo gif](TOI4-demo.gif)
 
 ---
 
@@ -99,6 +103,8 @@ Open the folder and run **`install.bat`**.
 ---
 
 **Once you are done installing run `toi4` to play it!**
+
+![Gameplay](gameplay.png)
 
 ---
 
