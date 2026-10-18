@@ -2,6 +2,8 @@
 
 A offline-vibecoded terminal Hearts Of Iron IV copy
 
+![Demo gif](TOI4-demo.gif)
+
 ## 𝗣𝗿𝗲𝗿𝗲𝗾𝘂𝗶𝘀𝗶𝘁𝗲𝘀
 * For compatibility its recommended to use **Linux** but it will work for any operating system **with a working Python 3 install**. (Including **Windows**) .
 
