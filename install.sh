@@ -1,7 +1,9 @@
 #!/bin/sh
 # Installs the "toi4" command on Linux and macOS:  chmod +x install.sh, then ./install.sh
 # Remove it again with:  ./install.sh --uninstall   (or: toi4 --uninstall)
-# It looks for Python 3.8 or newer with curses and lets the game do the rest (python3 toi4.py --install).
+# It looks for Python 3.8 or newer with curses and lets the game do the rest (python3 toi4.py --install --tidy).
+# Installing also tidies this folder: it deletes .git, LICENSE and README.md, so only the game is left.
+# (A .git folder with commits that aren't on GitHub yet is kept.)
 
 if [ "$(id -u)" = 0 ]; then
     echo "install.sh: run it as yourself, without sudo: the toi4 command goes in your own ~/.local/bin." >&2
@@ -28,6 +30,9 @@ fi
 for py in python3 python python3.15 python3.14 python3.13 python3.12 python3.11 python3.10 python3.9 python3.8; do
     if command -v "$py" >/dev/null 2>&1 &&
         "$py" -c 'import sys, curses; sys.exit(sys.version_info < (3, 8))' >/dev/null 2>&1; then
+        if [ "$action" = --install ]; then
+            exec "$py" "$game" --install --tidy
+        fi
         exec "$py" "$game" "$action"
     fi
 done
