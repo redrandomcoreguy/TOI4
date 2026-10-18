@@ -22967,6 +22967,7 @@ def main(stdscr):
 # user's PATH - that starts this file wherever it is.
 import sys
 import shutil
+import stat
 
 HELP = """toi4 - a WW2 grand strategy game for the terminal (Europe, from 1936)
 
@@ -22975,7 +22976,9 @@ Usage:
   toi4 --help          show this help
   toi4 --icons plain   standard symbols as map icons (nerd: Nerd Font icons);
                        the choice is remembered
-  toi4 --install       make the toi4 command (install.sh and install.bat do it)
+  toi4 --install       make the toi4 command (install.sh and install.bat do it,
+                       with --tidy: that also deletes .git, LICENSE and
+                       README.md from the game's folder)
   toi4 --uninstall     remove the toi4 command (the game stays where it is)
 
 Needs Python 3.8 or newer with curses (on Windows: py -m pip install
@@ -23062,7 +23065,67 @@ def windows_path(add=None, remove=None):
     return True
 
 
-def install_command():
+TIDY_NAMES = (".git", "LICENSE", "README.md")   # what install.sh / install.bat clear out of a downloaded copy
+
+
+def unpushed_commits(git_dir):
+    """True if this clone's branch has commits that its origin (GitHub) doesn't have yet - or if that can't be told.
+    Reads git's own files, so git doesn't have to be installed."""
+    def ref(name):
+        try:
+            with open(os.path.join(git_dir, *name.split("/")), encoding="utf-8") as f:
+                return f.read().strip()
+        except OSError:
+            pass
+        try:
+            with open(os.path.join(git_dir, "packed-refs"), encoding="utf-8") as f:
+                for line in f:
+                    parts = line.split()
+                    if len(parts) == 2 and parts[1] == name:
+                        return parts[0]
+        except OSError:
+            pass
+        return None
+    head = ref("HEAD") or ""
+    if not head.startswith("ref: refs/heads/"):
+        return True
+    branch = head[len("ref: refs/heads/"):]
+    mine = ref("refs/heads/" + branch)
+    return mine is None or mine != ref("refs/remotes/origin/" + branch)
+
+
+def tidy_download(folder):
+    """Delete TIDY_NAMES from the game's folder after an install, so only the game is left. A .git folder whose
+    commits aren't all on GitHub yet is kept. Returns (deleted names, a note or None)."""
+    removed, note = [], None
+    for name in TIDY_NAMES:
+        path = os.path.join(folder, name)
+        if not os.path.lexists(path):
+            continue
+        if name == ".git":
+            if not os.path.isdir(path) or os.path.islink(path):
+                continue                       # a link to a repository elsewhere: not ours to touch
+            if unpushed_commits(path):
+                note = "Kept .git: this folder has commits that aren't on GitHub yet."
+                continue
+        try:
+            if os.path.isdir(path) and not os.path.islink(path):
+                def unlock(func, p, _exc):     # git makes some of its files read-only, which Windows won't delete
+                    os.chmod(p, stat.S_IWRITE)
+                    func(p)
+                if sys.version_info >= (3, 12):
+                    shutil.rmtree(path, onexc=unlock)
+                else:
+                    shutil.rmtree(path, onerror=unlock)
+            else:
+                os.remove(path)
+            removed.append(name)
+        except OSError as e:
+            note = f"Could not delete {name}: {e}"
+    return removed, note
+
+
+def install_command(tidy=False):
     game, python = os.path.abspath(__file__), sys.executable or "python3"
     folder, path = launcher_path()
     if os.path.exists(path) and not made_by_us(path):
@@ -23083,6 +23146,12 @@ def install_command():
         os.chmod(path, 0o755)
     print(f"Installed the toi4 command: {path}")
     print(f"It starts the game in {os.path.dirname(game)} - if you move the game, run the install again.")
+    if tidy:
+        removed, note = tidy_download(os.path.dirname(game))
+        if removed:
+            print("Tidied the game's folder: deleted " + ", ".join(removed) + ".")
+        if note:
+            print(note)
     if os.name == "nt":
         windows_path(add=folder)
         print("Type:  toi4" if on_path(folder) else "Open a new terminal window, then type:  toi4")
@@ -23131,8 +23200,8 @@ def start(args):
         if flag in ("-h", "--help", "-help", "help", "/?") and len(args) == 1:
             print(HELP)
             return 0
-        if flag == "--install" and len(args) == 1:
-            return install_command()
+        if flag == "--install" and (len(args) == 1 or (len(args) == 2 and args[1].lower() == "--tidy")):
+            return install_command(tidy=len(args) == 2)
         if flag == "--uninstall" and len(args) == 1:
             return uninstall_command()
         if flag == "--icons" and len(args) == 2 and args[1].lower() in ICON_SETS:
