@@ -1,7 +1,9 @@
 @echo off
 rem Installs the "toi4" command on Windows: double-click this file, or run install.bat in a terminal.
 rem Remove it again with:  install.bat --uninstall   (or: toi4 --uninstall)
-rem It finds Python 3.8 to 3.14, adds windows-curses if Python lacks curses, then runs: toi4.py --install
+rem It finds Python 3.8 to 3.14, adds windows-curses if Python lacks curses, then runs: toi4.py --install --tidy
+rem Installing also tidies this folder: it deletes .git, LICENSE and README.md, so only the game is left.
+rem (A .git folder with commits that aren't on GitHub yet is kept.)
 setlocal
 set "PAUSE_AT_END="
 echo %cmdcmdline% | findstr /i /c:"%~nx0" >nul && set "PAUSE_AT_END=1"
@@ -37,7 +39,7 @@ if errorlevel 1 (
     %PY% -m pip install --user windows-curses
     if errorlevel 1 goto fail
 )
-%PY% "%GAME%" --install
+%PY% "%GAME%" --install --tidy
 if errorlevel 1 goto fail
 
 :done
