@@ -116,4 +116,4 @@ Open the folder and run **`install.bat`**.
 | `toi4 ---icons nerd` |  Uses Mono Nerd font icons(on windows it defaults to normal |
 | `toi4 --install` | Runs/makes the toi4 command |
 | `toi4 --uninstall` | Removes the toi4 command |
-
+| `toi4 --update` | Updates the game files |
