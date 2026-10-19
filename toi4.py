@@ -2,7 +2,7 @@
 # Copyright (C) 2026 redrandomcoreguy, ArgSliver
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-TOI4_VERSION = 47   # the release: one higher for every update put on GitHub (toi4 --update and the notice read it)
+TOI4_VERSION = 48   # the release: one higher for every update put on GitHub (toi4 --update and the notice read it)
 
 try:
     import curses
@@ -24106,27 +24106,53 @@ def icons_default():
         return want
     if not ICONS_CAN_SWITCH:
         return "plain"
-    try:
-        with open(ICON_FILE, encoding="utf-8") as f:
-            for line in f:
-                key, _, val = line.partition("=")
-                if key.strip() == "icons" and val.strip() in ICON_SETS:
-                    return val.strip()
-    except (OSError, UnicodeDecodeError):
-        pass
+    if read_settings().get("icons") in ICON_SETS:
+        return read_settings()["icons"]
     term = env.get("TERM", "")
     if env.get("KITTY_WINDOW_ID") or "kitty" in term or "ghostty" in term or env.get("TERM_PROGRAM") in ("WezTerm", "ghostty"):
         return "nerd"
     return "plain"
 
 
-def save_icons():
-    """Remember the icon choice for the next start (skipped quietly if the game's folder is read-only)."""
+def read_settings():
+    """toi4_settings.txt as {name: value} (one "name=value" a line: icons, updates)."""
+    got = {}
+    try:
+        with open(ICON_FILE, encoding="utf-8") as f:
+            for line in f:
+                key, eq, val = line.partition("=")
+                if eq:
+                    got[key.strip()] = val.strip()
+    except (OSError, UnicodeDecodeError):
+        pass
+    return got
+
+
+def write_setting(name, value):
+    """Change one setting and keep the rest of the file as it is. False if the file can't be written."""
+    lines = []
+    try:
+        with open(ICON_FILE, encoding="utf-8") as f:
+            lines = [ln.rstrip("\n") for ln in f]
+    except (OSError, UnicodeDecodeError):
+        pass
+    mine = [i for i, ln in enumerate(lines) if ln.partition("=")[1] and ln.partition("=")[0].strip() == name]
+    if mine:
+        lines[mine[0]] = f"{name}={value}"
+        lines = [ln for i, ln in enumerate(lines) if i not in mine[1:]]
+    else:
+        lines.append(f"{name}={value}")
     try:
         with open(ICON_FILE, "w", encoding="utf-8") as f:
-            f.write(f"icons={ICONS['mode']}\n")
+            f.write("\n".join(lines) + "\n")
+        return True
     except OSError:
-        pass
+        return False
+
+
+def save_icons():
+    """Remember the icon choice for the next start (skipped quietly if the game's folder is read-only)."""
+    write_setting("icons", ICONS["mode"])
 
 
 use_icons(icons_default())
@@ -27687,6 +27713,8 @@ Usage:
   toi4 --uninstall     remove the toi4 command (the game stays where it is)
   toi4 --update        replace this toi4.py with the newest one from GitHub;
                        only the game file changes: saves and settings stay
+  toi4 --updates off   don't check GitHub for new versions or show the notice;
+                       remembered (on: check again)
 
 Needs Python 3.8 or newer with curses (on Windows: py -m pip install
 windows-curses) and a terminal of at least 80x24 - the bigger the better,
@@ -27716,7 +27744,8 @@ standard symbols, Windows always standard symbols. TOI4_ICONS=nerd or
 TOI4_ICONS=plain overrides the choice.
 
 Updates: when the game starts it asks GitHub whether there is a newer
-toi4.py, and the title screen says so. TOI4_NO_UPDATE_CHECK=1 turns that off."""
+toi4.py, and the title screen says so. toi4 --updates off (or
+TOI4_NO_UPDATE_CHECK=1) turns that off; toi4 --update works either way."""
 
 LAUNCHER_MARK = "made by toi4 --install"
 
@@ -27911,7 +27940,8 @@ def uninstall_command():
 # game menu say so. A lower one means this copy is newer (it is being worked on), and nothing is said.
 # toi4 --update downloads GitHub's toi4.py, checks it matches GitHub's fingerprint and compiles, and puts it in
 # place of this file. Nothing else in the folder changes: saves, toi4_settings.txt and the rest stay as they are.
-# TOI4_NO_UPDATE_CHECK=1 stops the check.
+# toi4 --updates off stops the check (and so the notice), remembered in toi4_settings.txt as updates=off;
+# toi4 --updates on starts it again. TOI4_NO_UPDATE_CHECK=1 stops it too. toi4 --update works either way.
 TOI4_REPO = "redrandomcoreguy/TOI4"
 UPDATE_API = "https://api.github.com/repos/" + TOI4_REPO
 UPDATE = {"state": None, "version": None, "date": None, "note": None}   # state: None, same, older, new or offline
@@ -27980,7 +28010,25 @@ def check_for_update(timeout=8):
 
 
 def update_check_wanted():
-    return os.environ.get("TOI4_NO_UPDATE_CHECK", "").strip().lower() in ("", "0", "no", "false", "off")
+    if os.environ.get("TOI4_NO_UPDATE_CHECK", "").strip().lower() not in ("", "0", "no", "false", "off"):
+        return False
+    return read_settings().get("updates", "on").lower() != "off"
+
+
+def updates_switch(mode):
+    """toi4 --updates on|off: check GitHub for new versions when the game starts (and say so), or not."""
+    if not write_setting("updates", mode):
+        print(f"toi4: couldn't write {ICON_FILE}, so nothing was changed.", file=sys.stderr)
+        return 1
+    if mode == "off":
+        print("Update checks are off: the game won't ask GitHub for new versions or show the update notice.")
+        print("Saved in toi4_settings.txt. Turn them back on with:  " + update_command() + " --updates on")
+        print("(" + update_command() + " --update still updates the game whenever you run it.)")
+    else:
+        print("Update checks are on: the title screen says when a new version is on GitHub.")
+        if os.environ.get("TOI4_NO_UPDATE_CHECK", "").strip().lower() not in ("", "0", "no", "false", "off"):
+            print("But TOI4_NO_UPDATE_CHECK is set in this terminal, and that keeps them off.")
+    return 0
 
 
 def start_update_check():
@@ -28078,8 +28126,8 @@ def update_game():
 
 def start(args):
     """The command line first, then the game. Returns the exit code."""
-    if args and args[0].startswith("--icons="):
-        args = ["--icons", args[0].split("=", 1)[1]] + args[1:]
+    if args and args[0].startswith(("--icons=", "--updates=")):
+        args = args[0].split("=", 1) + args[1:]
     if args:
         flag = args[0].lower()
         if flag in ("-h", "--help", "-help", "help", "/?") and len(args) == 1:
@@ -28091,6 +28139,8 @@ def start(args):
             return uninstall_command()
         if flag == "--update" and len(args) == 1:
             return update_game()
+        if flag == "--updates" and len(args) == 2 and args[1].lower() in ("on", "off"):
+            return updates_switch(args[1].lower())
         if flag == "--icons" and len(args) == 2 and args[1].lower() in ICON_SETS:
             mode = args[1].lower()
             if mode == "nerd" and not ICONS_CAN_SWITCH:
