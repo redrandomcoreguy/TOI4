@@ -113,7 +113,9 @@ Open the folder and run **`install.bat`**.
 | :--- | :--- |
 | `toi4 --help` | Prints a help menu |
 | `toi4 --icons plain` |  Uses normal symbols for the map/game icons and uses the choice |
-| `toi4 ---icons nerd` |  Uses Mono Nerd font icons(on windows it defaults to normal |
+| `toi4 ---icons nerd` |  Uses Mono Nerd font icons (on windows it defaults to normal) |
 | `toi4 --install` | Runs/makes the toi4 command |
 | `toi4 --uninstall` | Removes the toi4 command |
 | `toi4 --update` | Updates the game files |
+| `toi4 --updates off` | Turns off update reminders and stops checking Github |
+
