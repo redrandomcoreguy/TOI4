@@ -2,6 +2,8 @@
 # Copyright (C) 2026 redrandomcoreguy, ArgSliver
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+TOI4_VERSION = 47   # the release: one higher for every update put on GitHub (toi4 --update and the notice read it)
+
 try:
     import curses
 except ImportError:   # Python on Windows has no curses of its own
@@ -79,7 +81,11 @@ ALL_NATIONS_DATA = [
     {"name": "Greece", "char": "E", "color_idx": 6,
         "manpower": 300, "ind": 2, "pp": 10, "ideo": "Non-Aligned"},
     {"name": "Turkey", "char": "T", "color_idx": 2,
-        "manpower": 800, "ind": 4, "pp": 10, "ideo": "Non-Aligned"}
+        "manpower": 800, "ind": 4, "pp": 10, "ideo": "Non-Aligned"},
+    # the side of the Spanish Civil War that breaks away (renamed Nationalist Spain if the Republic keeps Spain);
+    # no land in 1936, so nobody can pick it. Its own colour pair: 30+30 would clash with the city icons
+    {"name": "Republican Spain", "char": "¤", "color_idx": 5, "pair": 29,
+        "manpower": 0, "ind": 0, "pp": 0, "ideo": "Democracy", "dormant": True}
 ]
 
 FOCUS_TREES = {
@@ -1034,11 +1040,636 @@ FOCUS_TREES = {
         {"id": "POL_romanian_bridgehead_strategy", "name": "Romanian Bridgehead Strategy", "col": 51, "row": 10, "days": 70, "req": ["POL_join_allies"], "mut_excl": [], "reward": {"ind": 1}},
         {"id": "POL_annex_czech", "name": "Annex Czechoslovakia", "col": 43, "row": 11, "days": 70, "req": ["POL_pan_slavic_revanchism"], "mut_excl": [], "reward": {"wargoal_against": "Czechoslovakia"}},
         {"id": "POL_sea_to_sea", "name": "From Sea to Sea", "col": 45, "row": 11, "days": 70, "req": ["POL_baltic_ultimatums", "POL_the_old_borders"], "mut_excl": [], "reward": {"pp": 25}}
-    ]
+    ],
+    "Yugoslavia": [
+        {"id": "YUG_western_focus", "name": "Western Focus", "col": 3, "row": 0, "days": 70, "req": [], "mut_excl": ["YUG_recognize_the_soviet_union"], "reward": {"pp": 140}},
+        {"id": "YUG_recognize_the_soviet_union", "name": "Recognize the Soviet Union", "col": 11, "row": 0, "days": 70, "req": [], "mut_excl": ["YUG_western_focus"], "reward": {"pp": 25}},
+        {"id": "YUG_industrialization_program", "name": "Industrialization Program", "col": 19, "row": 0, "days": 70, "req": [], "mut_excl": [], "reward": {"research": [[["industry"], 1.0, 2, 0.0]]}},
+        {"id": "YUG_modernize_the_air_force", "name": "Modernize the Air Force", "col": 26, "row": 0, "days": 70, "req": [], "mut_excl": [], "reward": {"air_xp": 20}},
+        {"id": "YUG_army_modernization", "name": "Army Modernization", "col": 33, "row": 0, "days": 70, "req": [], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_expand_the_split_shipyards", "name": "Expand the Split Shipyards", "col": 38, "row": 0, "days": 70, "req": [], "mut_excl": ["YUG_expand_the_serbian_shipyards"], "reward": {"dockyard": 2, "slots": 2}},
+        {"id": "YUG_expand_the_serbian_shipyards", "name": "Expand the Serbian Shipyards", "col": 40, "row": 0, "days": 70, "req": [], "mut_excl": ["YUG_expand_the_split_shipyards"], "reward": {"dockyard": 2, "slots": 2}},
+        {"id": "YUG_friendship_treaty_with_italy", "name": "Friendship Treaty with Italy", "col": 2, "row": 1, "days": 35, "req": ["YUG_western_focus"], "mut_excl": ["YUG_reinforce_old_alliances"], "reward": {"pp": 50, "nap": "Kingdom of Italy"}},
+        {"id": "YUG_reinforce_old_alliances", "name": "Reinforce Old Alliances", "col": 5, "row": 1, "days": 70, "req": ["YUG_western_focus"], "mut_excl": ["YUG_friendship_treaty_with_italy"], "reward": {"guarantee": ["Romania", "Second Polish Republic"]}},
+        {"id": "YUG_form_peasant_councils", "name": "Form Peasant Councils", "col": 10, "row": 1, "days": 70, "req": ["YUG_recognize_the_soviet_union"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_mutual_economic_aid", "name": "Mutual Economic Aid", "col": 12, "row": 1, "days": 70, "req": ["YUG_recognize_the_soviet_union"], "mut_excl": [], "reward": {"ind": 1}},
+        {"id": "YUG_expand_the_mining_industry", "name": "Expand the Mining Industry", "col": 19, "row": 1, "days": 70, "req": ["YUG_industrialization_program"], "mut_excl": [], "reward": {"ind": 1}},
+        {"id": "YUG_local_developers", "name": "Local Developers", "col": 24, "row": 1, "days": 70, "req": ["YUG_modernize_the_air_force"], "mut_excl": ["YUG_purchase_foreign"], "reward": {"research": [[["air_equipment"], 0.15, 2, 0.0]]}},
+        {"id": "YUG_purchase_foreign", "name": "Purchase Foreign", "col": 28, "row": 1, "days": 70, "req": ["YUG_modernize_the_air_force"], "mut_excl": ["YUG_local_developers"], "reward": {"pp": 25}},
+        {"id": "YUG_motorize_the_cavalry", "name": "Motorize the Cavalry", "col": 31, "row": 1, "days": 70, "req": ["YUG_army_modernization"], "mut_excl": [], "reward": {"research": [[["motorised_infantry"], 3.0, 1, 0.0]]}},
+        {"id": "YUG_small_arms", "name": "Small Arms", "col": 32, "row": 1, "days": 70, "req": ["YUG_army_modernization"], "mut_excl": [], "reward": {"research": [[["infantry_weapons"], 1.0, 1, 0.0]]}},
+        {"id": "YUG_mountain_brigades", "name": "Mountain Brigades", "col": 34, "row": 1, "days": 70, "req": ["YUG_army_modernization"], "mut_excl": [], "reward": {"research": [[["mountaineers_tech"], 3.0, 1, 0.0]]}},
+        {"id": "YUG_army_maneuvers", "name": "Army Maneuvers", "col": 36, "row": 1, "days": 70, "req": ["YUG_army_modernization"], "mut_excl": [], "reward": {"atk": 1}},
+        {"id": "YUG_contest_the_adriatic", "name": "Contest the Adriatic", "col": 38, "row": 1, "days": 70, "req": ["YUG_expand_the_split_shipyards"], "mut_excl": [], "reward": {"doctrine_discount": 0.25}},
+        {"id": "YUG_coastal_defense", "name": "Coastal Defense", "col": 40, "row": 1, "days": 70, "req": ["YUG_expand_the_serbian_shipyards"], "mut_excl": [], "reward": {"def": 1}},
+        {"id": "YUG_attract_axis_capital", "name": "Attract Axis Capital", "col": 1, "row": 2, "days": 70, "req": [["YUG_friendship_treaty_with_italy", "YUG_reinforce_old_alliances"]], "mut_excl": [], "reward": {"ind": 2}},
+        {"id": "YUG_brigadistas", "name": "The Brigadistas", "col": 3, "row": 2, "days": 70, "req": [["YUG_friendship_treaty_with_italy", "YUG_reinforce_old_alliances"]], "mut_excl": [], "reward": {"pp": 25}, "need": {"war": False}},
+        {"id": "YUG_attract_allied_capital", "name": "Attract Allied Capital", "col": 6, "row": 2, "days": 70, "req": [["YUG_friendship_treaty_with_italy", "YUG_reinforce_old_alliances"]], "mut_excl": [], "reward": {"ind": 2}},
+        {"id": "YUG_local_militias", "name": "Local Militias", "col": 8, "row": 2, "days": 70, "req": [["YUG_reinforce_old_alliances", "YUG_friendship_treaty_with_italy", "YUG_form_peasant_councils"]], "mut_excl": [], "reward": {"manpower": 600}},
+        {"id": "YUG_abolish_the_monarchy", "name": "Abolish the Monarchy", "col": 11, "row": 2, "days": 70, "req": ["YUG_form_peasant_councils", "YUG_mutual_economic_aid"], "mut_excl": [], "reward": {"ind": 1, "set_ideology": "Communist"}},
+        {"id": "YUG_rare_minerals_exploitation", "name": "Rare Minerals Exploitation", "col": 17, "row": 2, "days": 70, "req": ["YUG_expand_the_mining_industry"], "mut_excl": [], "reward": {"res": {"tungsten": 8, "chromium": 8}}},
+        {"id": "YUG_develop_civilian_industry", "name": "Develop Civilian Industry", "col": 18, "row": 2, "days": 70, "req": ["YUG_expand_the_mining_industry"], "mut_excl": ["YUG_develop_military_industry"], "reward": {"civ_factory": 3, "slots": 3}},
+        {"id": "YUG_develop_military_industry", "name": "Develop Military Industry", "col": 20, "row": 2, "days": 70, "req": ["YUG_expand_the_mining_industry"], "mut_excl": ["YUG_develop_civilian_industry"], "reward": {"mil_factory": 3, "slots": 3}},
+        {"id": "YUG_ikarus", "name": "Ikarus", "col": 22, "row": 2, "days": 70, "req": ["YUG_local_developers"], "mut_excl": [], "reward": {"mil_factory": 1, "slots": 1}},
+        {"id": "YUG_rogozarski", "name": "Rogozarski", "col": 24, "row": 2, "days": 70, "req": ["YUG_local_developers"], "mut_excl": [], "reward": {"mil_factory": 1, "slots": 1}},
+        {"id": "YUG_zmaj", "name": "Zmaj", "col": 26, "row": 2, "days": 70, "req": ["YUG_local_developers"], "mut_excl": [], "reward": {"mil_factory": 1, "slots": 1}},
+        {"id": "YUG_license_production", "name": "License Production", "col": 28, "row": 2, "days": 70, "req": ["YUG_purchase_foreign"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_motorized_logistics", "name": "Motorized Logistics", "col": 30, "row": 2, "days": 70, "req": ["YUG_motorize_the_cavalry"], "mut_excl": [], "reward": {"research": [[["hospital_tech", "logistics_tech"], 1.0, 2, 0.0]]}},
+        {"id": "YUG_armored_cavalry", "name": "Armored Cavalry", "col": 31, "row": 2, "days": 70, "req": ["YUG_motorize_the_cavalry"], "mut_excl": [], "reward": {"research": [[["cat_mechanized_equipment"], 1.0, 1, 0.0]]}},
+        {"id": "YUG_domestic_artillery_production", "name": "Domestic Artillery Production", "col": 32, "row": 2, "days": 70, "req": ["YUG_small_arms"], "mut_excl": [], "reward": {"research": [[["artillery"], 1.0, 1, 0.0]]}},
+        {"id": "YUG_independent_engineer_regiments", "name": "Independent Engineer Regiments", "col": 34, "row": 2, "days": 70, "req": ["YUG_mountain_brigades"], "mut_excl": [], "reward": {"research": [[["engineers_tech"], 3.0, 1, 0.0]]}},
+        {"id": "YUG_supremacy_of_offense", "name": "Supremacy of Offense", "col": 35, "row": 2, "days": 70, "req": ["YUG_army_maneuvers"], "mut_excl": ["YUG_supremacy_of_defense"], "reward": {"atk": 2}},
+        {"id": "YUG_supremacy_of_defense", "name": "Supremacy of Defense", "col": 37, "row": 2, "days": 70, "req": ["YUG_army_maneuvers"], "mut_excl": ["YUG_supremacy_of_offense"], "reward": {"atk": 2}},
+        {"id": "YUG_replace_the_dalmacija", "name": "Replace the Dalmacija", "col": 38, "row": 2, "days": 70, "req": ["YUG_contest_the_adriatic"], "mut_excl": [], "reward": {"research": [[["ca_tech"], 1.0, 1, 0.0]]}},
+        {"id": "YUG_naval_bombers", "name": "Naval Bombers", "col": 39, "row": 2, "days": 70, "req": [["YUG_contest_the_adriatic", "YUG_coastal_defense"]], "mut_excl": [], "reward": {"research": [[["naval_bomber"], 1.0, 1, 0.0]]}},
+        {"id": "YUG_expand_the_submarine_fleet", "name": "Expand the Submarine Fleet", "col": 40, "row": 2, "days": 70, "req": ["YUG_coastal_defense"], "mut_excl": [], "reward": {"research": [[["ss_tech"], 1.0, 1, 0.0]]}},
+        {"id": "YUG_evolution", "name": "Evolution", "col": 1, "row": 3, "days": 70, "req": [["YUG_attract_allied_capital", "YUG_attract_axis_capital"]], "mut_excl": ["YUG_limited_self_government"], "reward": {"pp": -20, "slots": 1}},
+        {"id": "YUG_limited_self_government", "name": "Limited Self-Government", "col": 6, "row": 3, "days": 35, "req": [["YUG_attract_allied_capital", "YUG_attract_axis_capital"]], "mut_excl": ["YUG_evolution"], "reward": {"pp": 25}},
+        {"id": "YUG_join_comintern", "name": "Join Comintern", "col": 10, "row": 3, "days": 70, "req": ["YUG_abolish_the_monarchy"], "mut_excl": ["YUG_yugoslavian_path_to_communism"], "reward": {"join_faction_of": "Soviet Union"}},
+        {"id": "YUG_yugoslavian_path_to_communism", "name": "Yugoslavian Path to Communism", "col": 12, "row": 3, "days": 70, "req": ["YUG_abolish_the_monarchy"], "mut_excl": ["YUG_join_comintern"], "reward": {"ind": 1, "atk": 2, "def": 2}},
+        {"id": "YUG_exploit_the_pannonian_deposits", "name": "Exploit the Pannonian Deposits", "col": 17, "row": 3, "days": 70, "req": ["YUG_rare_minerals_exploitation"], "mut_excl": [], "reward": {"res": {"oil": 8}}},
+        {"id": "YUG_expand_the_university_of_zagreb", "name": "Expand the University of Zagreb", "col": 19, "row": 3, "days": 70, "req": [["YUG_develop_civilian_industry", "YUG_develop_military_industry"]], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "YUG_the_ik_3", "name": "The IK-3", "col": 24, "row": 3, "days": 70, "req": [["YUG_ikarus", "YUG_rogozarski", "YUG_zmaj"]], "mut_excl": [], "reward": {"research": [[["light_fighter"], 3.0, 1, 2.0]]}},
+        {"id": "YUG_fighter_license", "name": "Fighter License", "col": 27, "row": 3, "days": 70, "req": ["YUG_license_production"], "mut_excl": ["YUG_bomber_license"], "reward": {"pp": 25}},
+        {"id": "YUG_bomber_license", "name": "Bomber License", "col": 29, "row": 3, "days": 70, "req": ["YUG_license_production"], "mut_excl": ["YUG_fighter_license"], "reward": {"pp": 25}},
+        {"id": "YUG_tank_conversions", "name": "Tank Conversions", "col": 30, "row": 3, "days": 35, "req": ["YUG_armored_cavalry"], "mut_excl": ["YUG_modern_tanks"], "reward": {"pp": 25}},
+        {"id": "YUG_modern_tanks", "name": "Modern Tanks", "col": 31, "row": 3, "days": 70, "req": ["YUG_armored_cavalry"], "mut_excl": ["YUG_tank_conversions"], "reward": {"research": [[["armor"], 1.0, 1, 0.0]]}},
+        {"id": "YUG_anti_tank_defenses", "name": "Anti-Tank Defenses", "col": 32, "row": 3, "days": 70, "req": ["YUG_domestic_artillery_production"], "mut_excl": [], "reward": {"research": [[["cat_anti_tank"], 3.0, 1, 0.0]]}},
+        {"id": "YUG_motorized_recon_companies", "name": "Motorized Recon Companies", "col": 34, "row": 3, "days": 70, "req": ["YUG_independent_engineer_regiments"], "mut_excl": [], "reward": {"research": [[["recon_tech"], 3.0, 1, 0.0]]}},
+        {"id": "YUG_artillery_regiments", "name": "Artillery Regiments", "col": 36, "row": 3, "days": 70, "req": [["YUG_supremacy_of_offense", "YUG_supremacy_of_defense"]], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_heavy_cruiser_project", "name": "Heavy Cruiser Project", "col": 38, "row": 3, "days": 70, "req": ["YUG_replace_the_dalmacija"], "mut_excl": [], "reward": {"research": [[["ca_tech"], 1.0, 1, 0.0]]}},
+        {"id": "YUG_modern_destroyers", "name": "Modern Destroyers", "col": 39, "row": 3, "days": 70, "req": ["YUG_naval_bombers"], "mut_excl": [], "reward": {"research": [[["dd_tech"], 1.0, 1, 0.0]]}},
+        {"id": "YUG_crush_the_ustasa", "name": "Crush the Ustasa", "col": 0, "row": 4, "days": 35, "req": ["YUG_evolution"], "mut_excl": ["YUG_establish_the_banovina_of_croatia"], "reward": {"pp": 25}},
+        {"id": "YUG_establish_the_banovina_of_croatia", "name": "Establish the Banovina of Croatia", "col": 2, "row": 4, "days": 70, "req": ["YUG_evolution"], "mut_excl": ["YUG_crush_the_ustasa"], "reward": {"pp": -15}},
+        {"id": "YUG_united_autonomous_croatia", "name": "A United Autonomous Croatia", "col": 4, "row": 4, "days": 70, "req": ["YUG_limited_self_government"], "mut_excl": ["YUG_devolved_croatia"], "reward": {"pp": 25}},
+        {"id": "YUG_devolved_croatia", "name": "A Devolved Croatia", "col": 6, "row": 4, "days": 70, "req": ["YUG_limited_self_government"], "mut_excl": ["YUG_united_autonomous_croatia"], "reward": {"pp": 25}},
+        {"id": "YUG_research_collaboration", "name": "Research Collaboration", "col": 10, "row": 4, "days": 70, "req": ["YUG_join_comintern"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_form_the_federal_republic", "name": "Form the Federal Republic", "col": 12, "row": 4, "days": 70, "req": [["YUG_yugoslavian_path_to_communism", "YUG_join_comintern"]], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_pan_slavic_workers_congress", "name": "Pan-Slavic Worker's Congress", "col": 15, "row": 4, "days": 70, "req": ["YUG_yugoslavian_path_to_communism"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_integrated_rail_network", "name": "Integrated Rail Network", "col": 18, "row": 4, "days": 70, "req": ["YUG_expand_the_university_of_zagreb"], "mut_excl": ["YUG_improve_serbian_rail_network"], "reward": {"infra": 2}},
+        {"id": "YUG_improve_serbian_rail_network", "name": "Improve Serbian Rail Network", "col": 20, "row": 4, "days": 70, "req": ["YUG_expand_the_university_of_zagreb"], "mut_excl": ["YUG_integrated_rail_network"], "reward": {"infra": 4, "slots": 6}},
+        {"id": "YUG_heavy_fighter_project", "name": "Heavy Fighter Project", "col": 23, "row": 4, "days": 70, "req": ["YUG_the_ik_3"], "mut_excl": [], "reward": {"research": [[["cat_heavy_fighter"], 1.0, 1, 0.0]]}},
+        {"id": "YUG_bomber_project", "name": "Bomber Project", "col": 25, "row": 4, "days": 70, "req": ["YUG_the_ik_3"], "mut_excl": [], "reward": {"research": [[["tactical_bomber"], 1.0, 1, 0.0]]}},
+        {"id": "YUG_tank_licenses", "name": "Tank Licenses", "col": 31, "row": 4, "days": 35, "req": ["YUG_modern_tanks"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_form_parachute_battalions", "name": "Form Parachute Battalions", "col": 34, "row": 4, "days": 70, "req": ["YUG_motorized_recon_companies"], "mut_excl": [], "reward": {"research": [[["para_tech"], 3.0, 1, 0.0]]}},
+        {"id": "YUG_medal_for_extreme_bravery", "name": "Extreme Bravery", "col": 36, "row": 4, "days": 70, "req": ["YUG_artillery_regiments"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_slovenia_for_support", "name": "Slovenia for Support", "col": 0, "row": 5, "days": 70, "req": [["YUG_crush_the_ustasa", "YUG_establish_the_banovina_of_croatia"]], "mut_excl": ["YUG_ban_slovene_nationalist_parties"], "reward": {"ws": -5, "pp": 40}},
+        {"id": "YUG_ban_slovene_nationalist_parties", "name": "Ban Slovene Nationalist Parties", "col": 2, "row": 5, "days": 70, "req": [["YUG_crush_the_ustasa", "YUG_establish_the_banovina_of_croatia"]], "mut_excl": ["YUG_slovenia_for_support"], "reward": {"pp": 25}},
+        {"id": "YUG_divide_bosnia", "name": "Divide Bosnia", "col": 4, "row": 5, "days": 70, "req": [["YUG_united_autonomous_croatia", "YUG_devolved_croatia"]], "mut_excl": ["YUG_safeguard_bosnia"], "reward": {"pp": 25}},
+        {"id": "YUG_safeguard_bosnia", "name": "Protect Bosnia", "col": 6, "row": 5, "days": 70, "req": [["YUG_united_autonomous_croatia", "YUG_devolved_croatia"]], "mut_excl": ["YUG_divide_bosnia"], "reward": {"pp": 25}},
+        {"id": "YUG_dissolve_serbia", "name": "Dissolve the Banate of Serbia", "col": 7, "row": 5, "days": 70, "req": ["YUG_limited_self_government"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_federal_defense_council", "name": "Federal Defense Council", "col": 12, "row": 5, "days": 70, "req": ["YUG_form_the_federal_republic"], "mut_excl": [], "reward": {"atk": 1, "def": 4}},
+        {"id": "YUG_invite_bulgaria", "name": "Invite Bulgaria", "col": 14, "row": 5, "days": 35, "req": ["YUG_pan_slavic_workers_congress"], "mut_excl": [], "reward": {"faction_invite": ["Bulgaria"]}},
+        {"id": "YUG_invite_albania", "name": "Invite Albania", "col": 16, "row": 5, "days": 35, "req": ["YUG_pan_slavic_workers_congress"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_improve_light_industry", "name": "Improve Light Industry", "col": 19, "row": 5, "days": 70, "req": [["YUG_integrated_rail_network", "YUG_improve_serbian_rail_network"]], "mut_excl": [], "reward": {"civ_factory": 2, "slots": 2}},
+        {"id": "YUG_serbian_steel", "name": "Serbian Steel", "col": 21, "row": 5, "days": 70, "req": ["YUG_improve_serbian_rail_network"], "mut_excl": [], "reward": {"res": {"steel": 16}}},
+        {"id": "YUG_surrender_macedonia", "name": "Surrender Macedonia", "col": 0, "row": 6, "days": 70, "req": [["YUG_slovenia_for_support", "YUG_ban_slovene_nationalist_parties"]], "mut_excl": ["YUG_concessions_for_macedonians"], "reward": {"ws": -5, "pp": 40}},
+        {"id": "YUG_concessions_for_macedonians", "name": "Concessions for Macedonians", "col": 2, "row": 6, "days": 70, "req": [["YUG_slovenia_for_support", "YUG_ban_slovene_nationalist_parties"]], "mut_excl": ["YUG_surrender_macedonia"], "reward": {"pp": 25}},
+        {"id": "YUG_fortify_banat", "name": "Fortify Banat", "col": 4, "row": 6, "days": 35, "req": ["YUG_dissolve_serbia", ["YUG_safeguard_bosnia", "YUG_divide_bosnia"]], "mut_excl": ["YUG_autonomous_transylvania", "YUG_banat_for_support"], "reward": {"def": 1}},
+        {"id": "YUG_banat_for_support", "name": "Banat for Support", "col": 6, "row": 6, "days": 35, "req": ["YUG_dissolve_serbia", ["YUG_safeguard_bosnia", "YUG_divide_bosnia"]], "mut_excl": ["YUG_autonomous_transylvania", "YUG_fortify_banat"], "reward": {"ws": -5, "pp": 40}},
+        {"id": "YUG_autonomous_transylvania", "name": "Autonomy for Slavic Transylvania", "col": 7, "row": 6, "days": 35, "req": ["YUG_dissolve_serbia", ["YUG_safeguard_bosnia", "YUG_divide_bosnia"]], "mut_excl": ["YUG_banat_for_support", "YUG_fortify_banat"], "reward": {"pp": 25}},
+        {"id": "YUG_pan_balkan_workers_congress", "name": "Pan-Balkan Initiative", "col": 13, "row": 6, "days": 70, "req": ["YUG_invite_bulgaria", "YUG_invite_albania", "YUG_federal_defense_council"], "mut_excl": [], "reward": {"create_faction": "Balkan Federation"}},
+        {"id": "YUG_develop_slovenian_industry", "name": "Develop Slovenian Industry", "col": 18, "row": 6, "days": 70, "req": ["YUG_integrated_rail_network"], "mut_excl": [], "reward": {"civ_factory": 1, "mil_factory": 2, "slots": 3}},
+        {"id": "YUG_expand_the_university_of_belgrad", "name": "Expand the University of Belgrade", "col": 20, "row": 6, "days": 70, "req": ["YUG_improve_serbian_rail_network"], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "YUG_invite_german_military_mission", "name": "Invite German Military Mission", "col": 0, "row": 7, "days": 35, "req": [["YUG_concessions_for_macedonians", "YUG_surrender_macedonia", "YUG_banat_for_support", "YUG_autonomous_transylvania", "YUG_fortify_banat"]], "mut_excl": [], "reward": {"research": [[["basic_medium_tank", "improved_medium_tank", "advanced_medium_tank", "mechanised_infantry"], 1.0, 1, 0.0]]}},
+        {"id": "YUG_join_axis", "name": "Sign the Tripartite Pact", "col": 2, "row": 7, "days": 70, "req": [["YUG_concessions_for_macedonians", "YUG_surrender_macedonia", "YUG_banat_for_support", "YUG_autonomous_transylvania", "YUG_fortify_banat"]], "mut_excl": ["YUG_end_the_regency"], "reward": {"join_faction_of": "German Reich"}},
+        {"id": "YUG_end_the_regency", "name": "End the Regency", "col": 6, "row": 7, "days": 70, "req": [["YUG_concessions_for_macedonians", "YUG_surrender_macedonia", "YUG_banat_for_support", "YUG_autonomous_transylvania", "YUG_fortify_banat"]], "mut_excl": ["YUG_join_axis"], "reward": {"pp": 25}, "need": {"after": "1938-09-06"}},
+        {"id": "YUG_towards_independence", "name": "Towards Independence", "col": 7, "row": 7, "days": 70, "req": [["YUG_banat_for_support", "YUG_autonomous_transylvania", "YUG_fortify_banat"]], "mut_excl": ["YUG_united_kingdom"], "reward": {"pp": 25}},
+        {"id": "YUG_united_kingdom", "name": "A United Kingdom", "col": 9, "row": 7, "days": 70, "req": [["YUG_banat_for_support", "YUG_autonomous_transylvania", "YUG_fortify_banat"]], "mut_excl": ["YUG_towards_independence"], "reward": {"pp": 25}},
+        {"id": "YUG_invite_romania", "name": "Invite Romania", "col": 11, "row": 7, "days": 35, "req": ["YUG_pan_balkan_workers_congress"], "mut_excl": [], "reward": {"faction_invite": ["Romania"]}},
+        {"id": "YUG_invite_greece", "name": "Invite Greece", "col": 13, "row": 7, "days": 35, "req": ["YUG_pan_balkan_workers_congress"], "mut_excl": [], "reward": {"faction_invite": ["Greece"]}},
+        {"id": "YUG_invite_hungary", "name": "Invite Hungary", "col": 15, "row": 7, "days": 35, "req": ["YUG_pan_balkan_workers_congress"], "mut_excl": [], "reward": {"faction_invite": ["Hungary"]}},
+        {"id": "YUG_expand_the_university_of_ljubljana", "name": "Expand the University of Ljubljana", "col": 17, "row": 7, "days": 70, "req": ["YUG_develop_slovenian_industry"], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "YUG_local_self_management", "name": "Local Self-management", "col": 18, "row": 7, "days": 70, "req": ["YUG_develop_slovenian_industry"], "mut_excl": [], "reward": {"ind": 1}},
+        {"id": "YUG_central_management", "name": "Central Management", "col": 20, "row": 7, "days": 70, "req": ["YUG_expand_the_university_of_belgrad"], "mut_excl": [], "reward": {"ind": 1}},
+        {"id": "YUG_surrender_italian_claims", "name": "Surrender Italian Claims", "col": 0, "row": 8, "days": 70, "req": ["YUG_join_axis"], "mut_excl": ["YUG_zara_for_axis"], "reward": {"pp": 25}},
+        {"id": "YUG_zara_for_axis", "name": "Zara for Axis Membership", "col": 2, "row": 8, "days": 70, "req": ["YUG_join_axis"], "mut_excl": ["YUG_surrender_italian_claims"], "reward": {"pp": 25}},
+        {"id": "YUG_coronation", "name": "The Coronation", "col": 4, "row": 8, "days": 70, "req": [["YUG_end_the_regency", "YUG_join_axis"]], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_royal_wedding", "name": "A Royal Wedding", "col": 6, "row": 8, "days": 70, "req": ["YUG_end_the_regency"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_defence_army_of_yugoslavia", "name": "The Defence Army of Yugoslavia", "col": 7, "row": 8, "days": 70, "req": ["YUG_towards_independence"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_guarantee_religious_liberties", "name": "Guarantee Religious Liberties", "col": 9, "row": 8, "days": 70, "req": ["YUG_united_kingdom"], "mut_excl": [], "reward": {"pp": 20}},
+        {"id": "YUG_invite_turkey", "name": "Invite Turkey", "col": 13, "row": 8, "days": 35, "req": ["YUG_invite_greece", "YUG_invite_hungary", "YUG_invite_romania"], "mut_excl": [], "reward": {"faction_invite": ["Turkey"]}},
+        {"id": "YUG_expand_the_sarajevo_arsenals", "name": "Expand the Sarajevo Arsenals", "col": 19, "row": 8, "days": 70, "req": [["YUG_local_self_management", "YUG_central_management"]], "mut_excl": [], "reward": {"civ_factory": 1, "mil_factory": 2, "slots": 3}},
+        {"id": "YUG_claim_macedonia", "name": "Claim Macedonia", "col": 0, "row": 9, "days": 70, "req": [["YUG_zara_for_axis", "YUG_surrender_italian_claims"]], "mut_excl": [], "reward": {"wargoal_against": "Greece"}},
+        {"id": "YUG_invite_italian_naval_experts", "name": "Invite Italian Naval Experts", "col": 2, "row": 9, "days": 70, "req": [["YUG_zara_for_axis", "YUG_surrender_italian_claims"]], "mut_excl": [], "reward": {"navy_xp": 50}},
+        {"id": "YUG_enforced_neutrality", "name": "Enforce Yugoslav Neutrality", "col": 4, "row": 9, "days": 70, "req": ["YUG_royal_wedding", "YUG_coronation"], "mut_excl": ["YUG_join_allies"], "reward": {"atk": 2, "def": 2}},
+        {"id": "YUG_join_allies", "name": "A Royal Alliance", "col": 6, "row": 9, "days": 70, "req": ["YUG_royal_wedding", "YUG_coronation"], "mut_excl": ["YUG_enforced_neutrality"], "reward": {"join_faction_of": "British Empire"}},
+        {"id": "YUG_defence_league", "name": "Yugoslav Defence League", "col": 7, "row": 9, "days": 70, "req": ["YUG_defence_army_of_yugoslavia"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_reunite_the_kingdom", "name": "Reunite the Kingdoms", "col": 9, "row": 9, "days": 70, "req": ["YUG_guarantee_religious_liberties"], "mut_excl": [], "reward": {"wargoal_against": "Bulgaria"}},
+        {"id": "YUG_greater_yugoslavia", "name": "Greater Yugoslavia", "col": 0, "row": 10, "days": 70, "req": ["YUG_claim_macedonia"], "mut_excl": [], "reward": {"wargoal_against": ["Bulgaria", "Hungary"]}},
+        {"id": "YUG_fortress_yugoslavia", "name": "Fortress Yugoslavia", "col": 4, "row": 10, "days": 70, "req": ["YUG_enforced_neutrality"], "mut_excl": [], "reward": {"def": 1}},
+        {"id": "YUG_allied_air_combat_school", "name": "Allied Air Combat School", "col": 6, "row": 10, "days": 70, "req": ["YUG_join_allies"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "YUG_all_yugoslavian_regiments", "name": "All-Yugoslavian Regiments", "col": 0, "row": 11, "days": 70, "req": ["YUG_greater_yugoslavia"], "mut_excl": [], "reward": {"def": 1, "manpower": 300}},
+    ],
+    "Romania": [
+        {"id": "ROM_preserve_greater_romania", "name": "Preserve Greater Romania", "col": 3, "row": 0, "days": 70, "req": [], "mut_excl": ["ROM_balkans_dominance"], "reward": {"pp": 25}},
+        {"id": "ROM_balkans_dominance", "name": "Balkans Dominance", "col": 13, "row": 0, "days": 70, "req": [], "mut_excl": ["ROM_preserve_greater_romania"], "reward": {"pp": 25}},
+        {"id": "ROM_institute_royal_dictatorship", "name": "Institute Royal Dictatorship", "col": 18, "row": 0, "days": 70, "req": [], "mut_excl": [], "reward": {"pp": 120, "set_ideology": "Non-Aligned"}},
+        {"id": "ROM_expand_the_air_force", "name": "Expand the Air Force", "col": 26, "row": 0, "days": 70, "req": [], "mut_excl": [], "reward": {"def": 1}},
+        {"id": "ROM_army_maneuvers", "name": "Army Maneuvers", "col": 33, "row": 0, "days": 70, "req": [], "mut_excl": [], "reward": {"atk": 1}},
+        {"id": "ROM_expand_the_galati_shipyards", "name": "Expand the Galati Shipyards", "col": 40, "row": 0, "days": 70, "req": [], "mut_excl": [], "reward": {"dockyard": 2, "navy_xp": 25, "slots": 2}},
+        {"id": "ROM_a_deal_with_the_devil", "name": "A Deal with the Devil", "col": 1, "row": 1, "days": 70, "req": ["ROM_preserve_greater_romania"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_trade_treaty_with_germany", "name": "Trade Treaty with Germany", "col": 3, "row": 1, "days": 70, "req": ["ROM_preserve_greater_romania"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_renew_the_romanian_polish_alliance", "name": "Renew Romanian-Polish Alliance", "col": 5, "row": 1, "days": 70, "req": ["ROM_preserve_greater_romania"], "mut_excl": [], "reward": {"guarantee": ["Second Polish Republic"]}},
+        {"id": "ROM_civil_works", "name": "Civil Works", "col": 7, "row": 1, "days": 70, "req": ["ROM_preserve_greater_romania"], "mut_excl": [], "reward": {"research": [[["industry"], 1.0, 2, 0.0]]}},
+        {"id": "ROM_national_defense_industry", "name": "National Defense Industry", "col": 9, "row": 1, "days": 70, "req": ["ROM_balkans_dominance"], "mut_excl": [], "reward": {"mil_factory": 2, "slots": 3}},
+        {"id": "ROM_puppet_bulgaria", "name": "Puppet Bulgaria", "col": 11, "row": 1, "days": 70, "req": ["ROM_balkans_dominance"], "mut_excl": [], "reward": {"wargoal_against": "Bulgaria"}},
+        {"id": "ROM_align_hungary", "name": "Align Hungary", "col": 14, "row": 1, "days": 70, "req": ["ROM_balkans_dominance"], "mut_excl": [], "reward": {"nap": "Hungary"}},
+        {"id": "ROM_fortify_the_borders", "name": "Fortify the Borders", "col": 16, "row": 1, "days": 70, "req": ["ROM_institute_royal_dictatorship"], "mut_excl": [], "reward": {"def": 2}},
+        {"id": "ROM_revise_the_constitution", "name": "Revise the Constitution", "col": 19, "row": 1, "days": 70, "req": ["ROM_institute_royal_dictatorship"], "mut_excl": [], "reward": {"manpower": 300}},
+        {"id": "ROM_crack_down_on_extremism", "name": "Crack Down on Extremism", "col": 21, "row": 1, "days": 35, "req": ["ROM_institute_royal_dictatorship"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_white_squadron_focus", "name": "The White Squadron", "col": 26, "row": 1, "days": 35, "req": ["ROM_expand_the_air_force"], "mut_excl": [], "reward": {"pp": 25}, "need": {"war": True}},
+        {"id": "ROM_army_war_college", "name": "Army War College", "col": 32, "row": 1, "days": 70, "req": ["ROM_army_maneuvers"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_royal_guards_divisions", "name": "Royal Guards Divisions", "col": 34, "row": 1, "days": 70, "req": ["ROM_army_maneuvers"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_coastal_defense_navy", "name": "Coastal Defense Navy", "col": 39, "row": 1, "days": 70, "req": ["ROM_expand_the_galati_shipyards"], "mut_excl": ["ROM_black_sea_dominance"], "reward": {"pp": 25}},
+        {"id": "ROM_black_sea_dominance", "name": "Black Sea Dominance", "col": 41, "row": 1, "days": 70, "req": ["ROM_expand_the_galati_shipyards"], "mut_excl": ["ROM_coastal_defense_navy"], "reward": {"pp": 25}},
+        {"id": "ROM_form_peasant_militias", "name": "Form Peasant Militias", "col": 0, "row": 2, "days": 70, "req": ["ROM_a_deal_with_the_devil"], "mut_excl": [], "reward": {"manpower": 300}},
+        {"id": "ROM_the_cordon_sanitaire", "name": "The Cordon Sanitaire", "col": 6, "row": 2, "days": 70, "req": ["ROM_renew_the_romanian_polish_alliance"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_agrarian_reform", "name": "Agrarian Reform", "col": 8, "row": 2, "days": 70, "req": [["ROM_civil_works", "ROM_national_defense_industry"]], "mut_excl": [], "reward": {"ind": 2}},
+        {"id": "ROM_secure_greece", "name": "Secure Greece", "col": 10, "row": 2, "days": 70, "req": ["ROM_puppet_bulgaria"], "mut_excl": [], "reward": {"wargoal_against": "Greece"}},
+        {"id": "ROM_divide_yugoslavia", "name": "Divide Yugoslavia", "col": 12, "row": 2, "days": 70, "req": ["ROM_puppet_bulgaria"], "mut_excl": [], "reward": {"wargoal_against": "Yugoslavia"}},
+        {"id": "ROM_split_czechoslovakia", "name": "Split Czechoslovakia", "col": 14, "row": 2, "days": 70, "req": ["ROM_align_hungary"], "mut_excl": [], "reward": {"border_claims": "Czechoslovakia"}},
+        {"id": "ROM_his_majestys_loyal_government", "name": "His Majesty's Loyal Government", "col": 15, "row": 2, "days": 70, "req": ["ROM_fortify_the_borders", "ROM_align_hungary", "ROM_revise_the_constitution"], "mut_excl": ["ROM_flexible_foreign_policy"], "reward": {"pp": 120}, "need": {"ideology": ["Non-Aligned"]}},
+        {"id": "ROM_flexible_foreign_policy", "name": "Flexible Foreign Policy", "col": 19, "row": 2, "days": 35, "req": ["ROM_revise_the_constitution"], "mut_excl": ["ROM_his_majestys_loyal_government"], "reward": {"pp": 25}},
+        {"id": "ROM_the_royal_foundation", "name": "The Royal Foundation", "col": 21, "row": 2, "days": 70, "req": ["ROM_revise_the_constitution"], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "ROM_acquire_licenses", "name": "Acquire Licenses", "col": 25, "row": 2, "days": 70, "req": ["ROM_expand_the_air_force"], "mut_excl": ["ROM_local_development"], "reward": {"pp": 25}},
+        {"id": "ROM_local_development", "name": "Local Development", "col": 28, "row": 2, "days": 70, "req": ["ROM_expand_the_air_force"], "mut_excl": ["ROM_acquire_licenses"], "reward": {"pp": 25}},
+        {"id": "ROM_the_zb_53", "name": "The ZB-53", "col": 32, "row": 2, "days": 70, "req": ["ROM_army_war_college"], "mut_excl": [], "reward": {"research": [[["infantry_weapons"], 1.0, 1, 0.0]]}},
+        {"id": "ROM_reserve_divisions", "name": "Reserve Divisions", "col": 34, "row": 2, "days": 70, "req": ["ROM_royal_guards_divisions"], "mut_excl": ["ROM_the_armored_division"], "reward": {"manpower": 140}},
+        {"id": "ROM_the_armored_division", "name": "The Armored Division", "col": 36, "row": 2, "days": 70, "req": ["ROM_royal_guards_divisions"], "mut_excl": ["ROM_reserve_divisions"], "reward": {"pp": 25}},
+        {"id": "ROM_coastal_defense_ships", "name": "Coastal Defense Ships", "col": 38, "row": 2, "days": 70, "req": ["ROM_coastal_defense_navy"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_modern_destroyers", "name": "Modern Destroyers", "col": 40, "row": 2, "days": 70, "req": [["ROM_coastal_defense_navy", "ROM_black_sea_dominance"]], "mut_excl": [], "reward": {"research": [[["dd_tech"], 3.0, 1, 0.0]]}},
+        {"id": "ROM_capital_ships", "name": "Capital Ships", "col": 42, "row": 2, "days": 70, "req": ["ROM_black_sea_dominance"], "mut_excl": [], "reward": {"research": [[["ca_tech", "bb_tech", "bc_tech"], 1.0, 2, 0.0]]}},
+        {"id": "ROM_basing_rights_for_soviet_union", "name": "Basing Rights for", "col": 1, "row": 3, "days": 70, "req": ["ROM_a_deal_with_the_devil"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_invite_german_advisors", "name": "Invite German Advisors", "col": 3, "row": 3, "days": 70, "req": ["ROM_trade_treaty_with_germany"], "mut_excl": [], "reward": {"atk": 1}},
+        {"id": "ROM_demand_a_western_guarantee", "name": "Demand a Western Guarantee", "col": 5, "row": 3, "days": 70, "req": ["ROM_renew_the_romanian_polish_alliance"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_danubian_transport_network", "name": "Danubian Transport Network", "col": 8, "row": 3, "days": 70, "req": ["ROM_agrarian_reform"], "mut_excl": [], "reward": {"infra": 3}},
+        {"id": "ROM_secure_the_bosporus", "name": "Secure the Bosporus", "col": 10, "row": 3, "days": 70, "req": ["ROM_secure_greece"], "mut_excl": [], "reward": {"wargoal_against": "Turkey"}},
+        {"id": "ROM_militarize_the_sentinels", "name": "Militarize the Sentinels", "col": 15, "row": 3, "days": 70, "req": ["ROM_his_majestys_loyal_government"], "mut_excl": [], "reward": {"def": 2, "manpower": 600}, "need": {"ideology": ["Non-Aligned"]}},
+        {"id": "ROM_appoint_allied_friendly_government", "name": "Appoint Pro-Allied Government", "col": 17, "row": 3, "days": 70, "req": ["ROM_flexible_foreign_policy"], "mut_excl": [], "reward": {"pp": -10}},
+        {"id": "ROM_appoint_soviet_friendly_government", "name": "Appoint Pro-Soviet Government", "col": 19, "row": 3, "days": 70, "req": ["ROM_flexible_foreign_policy"], "mut_excl": [], "reward": {"pp": -10}},
+        {"id": "ROM_appoint_german_friendly_government", "name": "Appoint Pro-Axis Government", "col": 22, "row": 3, "days": 70, "req": ["ROM_flexible_foreign_policy"], "mut_excl": [], "reward": {"pp": -10}},
+        {"id": "ROM_air_defense", "name": "Air Defense", "col": 24, "row": 3, "days": 70, "req": ["ROM_acquire_licenses"], "mut_excl": ["ROM_ground_support"], "reward": {"air_xp": 30}},
+        {"id": "ROM_ground_support", "name": "Ground Support", "col": 25, "row": 3, "days": 70, "req": ["ROM_acquire_licenses"], "mut_excl": ["ROM_air_defense"], "reward": {"air_xp": 30}},
+        {"id": "ROM_air_superiority", "name": "Air Superiority", "col": 27, "row": 3, "days": 70, "req": ["ROM_local_development"], "mut_excl": ["ROM_strategic_bomber_force"], "reward": {"atk": 1}},
+        {"id": "ROM_strategic_bomber_force", "name": "Strategic Bomber Force", "col": 29, "row": 3, "days": 70, "req": ["ROM_local_development"], "mut_excl": ["ROM_air_superiority"], "reward": {"research": [[["cat_strategic_bomber"], 1.0, 1, 0.0]]}},
+        {"id": "ROM_vanatori_de_munte", "name": "Vanatori De Munte", "col": 31, "row": 3, "days": 70, "req": ["ROM_the_zb_53"], "mut_excl": [], "reward": {"research": [[["mountaineers_tech"], 1.0, 1, 0.0]]}},
+        {"id": "ROM_artillery_modernization", "name": "Artillery Modernization", "col": 33, "row": 3, "days": 70, "req": ["ROM_the_zb_53"], "mut_excl": [], "reward": {"research": [[["artillery"], 1.0, 1, 0.0]]}},
+        {"id": "ROM_acquire_modern_tanks", "name": "Acquire Modern Tanks", "col": 35, "row": 3, "days": 70, "req": [["ROM_the_armored_division", "ROM_reserve_divisions"]], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_torpedo_boats", "name": "Torpedo Boats", "col": 37, "row": 3, "days": 70, "req": ["ROM_coastal_defense_ships"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_modern_submarines", "name": "Modern Submarines", "col": 39, "row": 3, "days": 70, "req": ["ROM_modern_destroyers"], "mut_excl": [], "reward": {"research": [[["ss_tech"], 1.0, 1, 0.0]]}},
+        {"id": "ROM_torpedo_bombers", "name": "Torpedo Bombers", "col": 41, "row": 3, "days": 70, "req": ["ROM_modern_destroyers"], "mut_excl": [], "reward": {"research": [[["naval_bomber"], 1.0, 1, 0.0]]}},
+        {"id": "ROM_expand_the_marine_regiment", "name": "Expand the Marine Regiment", "col": 43, "row": 3, "days": 70, "req": ["ROM_capital_ships"], "mut_excl": [], "reward": {"research": [[["tp_tech", "marine_tech"], 0.5, 2, 0.0]]}},
+        {"id": "ROM_romanian_volunteer_brigades", "name": "Romanian Volunteer Brigades", "col": 0, "row": 4, "days": 70, "req": ["ROM_basing_rights_for_soviet_union"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_license_german_equipment", "name": "License German Equipment", "col": 4, "row": 4, "days": 70, "req": ["ROM_invite_german_advisors"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_military_modernization", "name": "Military Modernization", "col": 6, "row": 4, "days": 70, "req": ["ROM_demand_a_western_guarantee"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_malaxa", "name": "MALAXA", "col": 7, "row": 4, "days": 70, "req": ["ROM_danubian_transport_network"], "mut_excl": ["ROM_invite_foreign_motor_companies"], "reward": {"civ_factory": 3, "slots": 3}},
+        {"id": "ROM_invite_foreign_motor_companies", "name": "Invite Foreign Motor Companies", "col": 9, "row": 4, "days": 70, "req": ["ROM_danubian_transport_network"], "mut_excl": ["ROM_malaxa"], "reward": {"pp": 25}},
+        {"id": "ROM_all_parties_must_end", "name": "All Parties Must End", "col": 15, "row": 4, "days": 70, "req": ["ROM_militarize_the_sentinels"], "mut_excl": [], "reward": {"pp": 25}, "need": {"ideology": ["Non-Aligned"]}},
+        {"id": "ROM_constitutional_guarantees", "name": "Constitutional Guarantees", "col": 17, "row": 4, "days": 70, "req": ["ROM_appoint_allied_friendly_government"], "mut_excl": [], "reward": {"ind": 1}},
+        {"id": "ROM_securitate", "name": "Securitate", "col": 19, "row": 4, "days": 70, "req": ["ROM_appoint_soviet_friendly_government"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_iron_guard", "name": "Iron Guard", "col": 21, "row": 4, "days": 70, "req": ["ROM_appoint_german_friendly_government"], "mut_excl": ["ROM_national_christian_party"], "reward": {"atk": 1, "def": 1, "manpower": 100}},
+        {"id": "ROM_national_christian_party", "name": "National Christian Party", "col": 23, "row": 4, "days": 70, "req": ["ROM_appoint_german_friendly_government"], "mut_excl": ["ROM_iron_guard"], "reward": {"ind": 2}},
+        {"id": "ROM_acquire_fighters", "name": "Acquire Fighters", "col": 24, "row": 4, "days": 70, "req": ["ROM_air_defense"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_medium_bombers", "name": "Medium Bombers", "col": 25, "row": 4, "days": 70, "req": ["ROM_ground_support"], "mut_excl": [], "reward": {"research": [[["tactical_bomber"], 1.0, 1, 0.0]]}},
+        {"id": "ROM_iar_80", "name": "IAR 80", "col": 26, "row": 4, "days": 70, "req": ["ROM_air_superiority"], "mut_excl": [], "reward": {"pp": 8, "research": [[["light_fighter"], 1.0, 1, 2.0]]}},
+        {"id": "ROM_cas", "name": "CAS", "col": 28, "row": 4, "days": 70, "req": ["ROM_air_superiority"], "mut_excl": [], "reward": {"research": [[["cas_bomber"], 1.0, 1, 0.0]]}},
+        {"id": "ROM_heavy_bombers", "name": "Heavy Bombers", "col": 30, "row": 4, "days": 70, "req": ["ROM_strategic_bomber_force"], "mut_excl": [], "reward": {"research": [[["cat_strategic_bomber"], 1.0, 1, 0.0]]}},
+        {"id": "ROM_mountain_artillery", "name": "Mountain Artillery", "col": 31, "row": 4, "days": 70, "req": ["ROM_artillery_modernization", "ROM_vanatori_de_munte"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_modern_at_guns", "name": "Modern AT Guns", "col": 33, "row": 4, "days": 70, "req": ["ROM_artillery_modernization"], "mut_excl": ["ROM_mobile_tank_destroyers"], "reward": {"research": [[["cat_anti_tank"], 0.75, 2, 0.0]]}},
+        {"id": "ROM_mobile_tank_destroyers", "name": "Mobile Tank Destroyers", "col": 35, "row": 4, "days": 70, "req": ["ROM_acquire_modern_tanks", "ROM_artillery_modernization"], "mut_excl": ["ROM_modern_at_guns"], "reward": {"pp": 25}},
+        {"id": "ROM_join_comintern", "name": "Join Comintern", "col": 1, "row": 5, "days": 70, "req": ["ROM_basing_rights_for_soviet_union"], "mut_excl": [], "reward": {"join_faction_of": "Soviet Union"}},
+        {"id": "ROM_join_axis", "name": "Join the Axis", "col": 3, "row": 5, "days": 70, "req": ["ROM_invite_german_advisors"], "mut_excl": [], "reward": {"join_faction_of": "German Reich"}},
+        {"id": "ROM_join_allies", "name": "Join the Allies", "col": 5, "row": 5, "days": 70, "req": ["ROM_demand_a_western_guarantee"], "mut_excl": [], "reward": {"join_faction_of": "British Empire"}},
+        {"id": "ROM_hunedoara_steel_works", "name": "Hunedoara Steel Works", "col": 7, "row": 5, "days": 70, "req": [["ROM_invite_foreign_motor_companies", "ROM_malaxa"]], "mut_excl": [], "reward": {"civ_factory": 2, "res": {"steel": 12}, "slots": 2}},
+        {"id": "ROM_invest_in_the_iar", "name": "Invest In the IAR", "col": 9, "row": 5, "days": 70, "req": [["ROM_invite_foreign_motor_companies", "ROM_malaxa"]], "mut_excl": [], "reward": {"mil_factory": 3, "slots": 3}},
+        {"id": "ROM_handle_the_king", "name": "Handle the King", "col": 17, "row": 5, "days": 70, "req": ["ROM_constitutional_guarantees"], "mut_excl": ["ROM_force_abdication"], "reward": {"pp": 25}, "need": {"ideology": ["Democracy"]}},
+        {"id": "ROM_force_abdication", "name": "Force Abdication", "col": 20, "row": 5, "days": 70, "req": [["ROM_iron_guard", "ROM_securitate", "ROM_national_christian_party"]], "mut_excl": ["ROM_handle_the_king"], "reward": {"ind": -2, "pp": -15}},
+        {"id": "ROM_nuclear_bomb_project", "name": "Nuclear Bomb Project", "col": 30, "row": 5, "days": 70, "req": ["ROM_heavy_bombers"], "mut_excl": [], "reward": {"research": [[["nuclear"], 1.0, 1, 0.0]]}},
+        {"id": "ROM_the_maresal", "name": "The Maresal", "col": 35, "row": 5, "days": 70, "req": ["ROM_mobile_tank_destroyers"], "mut_excl": [], "reward": {"research": [[["cat_heavy_armor"], 1.0, 1, 2.0]]}},
+        {"id": "ROM_german_romanian_oil_exploitation_company", "name": "German-Romanian Oil Exploitation Company", "col": 2, "row": 6, "days": 70, "req": ["ROM_join_axis"], "mut_excl": [], "reward": {"res": {"oil": 8}}},
+        {"id": "ROM_demand_transnistria", "name": "Demand Transnistria", "col": 4, "row": 6, "days": 70, "req": ["ROM_join_axis"], "mut_excl": [], "reward": {"wargoal_against": "Soviet Union"}},
+        {"id": "ROM_joint_allied_staff_college", "name": "Joint Allied Staff College", "col": 6, "row": 6, "days": 70, "req": ["ROM_join_allies", "ROM_military_modernization"], "mut_excl": [], "reward": {"atk": 1}},
+        {"id": "ROM_expand_ploiesti_oil_production", "name": "Expand Ploiesti Oil Production", "col": 8, "row": 6, "days": 70, "req": ["ROM_invest_in_the_iar", "ROM_hunedoara_steel_works"], "mut_excl": [], "reward": {"res": {"oil": 24}}},
+        {"id": "ROM_king_michaels_coup", "name": "King Michael's Coup", "col": 20, "row": 6, "days": 70, "req": ["ROM_force_abdication"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "ROM_expand_the_university_of_bucharest", "name": "Expand the University of Bucharest", "col": 8, "row": 7, "days": 70, "req": ["ROM_expand_ploiesti_oil_production"], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "ROM_exploit_the_baita_mines", "name": "Exploit the Baita Mines", "col": 8, "row": 8, "days": 70, "req": ["ROM_expand_the_university_of_bucharest"], "mut_excl": [], "reward": {"pp": 25}},
+    ],
+    "Spain": [
+        {"id": "SPA_a_great_spain", "name": "A Great Spain", "col": 31, "row": 0, "days": 35, "req": [], "mut_excl": ["SPR_the_popular_front"], "reward": {"pp": 15}},
+        {"id": "SPR_the_popular_front", "name": "The Popular Front", "col": 32, "row": 0, "days": 35, "req": [], "mut_excl": ["SPA_a_great_spain"], "reward": {"pp": 25}},
+        {"id": "SPA_hand_over_the_ceda_campaign_chest", "name": "Hand Over the CEDA Campaign Chest", "col": 16, "row": 1, "days": 35, "req": ["SPA_a_great_spain"], "mut_excl": [], "reward": {"pp": 200}},
+        {"id": "SPR_secure_the_guardia_de_asalto", "name": "Secure the Guardia de Asalto", "col": 44, "row": 1, "days": 70, "req": ["SPR_the_popular_front"], "mut_excl": ["SPR_secure_the_guardia_civil"], "reward": {"pp": 25}},
+        {"id": "SPR_secure_the_guardia_civil", "name": "Secure the Guardia Civil", "col": 46, "row": 1, "days": 70, "req": ["SPR_the_popular_front"], "mut_excl": ["SPR_secure_the_guardia_de_asalto"], "reward": {"pp": 10}},
+        {"id": "SPA_negotiate_carlist_support", "name": "Negotiate Carlist Support", "col": 16, "row": 2, "days": 28, "req": ["SPA_hand_over_the_ceda_campaign_chest"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_train_the_union_youth", "name": "Train the Union Youth", "col": 45, "row": 2, "days": 70, "req": [["SPR_secure_the_guardia_de_asalto", "SPR_secure_the_guardia_civil"]], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_the_army_of_africa", "name": "The Army of Africa", "col": 16, "row": 3, "days": 35, "req": ["SPA_negotiate_carlist_support"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_enlarge_the_weapon_caches", "name": "Enlarge the Weapon Caches", "col": 45, "row": 3, "days": 70, "req": ["SPR_train_the_union_youth"], "mut_excl": [], "reward": {"pp": 50}},
+        {"id": "SPA_secure_the_northern_garrisons", "name": "Secure the Northern Garrisons", "col": 16, "row": 4, "days": 35, "req": ["SPA_the_army_of_africa"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_distribute_arms_to_the_people", "name": "Distribute Arms to the People", "col": 45, "row": 4, "days": 70, "req": ["SPR_enlarge_the_weapon_caches"], "mut_excl": [], "reward": {"pp": 75}},
+        {"id": "SPA_sin_paquito", "name": "Sin Paquito", "col": 15, "row": 5, "days": 28, "req": ["SPA_secure_the_northern_garrisons"], "mut_excl": ["SPA_con_paquito"], "reward": {"pp": 60}},
+        {"id": "SPA_con_paquito", "name": "Con Paquito", "col": 17, "row": 5, "days": 28, "req": ["SPA_secure_the_northern_garrisons"], "mut_excl": ["SPA_sin_paquito"], "reward": {"pp": 25}},
+        {"id": "SPR_disband_the_army", "name": "Disband the Army", "col": 45, "row": 5, "days": 70, "req": ["SPR_distribute_arms_to_the_people"], "mut_excl": [], "reward": {"pp": 200}},
+        {"id": "SPA_the_phalanx_ascendant", "name": "The Phalanx Ascendant", "col": 5, "row": 6, "days": 35, "req": ["SPA_sin_paquito"], "mut_excl": ["SPA_supremacy_of_the_communion", "SPA_unify_the_nationalist_front"], "reward": {"pp": 25}, "need": {"cw": "on", "auto": True}},
+        {"id": "SPA_unify_the_nationalist_front", "name": "Unify the Nationalist Front", "col": 16, "row": 6, "days": 35, "req": ["SPA_con_paquito"], "mut_excl": ["SPA_supremacy_of_the_communion", "SPA_the_phalanx_ascendant"], "reward": {"pp": 20}, "need": {"cw": "on", "auto": True}},
+        {"id": "SPA_supremacy_of_the_communion", "name": "Supremacy of the Communion", "col": 26, "row": 6, "days": 35, "req": ["SPA_negotiate_carlist_support"], "mut_excl": ["SPA_the_phalanx_ascendant", "SPA_unify_the_nationalist_front"], "reward": {"atk": -2, "def": -2, "ws": 5}, "need": {"cw": "on", "auto": True}},
+        {"id": "SPR_regional_defense_council_of_aragon", "name": "Regional Defense Council of Aragon", "col": 35, "row": 6, "days": 35, "req": ["SPR_disband_the_army"], "mut_excl": ["SPR_maintain_the_second_republic", "SPR_the_anti_fascist_workers_revolution"], "reward": {"pp": -24, "ws": 10}, "need": {"cw": "on", "auto": True}},
+        {"id": "SPR_the_anti_fascist_workers_revolution", "name": "The Anti-Fascist Worker's Revolution", "col": 45, "row": 6, "days": 35, "req": ["SPR_disband_the_army"], "mut_excl": ["SPR_maintain_the_second_republic", "SPR_regional_defense_council_of_aragon"], "reward": {"pp": 25}, "need": {"cw": "on", "auto": True}},
+        {"id": "SPR_maintain_the_second_republic", "name": "Maintain the Second Republic", "col": 56, "row": 6, "days": 35, "req": ["SPR_disband_the_army"], "mut_excl": ["SPR_regional_defense_council_of_aragon", "SPR_the_anti_fascist_workers_revolution"], "reward": {"pp": 60, "ws": 5}, "need": {"cw": "on", "auto": True}},
+        {"id": "SPA_bolster_offensive_infrastructure", "name": "Bolster Offensive Infrastructure", "col": 2, "row": 7, "days": 70, "req": ["SPA_the_phalanx_ascendant"], "mut_excl": [], "reward": {"infra": 3}, "need": {"cw": "notover"}},
+        {"id": "SPA_secure_the_national_defense_council", "name": "Secure the National Defense Council", "col": 5, "row": 7, "days": 70, "req": ["SPA_the_phalanx_ascendant"], "mut_excl": [], "reward": {"pp": 40}},
+        {"id": "SPA_the_corpo_truppe_volontarie", "name": "The Corpo Truppe Volontarie", "col": 9, "row": 7, "days": 35, "req": [["SPA_the_phalanx_ascendant", "SPA_unify_the_nationalist_front"]], "mut_excl": [], "reward": {"research": [[["infantry_weapons"], 1.0, 1, 0.0], [["artillery"], 1.0, 1, 0.0]]}, "need": {"cw": "notover"}},
+        {"id": "SPA_the_condor_legion", "name": "The Condor Legion", "col": 11, "row": 7, "days": 35, "req": [["SPA_the_phalanx_ascendant", "SPA_unify_the_nationalist_front"]], "mut_excl": [], "reward": {"research": [[["light_fighter"], 1.0, 1, 0.0], [["cas_bomber"], 1.0, 1, 0.0]]}, "need": {"cw": "notover"}},
+        {"id": "SPA_save_the_alcazar", "name": "Save the Alcázar!", "col": 14, "row": 7, "days": 35, "req": ["SPA_unify_the_nationalist_front"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_consolidate_the_north", "name": "Consolidate the North", "col": 16, "row": 7, "days": 70, "req": ["SPA_unify_the_nationalist_front"], "mut_excl": [], "reward": {"mil_factory": 5, "slots": 5}},
+        {"id": "SPA_a_methodical_approach", "name": "A Methodical Approach", "col": 18, "row": 7, "days": 35, "req": ["SPA_unify_the_nationalist_front"], "mut_excl": [], "reward": {"atk": 1}},
+        {"id": "SPA_prepare_the_carlist_insurrection", "name": "Prepare the Carlist Insurrection", "col": 23, "row": 7, "days": 35, "req": ["SPA_supremacy_of_the_communion"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_head_the_junta_nacional", "name": "Head the Junta Nacional", "col": 25, "row": 7, "days": 70, "req": ["SPA_supremacy_of_the_communion"], "mut_excl": [], "reward": {"pp": 10}},
+        {"id": "SPA_the_war_in_the_north", "name": "The War in the North", "col": 27, "row": 7, "days": 70, "req": ["SPA_supremacy_of_the_communion"], "mut_excl": [], "reward": {"atk": 1}},
+        {"id": "SPR_appropriate_the_means_of_production", "name": "Appropriate the Means of Production", "col": 34, "row": 7, "days": 70, "req": ["SPR_regional_defense_council_of_aragon"], "mut_excl": [], "reward": {"ind": 1, "mods": {"build": 0.05}}},
+        {"id": "SPR_arm_the_people", "name": "Arm the People", "col": 36, "row": 7, "days": 70, "req": ["SPR_regional_defense_council_of_aragon"], "mut_excl": [], "reward": {"atk": -2, "ws": 10}},
+        {"id": "SPR_arm_the_workers_militias", "name": "Arm the Worker's Militias", "col": 44, "row": 7, "days": 70, "req": ["SPR_the_anti_fascist_workers_revolution"], "mut_excl": [], "reward": {"atk": -2, "ws": 10}},
+        {"id": "SPR_demand_ministerial_positions", "name": "Demand Ministerial Positions", "col": 46, "row": 7, "days": 70, "req": ["SPR_the_anti_fascist_workers_revolution"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_strengthen_the_euzko_gudarostea", "name": "Strengthen the Euzko Gudarostea", "col": 51, "row": 7, "days": 35, "req": [["SPR_the_anti_fascist_workers_revolution", "SPR_maintain_the_second_republic"]], "mut_excl": [], "reward": {"pp": 25}, "need": {"cw": "notover"}},
+        {"id": "SPR_new_leadership", "name": "New Leadership", "col": 55, "row": 7, "days": 70, "req": ["SPR_maintain_the_second_republic"], "mut_excl": [], "reward": {"pp": 10}},
+        {"id": "SPR_ensure_loyalty", "name": "Ensure Loyalty", "col": 57, "row": 7, "days": 70, "req": ["SPR_maintain_the_second_republic"], "mut_excl": [], "reward": {"pp": 20}},
+        {"id": "SPR_enlist_the_carabineros", "name": "Enlist the Carabineros", "col": 59, "row": 7, "days": 35, "req": ["SPR_maintain_the_second_republic"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_the_fifth_column", "name": "The Fifth Column", "col": 1, "row": 8, "days": 35, "req": ["SPA_bolster_offensive_infrastructure"], "mut_excl": [], "reward": {"pp": 25}, "need": {"cw": "notover"}},
+        {"id": "SPA_emergency_munitions_corporations", "name": "Emergency Munitions Corporations", "col": 3, "row": 8, "days": 70, "req": ["SPA_bolster_offensive_infrastructure", "SPA_secure_the_national_defense_council"], "mut_excl": [], "reward": {"mil_factory": 3, "slots": 3}, "need": {"cw": "notover"}},
+        {"id": "SPA_suspend_the_constitution", "name": "Suspend the Constitution", "col": 5, "row": 8, "days": 70, "req": ["SPA_secure_the_national_defense_council"], "mut_excl": [], "reward": {"pp": 120}},
+        {"id": "SPA_primo_de_rivera_prisoner_exchange", "name": "Primo De Rivera Prisoner Exchange", "col": 7, "row": 8, "days": 35, "req": ["SPA_secure_the_national_defense_council"], "mut_excl": [], "reward": {"ws": 5}},
+        {"id": "SPA_equipment_shipments", "name": "Equipment Shipments", "col": 10, "row": 8, "days": 35, "req": ["SPA_the_corpo_truppe_volontarie", "SPA_the_condor_legion"], "mut_excl": [], "reward": {"pp": 25}, "need": {"cw": "notover"}},
+        {"id": "SPA_martyrdom_for_primo_de_rivera", "name": "Martyrdom for Primo De Rivera", "col": 13, "row": 8, "days": 70, "req": ["SPA_save_the_alcazar"], "mut_excl": [], "reward": {"ws": 10}},
+        {"id": "SPA_caudillo_of_spain", "name": "Caudillo of Spain", "col": 15, "row": 8, "days": 70, "req": ["SPA_save_the_alcazar"], "mut_excl": [], "reward": {"pp": 10}},
+        {"id": "SPA_tackle_the_vulnerable_fronts", "name": "Tackle the Vulnerable Fronts", "col": 17, "row": 8, "days": 35, "req": ["SPA_a_methodical_approach"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_portuguese_aid", "name": "Portuguese Aid", "col": 19, "row": 8, "days": 35, "req": ["SPA_a_methodical_approach"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_contact_the_union_militar_espanola", "name": "Contact the Unión Militar Española", "col": 23, "row": 8, "days": 35, "req": ["SPA_prepare_the_carlist_insurrection"], "mut_excl": [], "reward": {"atk": 1}},
+        {"id": "SPA_unite_the_requetes", "name": "Unite the Requetés", "col": 25, "row": 8, "days": 70, "req": ["SPA_head_the_junta_nacional"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_revive_the_spirit_of_the_carlist_wars", "name": "Revive the Spirit of the Carlist Wars", "col": 27, "row": 8, "days": 70, "req": ["SPA_the_war_in_the_north"], "mut_excl": [], "reward": {"ws": 10}},
+        {"id": "SPR_autogestion", "name": "Autogestión", "col": 33, "row": 8, "days": 70, "req": ["SPR_appropriate_the_means_of_production"], "mut_excl": [], "reward": {"ind": 2, "mods": {"build": 0.05}}},
+        {"id": "SPR_the_maximum_concession", "name": "The Maximum Concession", "col": 35, "row": 8, "days": 35, "req": ["SPR_appropriate_the_means_of_production", "SPR_arm_the_people"], "mut_excl": [], "reward": {"atk": 1, "def": 2, "ws": -5}},
+        {"id": "SPR_shared_burdens", "name": "Shared Burdens", "col": 37, "row": 8, "days": 35, "req": ["SPR_arm_the_people", "SPR_appropriate_the_means_of_production"], "mut_excl": [], "reward": {"ind": 3, "mods": {"build": 0.05}}},
+        {"id": "SPR_international_brigades", "name": "International Brigades", "col": 39, "row": 8, "days": 35, "req": [["SPR_arm_the_people", "SPR_arm_the_workers_militias"]], "mut_excl": [], "reward": {"manpower": 300}, "need": {"cw": "notover"}},
+        {"id": "SPR_hinder_nkvd_interference", "name": "Hinder NKVD Interference", "col": 43, "row": 8, "days": 35, "req": ["SPR_arm_the_workers_militias", "SPR_demand_ministerial_positions"], "mut_excl": ["SPR_the_stalinist_doctrine"], "reward": {"pp": 10}},
+        {"id": "SPR_the_stalinist_doctrine", "name": "The Stalinist Doctrine", "col": 47, "row": 8, "days": 35, "req": ["SPR_demand_ministerial_positions", "SPR_arm_the_workers_militias"], "mut_excl": ["SPR_hinder_nkvd_interference"], "reward": {"pp": 100}},
+        {"id": "SPR_fortify_the_iron_ring", "name": "Fortify the Iron Ring", "col": 51, "row": 8, "days": 35, "req": ["SPR_strengthen_the_euzko_gudarostea"], "mut_excl": [], "reward": {"def": 1}, "need": {"cw": "notover"}},
+        {"id": "SPR_the_future_of_the_republic", "name": "The Future of the Republic", "col": 55, "row": 8, "days": 70, "req": ["SPR_new_leadership"], "mut_excl": [], "reward": {"pp": 200}},
+        {"id": "SPR_the_popular_army", "name": "The Popular Army", "col": 58, "row": 8, "days": 70, "req": ["SPR_ensure_loyalty", "SPR_enlist_the_carabineros"], "mut_excl": [], "reward": {"atk": 1, "research": [[["infantry_weapons"], 1.0, 1, 0.0]]}},
+        {"id": "SPA_eliminate_the_carlists", "name": "Eliminate the Carlists", "col": 4, "row": 9, "days": 35, "req": ["SPA_suspend_the_constitution"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_establish_the_directory", "name": "Establish the Directory", "col": 6, "row": 9, "days": 35, "req": ["SPA_suspend_the_constitution", "SPA_primo_de_rivera_prisoner_exchange"], "mut_excl": [], "reward": {"pp": 10}},
+        {"id": "SPA_obtain_training_staff", "name": "Obtain Training Staff", "col": 9, "row": 9, "days": 35, "req": ["SPA_equipment_shipments"], "mut_excl": [], "reward": {"atk": 1}, "need": {"cw": "notover"}},
+        {"id": "SPA_doctrinal_advancements", "name": "Doctrinal Advancements", "col": 11, "row": 9, "days": 35, "req": ["SPA_equipment_shipments"], "mut_excl": [], "reward": {"atk": 1, "air_xp": 20}, "need": {"cw": "notover"}},
+        {"id": "SPA_extol_the_martyrs_of_the_war", "name": "Extol the Martyrs of the War", "col": 14, "row": 9, "days": 70, "req": ["SPA_martyrdom_for_primo_de_rivera", "SPA_caudillo_of_spain"], "mut_excl": [], "reward": {"ws": 10}},
+        {"id": "SPA_foment_a_carlist_split", "name": "Foment a Carlist Split", "col": 16, "row": 9, "days": 70, "req": ["SPA_consolidate_the_north"], "mut_excl": [], "reward": {"atk": -1, "def": -1}},
+        {"id": "SPA_the_iberian_pact", "name": "The Iberian Pact", "col": 19, "row": 9, "days": 70, "req": ["SPA_portuguese_aid"], "mut_excl": [], "reward": {"nap": "Portugal"}, "need": {"cw": "over", "war": False}},
+        {"id": "SPA_no_compromise_on_carlist_ideals", "name": "No Compromise on Carlist Ideals", "col": 24, "row": 9, "days": 35, "req": ["SPA_contact_the_union_militar_espanola", "SPA_unite_the_requetes"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_the_crusade_against_democracy", "name": "The Crusade Against Democracy", "col": 26, "row": 9, "days": 70, "req": ["SPA_unite_the_requetes", "SPA_revive_the_spirit_of_the_carlist_wars"], "mut_excl": [], "reward": {"atk": 2, "def": 2}},
+        {"id": "SPA_arms_modernization", "name": "Arms Modernization", "col": 29, "row": 9, "days": 70, "req": ["SPA_revive_the_spirit_of_the_carlist_wars"], "mut_excl": [], "reward": {"research": [[["infantry_weapons"], 1.0, 1, 0.0], [["artillery"], 1.0, 1, 0.0]]}},
+        {"id": "SPR_seize_public_transport", "name": "Seize Public Transport", "col": 34, "row": 9, "days": 35, "req": ["SPR_the_maximum_concession"], "mut_excl": [], "reward": {"atk": 1}},
+        {"id": "SPR_agrarian_collectivization", "name": "Agrarian Collectivization", "col": 36, "row": 9, "days": 35, "req": ["SPR_the_maximum_concession"], "mut_excl": [], "reward": {"ind": 3, "mods": {"build": 0.05}}},
+        {"id": "SPR_seize_the_gold_reserves", "name": "Seize the Gold Reserves", "col": 39, "row": 9, "days": 35, "req": [["SPR_the_maximum_concession", "SPR_hinder_nkvd_interference"]], "mut_excl": [], "reward": {"ind": 1}},
+        {"id": "SPR_subvert_the_stalinists", "name": "Subvert the Stalinists", "col": 42, "row": 9, "days": 70, "req": ["SPR_hinder_nkvd_interference"], "mut_excl": [], "reward": {"pp": 130}},
+        {"id": "SPR_secularize_the_new_state", "name": "Secularize the New State", "col": 45, "row": 9, "days": 70, "req": [["SPR_hinder_nkvd_interference", "SPR_the_stalinist_doctrine"]], "mut_excl": [], "reward": {"pp": 180}},
+        {"id": "SPR_relocate_the_gold_reserves", "name": "Relocate the Gold Reserves", "col": 50, "row": 9, "days": 35, "req": [["SPR_the_stalinist_doctrine", "SPR_the_future_of_the_republic"]], "mut_excl": [], "reward": {"ind": 2, "pp": -10}},
+        {"id": "SPR_reaffirm_the_popular_front_strategy", "name": "Reaffirm the Popular Front Strategy", "col": 52, "row": 9, "days": 35, "req": [["SPR_the_stalinist_doctrine", "SPR_the_future_of_the_republic"]], "mut_excl": [], "reward": {"ws": 5}},
+        {"id": "SPR_petition_for_french_aid", "name": "Petition for French Aid", "col": 55, "row": 9, "days": 70, "req": ["SPR_the_future_of_the_republic"], "mut_excl": [], "reward": {"pp": 25}, "need": {"cw": "notover"}},
+        {"id": "SPR_take_the_initiative", "name": "Take the Initiative", "col": 57, "row": 9, "days": 35, "req": ["SPR_the_popular_army"], "mut_excl": [], "reward": {"pp": 25}, "need": {"cw": "notover"}},
+        {"id": "SPR_no_pasaran", "name": "¡No Pasarán!", "col": 59, "row": 9, "days": 70, "req": ["SPR_the_popular_army"], "mut_excl": [], "reward": {"def": 1}},
+        {"id": "SPA_absorb_carlist_remnants", "name": "Absorb Carlist Remnants", "col": 3, "row": 10, "days": 70, "req": ["SPA_eliminate_the_carlists"], "mut_excl": [], "reward": {"pp": 60, "manpower": 250}},
+        {"id": "SPA_a_one_party_state", "name": "A One-Party State", "col": 5, "row": 10, "days": 70, "req": ["SPA_establish_the_directory", "SPA_eliminate_the_carlists"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_expand_conscription", "name": "Expand Conscription", "col": 9, "row": 10, "days": 70, "req": [["SPA_establish_the_directory", "SPA_extol_the_martyrs_of_the_war"]], "mut_excl": [], "reward": {"manpower": 600}},
+        {"id": "SPA_safeguard_the_freedom_of_worship", "name": "Safeguard the Freedom of Worship", "col": 11, "row": 10, "days": 70, "req": [["SPA_establish_the_directory", "SPA_extol_the_martyrs_of_the_war"]], "mut_excl": [], "reward": {"pp": 80}},
+        {"id": "SPA_banish_the_party_leaders", "name": "Banish the Party Leaders", "col": 15, "row": 10, "days": 70, "req": ["SPA_extol_the_martyrs_of_the_war", "SPA_foment_a_carlist_split"], "mut_excl": [], "reward": {"pp": 200}},
+        {"id": "SPA_integrate_the_requetes", "name": "Integrate the Requetés", "col": 17, "row": 10, "days": 70, "req": ["SPA_tackle_the_vulnerable_fronts", "SPA_foment_a_carlist_split"], "mut_excl": [], "reward": {"atk": 1, "def": 1, "manpower": 600}},
+        {"id": "SPA_the_latin_bloc", "name": "The Latin Bloc", "col": 19, "row": 10, "days": 70, "req": ["SPA_the_iberian_pact"], "mut_excl": [], "reward": {"pp": 25}, "need": {"cw": "over"}},
+        {"id": "SPA_confirm_the_fueros", "name": "Confirm the Fueros", "col": 23, "row": 10, "days": 70, "req": ["SPA_no_compromise_on_carlist_ideals"], "mut_excl": [], "reward": {"pp": 20}},
+        {"id": "SPA_expand_the_requetes", "name": "Expand the Requetés", "col": 25, "row": 10, "days": 70, "req": ["SPA_the_crusade_against_democracy", "SPA_no_compromise_on_carlist_ideals"], "mut_excl": [], "reward": {"atk": 4, "def": 6, "pp": 40, "manpower": 1500}},
+        {"id": "SPA_defenders_of_catholicism", "name": "Defenders of Catholicism", "col": 27, "row": 10, "days": 70, "req": ["SPA_the_crusade_against_democracy"], "mut_excl": [], "reward": {"atk": 3, "def": 6, "pp": 60, "manpower": 1500}},
+        {"id": "SPA_the_third_dimension_of_warfare", "name": "The Third Dimension of Warfare", "col": 29, "row": 10, "days": 70, "req": ["SPA_the_crusade_against_democracy", "SPA_arms_modernization"], "mut_excl": [], "reward": {"air_xp": 20}},
+        {"id": "SPR_collectivization_and_workers_control", "name": "Collectivization And Workers' Control", "col": 33, "row": 10, "days": 70, "req": ["SPR_autogestion", "SPR_seize_public_transport", "SPR_agrarian_collectivization"], "mut_excl": [], "reward": {"ind": 2, "mods": {"build": 0.05}}},
+        {"id": "SPR_mujeres_libres", "name": "Mujeres Libres", "col": 35, "row": 10, "days": 70, "req": ["SPR_seize_public_transport", "SPR_agrarian_collectivization"], "mut_excl": [], "reward": {"ind": 3, "manpower": 900, "mods": {"build": 0.05}}},
+        {"id": "SPR_foreign_arms_purchases", "name": "Foreign Arms Purchases", "col": 38, "row": 10, "days": 35, "req": ["SPR_seize_the_gold_reserves"], "mut_excl": [], "reward": {"pp": 25}, "need": {"cw": "notover"}},
+        {"id": "SPR_masters_of_our_own_fate", "name": "Masters of Our Own Fate", "col": 39, "row": 10, "days": 35, "req": ["SPR_seize_the_gold_reserves"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_class_war", "name": "Class War", "col": 42, "row": 10, "days": 70, "req": ["SPR_subvert_the_stalinists"], "mut_excl": [], "reward": {"ind": 1, "atk": 1, "def": 1, "manpower": 600}},
+        {"id": "SPR_appropriate_church_riches", "name": "Appropriate Church Riches", "col": 45, "row": 10, "days": 70, "req": ["SPR_secularize_the_new_state"], "mut_excl": [], "reward": {"ind": 2}},
+        {"id": "SPR_an_army_of_all_classes", "name": "An Army of All Classes", "col": 48, "row": 10, "days": 70, "req": ["SPR_the_stalinist_doctrine"], "mut_excl": [], "reward": {"manpower": 900}},
+        {"id": "SPR_crush_the_revolution", "name": "Crush the Revolution", "col": 52, "row": 10, "days": 35, "req": ["SPR_reaffirm_the_popular_front_strategy"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_anti_fascist_unity", "name": "Anti-Fascist Unity", "col": 55, "row": 10, "days": 35, "req": ["SPR_reaffirm_the_popular_front_strategy"], "mut_excl": [], "reward": {"pp": 25}, "need": {"cw": "notover"}},
+        {"id": "SPR_a_frontline_suited_for_intellectuals", "name": "A Frontline Suited for Intellectuals", "col": 59, "row": 10, "days": 70, "req": ["SPR_no_pasaran"], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "SPA_develop_all_talent", "name": "Develop All Talent", "col": 2, "row": 11, "days": 70, "req": ["SPA_a_one_party_state"], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "SPA_regional_agrarian_commissions", "name": "Regional Agrarian Commissions", "col": 4, "row": 11, "days": 70, "req": ["SPA_a_one_party_state"], "mut_excl": [], "reward": {"civ_factory": 2, "ind": 2, "slots": 2}},
+        {"id": "SPA_the_national_syndicalist_state", "name": "The National-Syndicalist State", "col": 6, "row": 11, "days": 70, "req": ["SPA_a_one_party_state"], "mut_excl": [], "reward": {"pp": 100}, "need": {"cw": "over"}},
+        {"id": "SPA_prepare_the_pyrenees_defenses", "name": "Prepare the Pyrenees Defenses", "col": 10, "row": 11, "days": 70, "req": [["SPA_establish_the_directory", "SPA_extol_the_martyrs_of_the_war"]], "mut_excl": [], "reward": {"def": 1}},
+        {"id": "SPA_fuse_the_parties", "name": "Fuse the Parties", "col": 14, "row": 11, "days": 70, "req": ["SPA_banish_the_party_leaders", "SPA_safeguard_the_freedom_of_worship"], "mut_excl": [], "reward": {"atk": 1, "def": 1, "manpower": 300}},
+        {"id": "SPA_utilize_the_intellectuals", "name": "Utilize the Intellectuals", "col": 20, "row": 11, "days": 70, "req": [["SPA_integrate_the_requetes", "SPA_confirm_the_fueros"]], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "SPA_encourage_local_industrialization", "name": "Encourage Local Industrialization", "col": 22, "row": 11, "days": 70, "req": ["SPA_confirm_the_fueros"], "mut_excl": [], "reward": {"civ_factory": 3, "research": [[["industry"], 1.0, 1, 0.0]], "slots": 3}},
+        {"id": "SPA_militarize_the_masses", "name": "Militarize the Masses", "col": 25, "row": 11, "days": 70, "req": ["SPA_expand_the_requetes"], "mut_excl": [], "reward": {"atk": 4, "def": 6, "pp": 40, "manpower": 1500}},
+        {"id": "SPA_battle_rites", "name": "Battle Rites", "col": 27, "row": 11, "days": 70, "req": ["SPA_defenders_of_catholicism"], "mut_excl": [], "reward": {"atk": 6, "def": 6, "pp": 60, "manpower": 1500}},
+        {"id": "SPA_a_modern_fighter_fleet", "name": "A Modern Fighter Fleet", "col": 29, "row": 11, "days": 70, "req": ["SPA_the_third_dimension_of_warfare"], "mut_excl": [], "reward": {"research": [[["light_fighter", "cat_heavy_fighter"], 1.0, 2, 0.0]]}},
+        {"id": "SPR_literacy_programs", "name": "Literacy Programs", "col": 34, "row": 11, "days": 70, "req": ["SPR_collectivization_and_workers_control", "SPR_mujeres_libres"], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "SPR_all_must_bear_the_torch", "name": "All Must Bear the Torch", "col": 36, "row": 11, "days": 70, "req": ["SPR_mujeres_libres", "SPR_masters_of_our_own_fate", "SPR_collectivization_and_workers_control"], "mut_excl": [], "reward": {"ind": 4, "pp": -116, "manpower": 1500, "mods": {"build": 0.125, "slots": 0.1, "dock_output": 0.7}}},
+        {"id": "SPR_united_under_socialism", "name": "United Under Socialism", "col": 42, "row": 11, "days": 70, "req": ["SPR_class_war", "SPR_masters_of_our_own_fate"], "mut_excl": [], "reward": {"ws": 10}},
+        {"id": "SPR_invite_socialist_intellectuals", "name": "Invite Socialist Intellectuals", "col": 45, "row": 11, "days": 70, "req": [["SPR_class_war", "SPR_an_army_of_all_classes"]], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "SPR_solidify_government_control", "name": "Solidify Government Control", "col": 48, "row": 11, "days": 70, "req": ["SPR_an_army_of_all_classes"], "mut_excl": [], "reward": {"pp": 20}},
+        {"id": "SPR_expand_soviet_aid", "name": "Expand Soviet Aid", "col": 51, "row": 11, "days": 35, "req": ["SPR_relocate_the_gold_reserves", "SPR_crush_the_revolution"], "mut_excl": [], "reward": {"pp": 25}, "need": {"cw": "notover"}},
+        {"id": "SPR_strengthen_the_anti_fascist_coalition", "name": "Strengthen the Anti-Fascist Coalition", "col": 56, "row": 11, "days": 70, "req": ["SPR_crush_the_revolution", "SPR_no_pasaran"], "mut_excl": [], "reward": {"pp": 10, "ws": 10}},
+        {"id": "SPA_strengthen_the_supreme_reality_of_spain", "name": "Strengthen the Supreme Reality of Spain", "col": 3, "row": 12, "days": 70, "req": ["SPA_the_national_syndicalist_state"], "mut_excl": [], "reward": {"pp": 20}},
+        {"id": "SPA_syndicalize_production", "name": "Syndicalize Production", "col": 5, "row": 12, "days": 70, "req": ["SPA_the_national_syndicalist_state"], "mut_excl": [], "reward": {"civ_factory": 2, "mil_factory": 2, "research": [[["industry"], 1.0, 1, 0.0]], "slots": 4}},
+        {"id": "SPA_the_national_and_popular_army_of_spain", "name": "The National And Popular Army of Spain", "col": 8, "row": 12, "days": 70, "req": [["SPA_the_national_syndicalist_state", "SPA_fuse_the_parties"]], "mut_excl": [], "reward": {"mil_factory": 2, "slots": 2}, "need": {"cw": "over"}},
+        {"id": "SPA_join_the_axis", "name": "Join the Axis", "col": 10, "row": 12, "days": 35, "req": [["SPA_the_national_syndicalist_state", "SPA_fuse_the_parties"]], "mut_excl": [], "reward": {"join_faction_of": "German Reich"}, "need": {"cw": "over"}},
+        {"id": "SPA_national_recovery", "name": "National Recovery", "col": 12, "row": 12, "days": 70, "req": [["SPA_the_national_syndicalist_state", "SPA_fuse_the_parties"]], "mut_excl": [], "reward": {"civ_factory": 2, "ind": 1, "slots": 2}, "need": {"cw": "over"}},
+        {"id": "SPA_join_the_allies", "name": "Join the Allies", "col": 14, "row": 12, "days": 35, "req": ["SPA_fuse_the_parties"], "mut_excl": [], "reward": {"join_faction_of": "British Empire"}, "need": {"cw": "over", "not_ideology": ["Fascist"]}},
+        {"id": "SPA_adopt_the_26_points", "name": "Adopt the 26 Points", "col": 20, "row": 12, "days": 70, "req": ["SPA_fuse_the_parties"], "mut_excl": [], "reward": {"ind": -1, "manpower": 1500}, "need": {"cw": "over"}},
+        {"id": "SPA_encourage_local_mining", "name": "Encourage Local Mining", "col": 22, "row": 12, "days": 70, "req": ["SPA_encourage_local_industrialization"], "mut_excl": [], "reward": {"infra": 2}},
+        {"id": "SPA_settle_the_succession_question", "name": "Settle the Succession Question", "col": 24, "row": 12, "days": 70, "req": ["SPA_confirm_the_fueros"], "mut_excl": [], "reward": {"pp": 20}, "need": {"cw": "over"}},
+        {"id": "SPA_cultivate_fanaticism", "name": "Cultivate Fanaticism", "col": 26, "row": 12, "days": 140, "req": ["SPA_militarize_the_masses", "SPA_battle_rites"], "mut_excl": [], "reward": {"atk": 5, "def": 6, "pp": 20, "manpower": 1500}},
+        {"id": "SPR_the_threats_abound", "name": "The Threats Abound", "col": 35, "row": 12, "days": 70, "req": ["SPR_all_must_bear_the_torch"], "mut_excl": [], "reward": {"def": 2}},
+        {"id": "SPR_maintaining_the_fire", "name": "Maintaining the Fire", "col": 37, "row": 12, "days": 70, "req": ["SPR_all_must_bear_the_torch"], "mut_excl": [], "reward": {"ws": 15}},
+        {"id": "SPR_wealth_redistribution", "name": "Wealth Redistribution", "col": 41, "row": 12, "days": 70, "req": ["SPR_united_under_socialism"], "mut_excl": [], "reward": {"ind": 2}},
+        {"id": "SPR_land_redistribution", "name": "Land Redistribution", "col": 43, "row": 12, "days": 70, "req": ["SPR_united_under_socialism"], "mut_excl": [], "reward": {"slots": 5}},
+        {"id": "SPR_reeducate_the_bourgeoisie", "name": "Re-educate the Bourgeoisie", "col": 47, "row": 12, "days": 70, "req": ["SPR_invite_socialist_intellectuals", "SPR_solidify_government_control"], "mut_excl": [], "reward": {"pp": 70}},
+        {"id": "SPR_soviet_equipment_shipments", "name": "Soviet Equipment Shipments", "col": 50, "row": 12, "days": 35, "req": ["SPR_expand_soviet_aid"], "mut_excl": [], "reward": {"mil_factory": 3, "slots": 3}},
+        {"id": "SPR_soviet_military_advisors", "name": "Soviet Military Advisors", "col": 52, "row": 12, "days": 35, "req": ["SPR_expand_soviet_aid"], "mut_excl": [], "reward": {"atk": 1, "ws": 10}},
+        {"id": "SPR_oppose_the_communists", "name": "Oppose the Communists", "col": 55, "row": 12, "days": 70, "req": ["SPR_strengthen_the_anti_fascist_coalition"], "mut_excl": ["SPR_end_fascism_at_all_costs"], "reward": {"atk": -1, "def": -1}},
+        {"id": "SPR_end_fascism_at_all_costs", "name": "End Fascism At All Costs", "col": 57, "row": 12, "days": 70, "req": ["SPR_strengthen_the_anti_fascist_coalition"], "mut_excl": ["SPR_oppose_the_communists"], "reward": {"pp": 25}},
+        {"id": "SPR_reprofessionalize_the_military", "name": "Re-professionalize the Military", "col": 59, "row": 12, "days": 70, "req": ["SPR_strengthen_the_anti_fascist_coalition"], "mut_excl": [], "reward": {"manpower": 300}},
+        {"id": "SPR_revive_the_republican_navy", "name": "Revive the Republican Navy", "col": 61, "row": 12, "days": 70, "req": ["SPR_strengthen_the_anti_fascist_coalition"], "mut_excl": [], "reward": {"dockyard": 3, "navy_xp": 25, "slots": 3}},
+        {"id": "SPA_glory_and_wealth_on_the_sea_lanes", "name": "Glory And Wealth on the Sea Lanes", "col": 1, "row": 13, "days": 70, "req": ["SPA_strengthen_the_supreme_reality_of_spain"], "mut_excl": [], "reward": {"navy_xp": 25, "research": [[["ca_tech"], 1.0, 1, 0.0], [["dd_tech"], 1.0, 1, 0.0], [["ss_tech"], 1.0, 1, 0.0]]}},
+        {"id": "SPA_exemplify_the_art_and_science_of_warfare", "name": "Exemplify the Art And Science of Warfare", "col": 4, "row": 13, "days": 70, "req": ["SPA_strengthen_the_supreme_reality_of_spain"], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "SPA_mandatory_pre_military_training", "name": "Mandatory Pre-Military Training", "col": 6, "row": 13, "days": 70, "req": ["SPA_the_national_syndicalist_state", "SPA_the_national_and_popular_army_of_spain"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_the_army_of_africa_model", "name": "The 'Army of Africa'-Model", "col": 9, "row": 13, "days": 70, "req": ["SPA_the_national_and_popular_army_of_spain"], "mut_excl": [], "reward": {"atk": 1}},
+        {"id": "SPA_fascist_economic_aid", "name": "Fascist Economic Aid", "col": 11, "row": 13, "days": 70, "req": ["SPA_join_the_axis", "SPA_national_recovery"], "mut_excl": ["SPA_autarky"], "reward": {"ind": -3, "research": [[["industry"], 1.0, 1, 0.0]], "mods": {"dock_output": -0.14}}},
+        {"id": "SPA_autarky", "name": "Autarky", "col": 13, "row": 13, "days": 70, "req": ["SPA_national_recovery"], "mut_excl": ["SPA_fascist_economic_aid"], "reward": {"ind": 2, "research": [[["excavation_tech"], 1.0, 2, 0.0], [["synth_resources"], 1.0, 1, 0.0]], "mods": {"build": -0.025}}},
+        {"id": "SPA_the_stabilization_plan", "name": "The Stabilization Plan", "col": 16, "row": 13, "days": 70, "req": ["SPA_join_the_allies", "SPA_national_recovery"], "mut_excl": [], "reward": {"ind": -3, "mods": {"dock_output": -0.21}}},
+        {"id": "SPA_direct_the_universities", "name": "Direct the Universities", "col": 19, "row": 13, "days": 70, "req": ["SPA_adopt_the_26_points"], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "SPA_dictator_for_life", "name": "Dictator for Life", "col": 21, "row": 13, "days": 70, "req": ["SPA_adopt_the_26_points"], "mut_excl": ["SPA_restore_the_monarchy"], "reward": {"pp": 10}},
+        {"id": "SPA_restore_the_monarchy", "name": "Restore the Monarchy", "col": 23, "row": 13, "days": 70, "req": [["SPA_adopt_the_26_points", "SPA_settle_the_succession_question"]], "mut_excl": ["SPA_dictator_for_life"], "reward": {"pp": 25}, "need": {"ideology": ["Non-Aligned", "Fascist"]}},
+        {"id": "SPA_dios_patria_rey", "name": "Dios, Patria y Rey!", "col": 27, "row": 13, "days": 70, "req": ["SPA_settle_the_succession_question"], "mut_excl": [], "reward": {"ind": -3, "pp": 10, "ws": 5, "mods": {"dock_output": -0.14}}},
+        {"id": "SPR_portuguese_anarchism", "name": "Portuguese Anarchism", "col": 33, "row": 13, "days": 70, "req": ["SPR_the_threats_abound"], "mut_excl": [], "reward": {"wargoal_against": "Portugal"}},
+        {"id": "SPR_a_new_way_of_warfare", "name": "A New Way of Warfare", "col": 35, "row": 13, "days": 70, "req": ["SPR_the_threats_abound"], "mut_excl": [], "reward": {"research": [[["light_fighter"], 1.0, 1, 0.0], [["armor"], 1.0, 1, 0.0]]}},
+        {"id": "SPR_freedom_of_thought", "name": "Freedom of Thought", "col": 37, "row": 13, "days": 70, "req": ["SPR_maintaining_the_fire"], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "SPR_collective_recovery_efforts", "name": "Collective Recovery Efforts", "col": 39, "row": 13, "days": 70, "req": [["SPR_wealth_redistribution", "SPR_maintaining_the_fire"]], "mut_excl": [], "reward": {"infra": 1, "mods": {"bomb_res": 0.025}}, "need": {"cw": "over"}},
+        {"id": "SPR_expand_the_means_of_production", "name": "Expand the Means of Production", "col": 43, "row": 13, "days": 70, "req": ["SPR_land_redistribution"], "mut_excl": [], "reward": {"civ_factory": 2, "mil_factory": 2, "research": [[["industry"], 1.0, 1, 0.0]], "slots": 4}},
+        {"id": "SPR_the_spanish_red_army", "name": "The Spanish Red Army", "col": 47, "row": 13, "days": 70, "req": ["SPR_reeducate_the_bourgeoisie"], "mut_excl": [], "reward": {"atk": 1, "research": [[["motorized_equipment"], 1.0, 1, 0.0]]}},
+        {"id": "SPR_soviet_industrial_aid", "name": "Soviet Industrial Aid", "col": 50, "row": 13, "days": 35, "req": [["SPR_soviet_equipment_shipments", "SPR_soviet_military_advisors"]], "mut_excl": [], "reward": {"civ_factory": 2, "ind": 1, "research": [[["industry"], 1.0, 1, 0.0]], "mods": {"build": 0.025}, "slots": 2}},
+        {"id": "SPR_soviet_technological_advancements", "name": "Soviet Technological Advancements", "col": 52, "row": 13, "days": 35, "req": [["SPR_soviet_equipment_shipments", "SPR_soviet_military_advisors"]], "mut_excl": [], "reward": {"research": [[["infantry_weapons"], 1.0, 1, 0.0], [["armor"], 1.0, 1, 0.0]]}},
+        {"id": "SPR_fortify_the_central_government", "name": "Fortify the Central Government", "col": 55, "row": 13, "days": 70, "req": ["SPR_oppose_the_communists"], "mut_excl": [], "reward": {"pp": 140}},
+        {"id": "SPR_communists_in_the_government", "name": "Communists in the Government", "col": 57, "row": 13, "days": 70, "req": ["SPR_end_fascism_at_all_costs"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_experiences_from_the_civil_war", "name": "Experiences from the Civil War", "col": 59, "row": 13, "days": 70, "req": ["SPR_reprofessionalize_the_military"], "mut_excl": [], "reward": {"atk": 1}},
+        {"id": "SPR_navy_modernization", "name": "Navy Modernization", "col": 61, "row": 13, "days": 70, "req": ["SPR_revive_the_republican_navy"], "mut_excl": [], "reward": {"navy_xp": 25, "research": [[["dd_tech"], 1.0, 2, 0.0], [["ca_tech"], 1.0, 2, 0.0]]}},
+        {"id": "SPA_improve_domestic_naval_facilities", "name": "Improve Domestic Naval Facilities", "col": 0, "row": 14, "days": 70, "req": ["SPA_glory_and_wealth_on_the_sea_lanes"], "mut_excl": [], "reward": {"dockyard": 3, "navy_xp": 25, "slots": 3}},
+        {"id": "SPA_commerce_protection", "name": "Commerce Protection", "col": 1, "row": 14, "days": 70, "req": ["SPA_glory_and_wealth_on_the_sea_lanes"], "mut_excl": [], "reward": {"atk": 1, "research": [[["ca_tech"], 1.0, 1, 0.0]]}},
+        {"id": "SPA_the_will_to_empire", "name": "The Will to Empire", "col": 3, "row": 14, "days": 70, "req": ["SPA_strengthen_the_supreme_reality_of_spain"], "mut_excl": [], "reward": {"civ_factory": 1, "pp": 200, "slots": 1}},
+        {"id": "SPA_all_shall_serve", "name": "All Shall Serve", "col": 6, "row": 14, "days": 70, "req": ["SPA_mandatory_pre_military_training"], "mut_excl": [], "reward": {"manpower": 600, "ws": 10}},
+        {"id": "SPA_motorization", "name": "Motorization", "col": 9, "row": 14, "days": 70, "req": ["SPA_the_army_of_africa_model"], "mut_excl": [], "reward": {"research": [[["motorized_equipment"], 2.0, 1, 0.0]]}},
+        {"id": "SPA_facilitate_pyrenees_freight_transports", "name": "Facilitate Pyrenees Freight Transports", "col": 11, "row": 14, "days": 70, "req": ["SPA_fascist_economic_aid"], "mut_excl": [], "reward": {"infra": 4}},
+        {"id": "SPA_spanish_austerity", "name": "Spanish Austerity", "col": 13, "row": 14, "days": 70, "req": ["SPA_autarky"], "mut_excl": [], "reward": {"ind": -3, "mods": {"build": 0.025, "dock_output": -0.21}}},
+        {"id": "SPA_expand_spanish_bases", "name": "Expand Spanish Bases", "col": 16, "row": 14, "days": 70, "req": ["SPA_the_stabilization_plan"], "mut_excl": [], "reward": {"naval_base": 6, "def": 1}},
+        {"id": "SPA_la_division_azul", "name": "La División Azul", "col": 21, "row": 14, "days": 70, "req": [["SPA_dictator_for_life", "SPA_restore_the_monarchy"]], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_stamp_out_the_maquis", "name": "Stamp Out the Maquis", "col": 23, "row": 14, "days": 70, "req": [["SPA_dictator_for_life", "SPA_restore_the_monarchy"]], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_restore_the_empire", "name": "Restore the Empire", "col": 27, "row": 14, "days": 70, "req": ["SPA_dios_patria_rey"], "mut_excl": [], "reward": {"mil_factory": 3, "slots": 3}},
+        {"id": "SPA_found_the_academia_vazquez_de_mella", "name": "Found the Academia Vázquez De Mella", "col": 29, "row": 14, "days": 70, "req": ["SPA_dios_patria_rey"], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "SPR_regional_defense_council_of_iberia", "name": "Regional Defense Council of Iberia", "col": 33, "row": 14, "days": 70, "req": ["SPR_portuguese_anarchism"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_communal_military_strategies", "name": "Communal Military Strategies", "col": 35, "row": 14, "days": 70, "req": ["SPR_a_new_way_of_warfare"], "mut_excl": [], "reward": {"atk": 1}},
+        {"id": "SPR_torchbearers_of_tomorrow", "name": "Torchbearers of Tomorrow", "col": 37, "row": 14, "days": 70, "req": ["SPR_a_new_way_of_warfare", "SPR_collective_recovery_efforts"], "mut_excl": [], "reward": {"def": 4, "research_speed": 0.05}},
+        {"id": "SPR_repair_and_expand_the_dockyards", "name": "Repair And Expand the Dockyards", "col": 39, "row": 14, "days": 70, "req": ["SPR_collective_recovery_efforts"], "mut_excl": [], "reward": {"dockyard": 4, "navy_xp": 25, "slots": 4}},
+        {"id": "SPR_all_must_do_their_part", "name": "All Must Do Their Part", "col": 42, "row": 14, "days": 70, "req": ["SPR_collective_recovery_efforts", "SPR_expand_the_means_of_production"], "mut_excl": [], "reward": {"ind": 3, "atk": 1, "def": 1, "manpower": 600}},
+        {"id": "SPR_nationalize_the_industry", "name": "Nationalize the Industry", "col": 45, "row": 14, "days": 70, "req": [["SPR_land_redistribution", "SPR_reeducate_the_bourgeoisie"]], "mut_excl": [], "reward": {"civ_factory": 3, "pp": -20, "research": [[["industry"], 1.0, 1, 0.0]], "slots": 3}},
+        {"id": "SPR_red_bulwark_in_the_west", "name": "Red Bulwark in the West", "col": 48, "row": 14, "days": 70, "req": ["SPR_the_spanish_red_army", "SPR_soviet_industrial_aid"], "mut_excl": [], "reward": {"def": 3, "manpower": 900, "join_faction_of": "Soviet Union"}, "need": {"cw": "over"}},
+        {"id": "SPR_soviet_recovery_aid", "name": "Soviet Recovery Aid", "col": 51, "row": 14, "days": 70, "req": ["SPR_soviet_industrial_aid", "SPR_soviet_technological_advancements"], "mut_excl": [], "reward": {"civ_factory": 2, "mods": {"bomb_res": 0.013}, "slots": 2}, "need": {"cw": "over"}},
+        {"id": "SPR_secure_democratic_principles", "name": "Secure Democratic Principles", "col": 54, "row": 14, "days": 70, "req": ["SPR_fortify_the_central_government"], "mut_excl": [], "reward": {"pp": 20}},
+        {"id": "SPR_stabilize_the_nation", "name": "Stabilize the Nation", "col": 56, "row": 14, "days": 70, "req": [["SPR_fortify_the_central_government", "SPR_communists_in_the_government"]], "mut_excl": [], "reward": {"pp": 40}, "need": {"cw": "over"}},
+        {"id": "SPR_restore_higher_education", "name": "Restore Higher Education", "col": 58, "row": 14, "days": 70, "req": [["SPR_fortify_the_central_government", "SPR_communists_in_the_government"]], "mut_excl": [], "reward": {"research_slot": 1}, "need": {"cw": "over"}},
+        {"id": "SPA_a_great_maritime_power", "name": "A Great Maritime Power", "col": 0, "row": 15, "days": 70, "req": ["SPA_improve_domestic_naval_facilities"], "mut_excl": [], "reward": {"dockyard": 2, "navy_xp": 50, "research": [[["bb_tech"], 1.0, 1, 0.0], [["cv_tech"], 1.0, 1, 0.0]], "slots": 2}},
+        {"id": "SPA_unite_iberia", "name": "Unite Iberia", "col": 1, "row": 15, "days": 70, "req": ["SPA_the_will_to_empire"], "mut_excl": [], "reward": {"wargoal_against": "Portugal"}},
+        {"id": "SPA_reclaim_spanish_africa", "name": "Expand Spanish Africa", "col": 3, "row": 15, "days": 70, "req": ["SPA_the_will_to_empire"], "mut_excl": [], "reward": {"wargoal_against": "French Republic"}},
+        {"id": "SPA_embrace_the_spanish_destiny", "name": "Embrace the Spanish Destiny", "col": 5, "row": 15, "days": 70, "req": ["SPA_the_will_to_empire"], "mut_excl": [], "reward": {"atk": 1}},
+        {"id": "SPA_equipment_modernization", "name": "Equipment Modernization", "col": 8, "row": 15, "days": 70, "req": ["SPA_the_army_of_africa_model"], "mut_excl": [], "reward": {"research": [[["infantry_weapons"], 1.0, 2, 0.0]]}},
+        {"id": "SPA_an_armored_corps", "name": "An Armored Corps", "col": 10, "row": 15, "days": 70, "req": ["SPA_motorization", "SPA_join_the_axis"], "mut_excl": [], "reward": {"research": [[["armor"], 1.0, 1, 0.0]]}},
+        {"id": "SPA_improve_cross_country_railways", "name": "Improve Cross-Country Railways", "col": 12, "row": 15, "days": 70, "req": [["SPA_fascist_economic_aid", "SPA_spanish_austerity"]], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_reduce_reliance_on_foreign_resources", "name": "Reduce Reliance on Foreign Resources", "col": 14, "row": 15, "days": 70, "req": ["SPA_spanish_austerity"], "mut_excl": [], "reward": {"research": [[["excavation_tech"], 1.5, 2, 0.0]]}},
+        {"id": "SPA_invest_in_naval_infrastructure", "name": "Invest in Naval Infrastructure", "col": 18, "row": 15, "days": 70, "req": [["SPA_expand_spanish_bases", "SPA_dictator_for_life", "SPA_restore_the_monarchy"]], "mut_excl": [], "reward": {"dockyard": 3, "navy_xp": 25, "slots": 3}},
+        {"id": "SPA_the_tangiers_enclave", "name": "The Tangiers Enclave", "col": 21, "row": 15, "days": 70, "req": ["SPA_la_division_azul", "SPA_stamp_out_the_maquis"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_defenses_against_strategic_bombing", "name": "Defenses Against Strategic Bombing", "col": 23, "row": 15, "days": 70, "req": ["SPA_stamp_out_the_maquis"], "mut_excl": [], "reward": {"def": 1}},
+        {"id": "SPA_strengthen_the_empire", "name": "Strengthen the Empire", "col": 25, "row": 15, "days": 70, "req": ["SPA_restore_the_empire"], "mut_excl": [], "reward": {"civ_factory": 2, "mil_factory": 2, "slots": 4}},
+        {"id": "SPA_claim_the_french_throne", "name": "Claim the French Throne", "col": 27, "row": 15, "days": 70, "req": ["SPA_restore_the_empire"], "mut_excl": [], "reward": {"wargoal_against": "French Republic"}},
+        {"id": "SPA_a_fleet_worthy_of_a_king", "name": "A Fleet Worthy of a King", "col": 30, "row": 15, "days": 70, "req": ["SPA_restore_the_empire"], "mut_excl": [], "reward": {"dockyard": 5, "navy_xp": 25, "research": [[["dd_tech"], 1.0, 1, 0.0]], "slots": 6}},
+        {"id": "SPR_the_inevitable_counterblow", "name": "The Inevitable Counterblow", "col": 35, "row": 15, "days": 70, "req": ["SPR_regional_defense_council_of_iberia", "SPR_torchbearers_of_tomorrow"], "mut_excl": [], "reward": {"def": 1}},
+        {"id": "SPR_faith_in_the_cause", "name": "Faith in the Cause", "col": 37, "row": 15, "days": 70, "req": ["SPR_torchbearers_of_tomorrow"], "mut_excl": [], "reward": {"ws": 10}},
+        {"id": "SPR_the_peoples_fleet", "name": "The People's Fleet", "col": 39, "row": 15, "days": 70, "req": ["SPR_repair_and_expand_the_dockyards"], "mut_excl": [], "reward": {"atk": 1, "navy_xp": 75, "research": [[["ca_tech"], 1.0, 1, 0.0], [["dd_tech"], 1.0, 1, 0.0], [["ss_tech"], 1.0, 1, 0.0]]}},
+        {"id": "SPR_lessons_from_the_civil_war", "name": "Lessons from the Civil War", "col": 42, "row": 15, "days": 70, "req": ["SPR_all_must_do_their_part"], "mut_excl": [], "reward": {"atk": 1}},
+        {"id": "SPR_beacon_of_socialism", "name": "Beacon of Socialism", "col": 44, "row": 15, "days": 70, "req": ["SPR_nationalize_the_industry"], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "SPR_increase_arms_production", "name": "Increase Arms Production", "col": 46, "row": 15, "days": 70, "req": ["SPR_nationalize_the_industry"], "mut_excl": [], "reward": {"mil_factory": 3, "slots": 3}},
+        {"id": "SPR_appeal_for_increased_autonomy", "name": "Appeal for Increased Autonomy", "col": 48, "row": 15, "days": 70, "req": ["SPR_red_bulwark_in_the_west", "SPR_soviet_recovery_aid"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_provide_for_the_people", "name": "Provide for the People", "col": 51, "row": 15, "days": 70, "req": ["SPR_soviet_recovery_aid"], "mut_excl": [], "reward": {"ind": 2, "pp": 20}},
+        {"id": "SPR_subvert_soviet_control", "name": "Subvert Soviet Control", "col": 55, "row": 15, "days": 70, "req": ["SPR_soviet_recovery_aid", "SPR_secure_democratic_principles"], "mut_excl": [], "reward": {"pp": 25}, "need": {"cw": "over"}},
+        {"id": "SPR_engineering_advances", "name": "Engineering Advances", "col": 57, "row": 15, "days": 70, "req": [["SPR_stabilize_the_nation", "SPR_restore_higher_education"]], "mut_excl": [], "reward": {"research": [[["industry"], 1.0, 1, 0.0], [["light_fighter"], 1.0, 1, 0.0], [["armor"], 1.0, 1, 0.0]]}},
+        {"id": "SPR_a_new_military_academy", "name": "A New Military Academy", "col": 59, "row": 15, "days": 70, "req": ["SPR_experiences_from_the_civil_war", "SPR_restore_higher_education"], "mut_excl": [], "reward": {"atk": 1, "manpower": 300}},
+        {"id": "SPR_expand_the_naval_academy", "name": "Expand the Naval Academy", "col": 61, "row": 15, "days": 70, "req": ["SPR_navy_modernization", "SPR_restore_higher_education"], "mut_excl": [], "reward": {"navy_xp": 50, "doctrine_discount": 0.25}},
+        {"id": "SPA_absorb_the_portuguese_empire", "name": "Absorb the Portuguese Empire", "col": 2, "row": 16, "days": 70, "req": ["SPA_unite_iberia"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_reassert_american_dominance", "name": "Reassert American Dominance", "col": 4, "row": 16, "days": 70, "req": ["SPA_the_will_to_empire"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_artillery_modernization", "name": "Artillery Modernization", "col": 7, "row": 16, "days": 70, "req": ["SPA_equipment_modernization"], "mut_excl": [], "reward": {"research": [[["artillery"], 1.0, 2, 0.0]]}},
+        {"id": "SPA_expand_the_special_forces", "name": "Expand the Special Forces", "col": 9, "row": 16, "days": 70, "req": ["SPA_equipment_modernization"], "mut_excl": [], "reward": {"research": [[["marine_tech"], 1.0, 1, 0.0], [["mountaineers_tech"], 1.0, 1, 0.0]]}},
+        {"id": "SPA_support_the_war_industry", "name": "Support the War Industry", "col": 11, "row": 16, "days": 70, "req": ["SPA_facilitate_pyrenees_freight_transports", "SPA_improve_cross_country_railways"], "mut_excl": [], "reward": {"civ_factory": 3, "ind": -3, "mods": {"dock_output": -0.07}, "slots": 3}},
+        {"id": "SPA_expand_the_axis_gold_trade", "name": "Expand the Axis Gold Trade", "col": 13, "row": 16, "days": 70, "req": ["SPA_spanish_austerity"], "mut_excl": ["SPA_capitalist_economic_aid"], "reward": {"ind": 2}},
+        {"id": "SPA_capitalist_economic_aid", "name": "Capitalist Economic Aid", "col": 16, "row": 16, "days": 70, "req": ["SPA_expand_spanish_bases", "SPA_reduce_reliance_on_foreign_resources"], "mut_excl": ["SPA_expand_the_axis_gold_trade"], "reward": {"civ_factory": 2, "ind": 4, "research": [[["industry"], 1.0, 1, 0.0]], "mods": {"build": 0.075}, "slots": 2}},
+        {"id": "SPA_expand_the_slipways", "name": "Expand the Slipways", "col": 18, "row": 16, "days": 70, "req": ["SPA_invest_in_naval_infrastructure"], "mut_excl": [], "reward": {"dockyard": 5, "slots": 6}},
+        {"id": "SPA_demand_french_north_africa", "name": "Demand French North Africa", "col": 21, "row": 16, "days": 70, "req": ["SPA_the_tangiers_enclave"], "mut_excl": [], "reward": {"wargoal_against": "French Republic"}},
+        {"id": "SPA_defenses_against_invasion", "name": "Defenses Against Invasion", "col": 23, "row": 16, "days": 70, "req": ["SPA_defenses_against_strategic_bombing"], "mut_excl": [], "reward": {"def": 1}},
+        {"id": "SPA_prosperity_of_the_empire", "name": "Prosperity of the Empire", "col": 25, "row": 16, "days": 70, "req": ["SPA_strengthen_the_empire"], "mut_excl": [], "reward": {"infra": 3}},
+        {"id": "SPA_retake_the_spanish_netherlands", "name": "Retake the Spanish Netherlands", "col": 27, "row": 16, "days": 70, "req": ["SPA_claim_the_french_throne"], "mut_excl": [], "reward": {"wargoal_against": ["Belgium", "Luxembourg", "Netherlands"]}},
+        {"id": "SPA_rebuild_the_battlefleet", "name": "Rebuild the Battlefleet", "col": 30, "row": 16, "days": 70, "req": ["SPA_a_fleet_worthy_of_a_king"], "mut_excl": [], "reward": {"research": [[["bb_tech"], 1.0, 2, 0.0]]}},
+        {"id": "SPR_improve_military_infrastructure", "name": "Improve Military Infrastructure", "col": 33, "row": 16, "days": 70, "req": ["SPR_the_inevitable_counterblow"], "mut_excl": [], "reward": {"infra": 4, "mods": {"build": 0.025}}},
+        {"id": "SPR_militarize_the_industry", "name": "Militarize the Industry", "col": 35, "row": 16, "days": 70, "req": ["SPR_the_inevitable_counterblow"], "mut_excl": [], "reward": {"mil_factory": 4, "slots": 4}},
+        {"id": "SPR_militarize_the_people", "name": "Militarize the People", "col": 37, "row": 16, "days": 70, "req": ["SPR_the_inevitable_counterblow", "SPR_faith_in_the_cause"], "mut_excl": [], "reward": {"atk": 1, "def": 4, "manpower": 600}},
+        {"id": "SPR_the_red_tide", "name": "The Red Tide", "col": 41, "row": 16, "days": 70, "req": ["SPR_all_must_do_their_part"], "mut_excl": [], "reward": {"ind": 3, "atk": 1, "def": 1, "manpower": 1500}},
+        {"id": "SPR_unify_the_london_bureau", "name": "Unify the London Bureau", "col": 43, "row": 16, "days": 70, "req": ["SPR_lessons_from_the_civil_war", "SPR_beacon_of_socialism"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_exploit_spains_riches", "name": "Exploit Spain's Riches", "col": 45, "row": 16, "days": 70, "req": ["SPR_beacon_of_socialism", "SPR_increase_arms_production"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_modernize_the_armed_forces", "name": "Modernize the Armed Forces", "col": 47, "row": 16, "days": 70, "req": ["SPR_increase_arms_production", "SPR_appeal_for_increased_autonomy"], "mut_excl": [], "reward": {"research": [[["infantry_weapons"], 1.0, 1, 0.0], [["artillery"], 1.0, 1, 0.0], [["light_fighter"], 1.0, 1, 0.0], [["armor"], 1.0, 1, 0.0]]}},
+        {"id": "SPR_collectivize_industry", "name": "Collectivize Industry", "col": 50, "row": 16, "days": 70, "req": ["SPR_provide_for_the_people"], "mut_excl": [], "reward": {"civ_factory": 4, "slots": 4}},
+        {"id": "SPR_connect_the_country", "name": "Connect the Country", "col": 52, "row": 16, "days": 70, "req": ["SPR_provide_for_the_people"], "mut_excl": [], "reward": {"infra": 4}},
+        {"id": "SPR_war_of_independence", "name": "War of Independence", "col": 55, "row": 16, "days": 70, "req": ["SPR_subvert_soviet_control"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_rebuild_the_nation", "name": "Rebuild the Nation", "col": 57, "row": 16, "days": 70, "req": ["SPR_engineering_advances"], "mut_excl": [], "reward": {"civ_factory": 4, "slots": 4}},
+        {"id": "SPR_prepare_for_the_next_war", "name": "Prepare for the Next War", "col": 60, "row": 16, "days": 70, "req": ["SPR_a_new_military_academy", "SPR_expand_the_naval_academy"], "mut_excl": [], "reward": {"mil_factory": 2, "atk": 1, "ws": 10, "slots": 2}},
+        {"id": "SPA_claim_the_aragonese_possessions", "name": "Claim the Aragonese Possessions", "col": 1, "row": 17, "days": 70, "req": ["SPA_unite_iberia"], "mut_excl": [], "reward": {"wargoal_against": "Kingdom of Italy"}},
+        {"id": "SPA_retake_the_americas", "name": "Retake the Americas", "col": 4, "row": 17, "days": 70, "req": ["SPA_reassert_american_dominance"], "mut_excl": [], "reward": {"wargoal_against": "United States", "pp": 25}},
+        {"id": "SPA_expand_the_air_branch", "name": "Expand the Air Branch", "col": 8, "row": 17, "days": 70, "req": ["SPA_equipment_modernization"], "mut_excl": [], "reward": {"research": [[["light_fighter", "cas_bomber"], 1.0, 1, 0.0]], "air_xp": 20}},
+        {"id": "SPA_italian_shipbuilding_expertise", "name": "Italian Shipbuilding Expertise", "col": 10, "row": 17, "days": 70, "req": ["SPA_support_the_war_industry"], "mut_excl": [], "reward": {"research": [[["bb_tech"], 1.0, 1, 0.0]], "mods": {"dock_output": 0.1}}},
+        {"id": "SPA_expand_the_war_industry", "name": "Expand the War Industry", "col": 12, "row": 17, "days": 70, "req": [["SPA_support_the_war_industry", "SPA_expand_the_axis_gold_trade"]], "mut_excl": [], "reward": {"mil_factory": 4, "slots": 4}},
+        {"id": "SPA_improve_living_standards", "name": "Improve Living Standards", "col": 15, "row": 17, "days": 70, "req": ["SPA_capitalist_economic_aid"], "mut_excl": [], "reward": {"ind": 4, "pp": 150, "mods": {"build": 0.15, "dock_output": 0.05}}},
+        {"id": "SPA_domestic_industrial_developments", "name": "Domestic Industrial Developments", "col": 17, "row": 17, "days": 70, "req": ["SPA_capitalist_economic_aid"], "mut_excl": [], "reward": {"ind": 4, "mods": {"build": 0.15, "dock_output": 0.1}}},
+        {"id": "SPA_restart_small_scale_shipbuilding", "name": "Restart Small-Scale Shipbuilding", "col": 19, "row": 17, "days": 70, "req": ["SPA_invest_in_naval_infrastructure"], "mut_excl": [], "reward": {"navy_xp": 25, "research": [[["ca_tech"], 1.0, 1, 0.0], [["dd_tech"], 1.0, 1, 0.0], [["ss_tech"], 1.0, 1, 0.0]]}},
+        {"id": "SPA_retake_gibraltar", "name": "Retake Gibraltar", "col": 22, "row": 17, "days": 70, "req": ["SPA_demand_french_north_africa", "SPA_defenses_against_invasion"], "mut_excl": [], "reward": {"wargoal_against": "British Empire"}},
+        {"id": "SPA_press_the_gibraltar_claim", "name": "Press the Gibraltar Claim", "col": 26, "row": 17, "days": 70, "req": ["SPA_restore_the_empire"], "mut_excl": [], "reward": {"wargoal_against": "British Empire"}},
+        {"id": "SPA_restore_the_iberian_union", "name": "Restore the Iberian Union", "col": 28, "row": 17, "days": 70, "req": ["SPA_restore_the_empire"], "mut_excl": [], "reward": {"wargoal_against": "Portugal"}},
+        {"id": "SPA_imperial_security", "name": "Imperial Security", "col": 30, "row": 17, "days": 70, "req": ["SPA_rebuild_the_battlefleet"], "mut_excl": [], "reward": {"navy_xp": 50, "research": [[["ca_tech"], 1.0, 2, 0.0]], "doctrine_discount": 0.25}},
+        {"id": "SPR_fortify_the_pyrenees", "name": "Fortify the Pyrenees", "col": 33, "row": 17, "days": 70, "req": ["SPR_improve_military_infrastructure"], "mut_excl": [], "reward": {"def": 1}},
+        {"id": "SPR_communal_autarky", "name": "Communal Autarky", "col": 35, "row": 17, "days": 70, "req": ["SPR_militarize_the_industry"], "mut_excl": [], "reward": {"ind": 4, "pp": -58, "manpower": 1500, "research": [[["excavation_tech"], 1.0, 1, 0.0]], "mods": {"build": 0.05}}},
+        {"id": "SPR_anarchism_knows_no_borders", "name": "Anarchism Knows No Borders", "col": 37, "row": 17, "days": 70, "req": ["SPR_militarize_the_people"], "mut_excl": [], "reward": {"ws": 10}},
+        {"id": "SPR_arm_the_tide", "name": "Arm the Tide", "col": 40, "row": 17, "days": 70, "req": ["SPR_the_red_tide"], "mut_excl": [], "reward": {"research": [[["infantry_weapons"], 1.0, 2, 0.0], [["artillery"], 1.0, 2, 0.0]]}},
+        {"id": "SPR_doctrinal_advancements", "name": "Doctrinal Advancements", "col": 42, "row": 17, "days": 70, "req": ["SPR_the_red_tide", "SPR_lessons_from_the_civil_war"], "mut_excl": [], "reward": {"atk": 1, "air_xp": 20}},
+        {"id": "SPR_a_red_iberia", "name": "A Red Iberia", "col": 45, "row": 17, "days": 70, "req": [["SPR_unify_the_london_bureau", "SPR_modernize_the_armed_forces"]], "mut_excl": [], "reward": {"wargoal_against": "Portugal"}},
+        {"id": "SPR_support_french_communists", "name": "Support French Communists", "col": 47, "row": 17, "days": 70, "req": ["SPR_modernize_the_armed_forces"], "mut_excl": [], "reward": {"wargoal_against": "French Republic"}},
+        {"id": "SPR_slipway_enlargement", "name": "Slipway Enlargement", "col": 49, "row": 17, "days": 70, "req": ["SPR_collectivize_industry", "SPR_connect_the_country"], "mut_excl": [], "reward": {"dockyard": 4, "infra": 2, "navy_xp": 25, "slots": 4}},
+        {"id": "SPR_transplant_soviet_industry", "name": "Transplant Soviet Industry", "col": 51, "row": 17, "days": 70, "req": ["SPR_collectivize_industry", "SPR_connect_the_country"], "mut_excl": [], "reward": {"mil_factory": 4, "slots": 4}},
+        {"id": "SPR_those_who_would_not_help_us", "name": "Those Who Would Not Help Us", "col": 54, "row": 17, "days": 70, "req": ["SPR_war_of_independence"], "mut_excl": ["SPR_enemies_of_our_enemy"], "reward": {"pp": 25}},
+        {"id": "SPR_enemies_of_our_enemy", "name": "Enemies of Our Enemy", "col": 56, "row": 17, "days": 70, "req": ["SPR_war_of_independence"], "mut_excl": ["SPR_join_the_global_fight_against_fascism", "SPR_those_who_would_not_help_us"], "reward": {"pp": 25}},
+        {"id": "SPR_join_the_global_fight_against_fascism", "name": "Join the Global Fight Against Fascism", "col": 60, "row": 17, "days": 70, "req": ["SPR_prepare_for_the_next_war"], "mut_excl": ["SPR_enemies_of_our_enemy"], "reward": {"join_faction_of": "British Empire"}},
+        {"id": "SPR_wartime_industry", "name": "Wartime Industry", "col": 62, "row": 17, "days": 70, "req": ["SPR_prepare_for_the_next_war"], "mut_excl": [], "reward": {"mil_factory": 4, "slots": 4}, "need": {"war": True}},
+        {"id": "SPA_embrace_pan_hispanism", "name": "Embrace Pan-Hispanic Nationalism", "col": 4, "row": 18, "days": 70, "req": ["SPA_retake_the_americas"], "mut_excl": [], "reward": {"pp": -120}, "need": {"ideology": ["Fascist"]}},
+        {"id": "SPA_the_duty_to_work", "name": "The Duty To Work", "col": 11, "row": 18, "days": 70, "req": ["SPA_support_the_war_industry"], "mut_excl": [], "reward": {"ind": 1}},
+        {"id": "SPA_ensure_agricultural_self_sufficiency", "name": "Ensure Agricultural Self-Sufficiency", "col": 13, "row": 18, "days": 70, "req": ["SPA_expand_the_axis_gold_trade"], "mut_excl": [], "reward": {"civ_factory": 5, "slots": 6}},
+        {"id": "SPA_the_spanish_miracle", "name": "The Spanish Miracle", "col": 16, "row": 18, "days": 140, "req": ["SPA_improve_living_standards", "SPA_domestic_industrial_developments"], "mut_excl": [], "reward": {"civ_factory": 5, "mil_factory": 4, "slots": 6}},
+        {"id": "SPA_the_plan_imperial", "name": "The 'Plan Imperial'", "col": 18, "row": 18, "days": 70, "req": ["SPA_expand_the_slipways"], "mut_excl": [], "reward": {"navy_xp": 50, "research": [[["bb_tech"], 1.0, 1, 0.0], [["cv_tech"], 1.0, 1, 0.0]]}},
+        {"id": "SPA_claim_west_africa", "name": "Claim West Africa", "col": 22, "row": 18, "days": 70, "req": ["SPA_retake_gibraltar"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPA_the_war_of_vengeance", "name": "The War of Vengeance", "col": 27, "row": 18, "days": 70, "req": ["SPA_press_the_gibraltar_claim", "SPA_restore_the_iberian_union"], "mut_excl": [], "reward": {"wargoal_against": "British Empire"}},
+        {"id": "SPR_fortify_la_linea_de_la_concepcion", "name": "Fortify La Línea de la Concepción", "col": 32, "row": 18, "days": 70, "req": ["SPR_fortify_the_pyrenees"], "mut_excl": [], "reward": {"def": 1}},
+        {"id": "SPR_fortify_the_coastlines", "name": "Fortify the Coastlines", "col": 34, "row": 18, "days": 70, "req": ["SPR_fortify_the_pyrenees"], "mut_excl": [], "reward": {"def": 1}},
+        {"id": "SPR_plant_the_seeds_of_revolution", "name": "Plant the Seeds of Revolution", "col": 36, "row": 18, "days": 70, "req": ["SPR_anarchism_knows_no_borders"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_global_defense_council", "name": "Global Defense Council", "col": 38, "row": 18, "days": 70, "req": ["SPR_anarchism_knows_no_borders"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_against_fascism", "name": "Against Fascism", "col": 41, "row": 18, "days": 70, "req": ["SPR_the_red_tide"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_against_trotskyism_and_stalinism", "name": "Against Trotskyism and Stalinism", "col": 43, "row": 18, "days": 70, "req": ["SPR_unify_the_london_bureau"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_avenge_foreign_interference", "name": "Avenge Foreign Interference", "col": 46, "row": 18, "days": 70, "req": [["SPR_a_red_iberia", "SPR_support_french_communists"]], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_a_red_fleet", "name": "A Red Fleet", "col": 49, "row": 18, "days": 70, "req": ["SPR_slipway_enlargement"], "mut_excl": [], "reward": {"navy_xp": 50, "research": [[["dd_tech"], 1.0, 1, 0.0], [["ca_tech"], 1.0, 1, 0.0], [["bb_tech"], 1.0, 1, 0.0]]}},
+        {"id": "SPR_the_five_year_plan", "name": "The Five Year Plan", "col": 51, "row": 18, "days": 70, "req": ["SPR_transplant_soviet_industry"], "mut_excl": [], "reward": {"ind": 1, "mods": {"dock_output": 0.025}}},
+        {"id": "SPR_ideological_allies", "name": "Ideological Allies", "col": 53, "row": 18, "days": 35, "req": ["SPR_those_who_would_not_help_us"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_foreign_industrial_aid", "name": "Foreign Industrial Aid", "col": 55, "row": 18, "days": 70, "req": [["SPR_those_who_would_not_help_us", "SPR_enemies_of_our_enemy"]], "mut_excl": [], "reward": {"civ_factory": 2, "mil_factory": 2, "slots": 4}},
+        {"id": "SPR_deal_with_the_devil", "name": "Deal With the Devil", "col": 57, "row": 18, "days": 35, "req": ["SPR_enemies_of_our_enemy"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "SPR_the_anti_fascist_crusade", "name": "The Anti-Fascist Crusade", "col": 60, "row": 18, "days": 70, "req": ["SPR_join_the_global_fight_against_fascism"], "mut_excl": [], "reward": {"atk": 2}},
+        {"id": "SPR_fuel_for_the_war_machine", "name": "Fuel for the War Machine", "col": 62, "row": 18, "days": 70, "req": ["SPR_wartime_industry"], "mut_excl": [], "reward": {"research": [[["excavation_tech"], 1.5, 2, 0.0]]}},
+    ],
+    "Portugal": [
+        {"id": "POR_colonial_assimilation_policy", "name": "Colonial Assimilation Policy", "col": 1, "row": 0, "days": 70, "req": [], "mut_excl": [], "reward": {"manpower": 200}},
+        {"id": "POR_continue_the_public_works", "name": "Continue the Public Works", "col": 11, "row": 0, "days": 70, "req": [], "mut_excl": [], "reward": {"naval_base": 2, "infra": 4, "ind": 1, "slots": 5}},
+        {"id": "POR_second_navy_reequipment", "name": "Second Navy Reequipment", "col": 16, "row": 0, "days": 70, "req": [], "mut_excl": [], "reward": {"dockyard": 2, "slots": 2}},
+        {"id": "POR_army_reorganization", "name": "Army Reorganization", "col": 22, "row": 0, "days": 70, "req": [], "mut_excl": [], "reward": {"pp": -10}},
+        {"id": "POR_popular_front", "name": "Popular Front", "col": 29, "row": 0, "days": 70, "req": [], "mut_excl": ["POR_estado_novo"], "reward": {"pp": 100}},
+        {"id": "POR_estado_novo", "name": "Estado Novo", "col": 39, "row": 0, "days": 70, "req": [], "mut_excl": ["POR_popular_front"], "reward": {"pp": 100, "mods": {"build": 0.05}}},
+        {"id": "POR_colonial_army", "name": "Colonial Army", "col": 1, "row": 1, "days": 70, "req": ["POR_colonial_assimilation_policy"], "mut_excl": [], "reward": {"manpower": 200}},
+        {"id": "POR_haven_of_neutrality_macau", "name": "Macau, Haven of Neutrality", "col": 4, "row": 1, "days": 35, "req": ["POR_colonial_assimilation_policy"], "mut_excl": [], "reward": {"civ_factory": 1, "infra": 2, "manpower": 1000, "slots": 4}, "need": {"war": False}},
+        {"id": "POR_instituto_superior_tecnico", "name": "Instituto Superior Técnico", "col": 11, "row": 1, "days": 70, "req": ["POR_continue_the_public_works"], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "POR_submarine_effort", "name": "Submarine Effort", "col": 15, "row": 1, "days": 70, "req": ["POR_second_navy_reequipment"], "mut_excl": [], "reward": {"atk": 1, "research": [[["ss_tech"], 0.75, 2, 0.0]], "doctrine_discount": 0.1}},
+        {"id": "POR_a_powerful_merchant_marine", "name": "A Powerful Merchant Marine", "col": 16, "row": 1, "days": 70, "req": ["POR_second_navy_reequipment"], "mut_excl": [], "reward": {"dockyard": 2, "research": [[["dd_tech"], 1.0, 1, 0.0]], "slots": 2}},
+        {"id": "POR_arsenal_do_alfeite", "name": "Arsenal do Alfeite", "col": 18, "row": 1, "days": 140, "req": ["POR_second_navy_reequipment"], "mut_excl": [], "reward": {"dockyard": 3, "naval_base": 2, "research": [[["ca_tech"], 1.0, 1, 0.0], [["ca_tech"], 1.0, 1, 0.0]], "slots": 2}},
+        {"id": "POR_metropolitan_army", "name": "Metropolitan Army", "col": 21, "row": 1, "days": 70, "req": ["POR_army_reorganization"], "mut_excl": [], "reward": {"research": [[["infantry_weapons", "armor", "artillery"], 1.0, 2, 0.0]]}},
+        {"id": "POR_corpo_do_estado_maior", "name": "Corpo do Estado Maior", "col": 23, "row": 1, "days": 70, "req": ["POR_army_reorganization"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_nation_in_arms", "name": "Nation in Arms", "col": 26, "row": 1, "days": 70, "req": ["POR_popular_front"], "mut_excl": [], "reward": {"def": -2, "manpower": 200, "ws": 10}},
+        {"id": "POR_support_the_spanish_republic", "name": "Support the Spanish Republic", "col": 29, "row": 1, "days": 70, "req": ["POR_popular_front"], "mut_excl": ["POR_a_royal_wedding", "POR_strict_neutrality_in_the_spanish_civil_war", "POR_support_the_spanish_nationalists"], "reward": {"inf_eq": 100}},
+        {"id": "POR_strict_neutrality_in_the_spanish_civil_war", "name": "Strict Neutrality in the Spanish Civil War", "col": 32, "row": 1, "days": 70, "req": [["POR_popular_front", "POR_estado_novo"]], "mut_excl": ["POR_a_royal_wedding", "POR_support_the_spanish_nationalists", "POR_support_the_spanish_republic"], "reward": {"pp": 25}},
+        {"id": "POR_support_the_spanish_nationalists", "name": "Support the Spanish Nationalists", "col": 39, "row": 1, "days": 70, "req": ["POR_estado_novo"], "mut_excl": ["POR_a_royal_wedding", "POR_strict_neutrality_in_the_spanish_civil_war", "POR_support_the_spanish_republic"], "reward": {"inf_eq": 100}},
+        {"id": "POR_a_royal_wedding", "name": "A Royal Wedding", "col": 51, "row": 1, "days": 70, "req": ["POR_estado_novo"], "mut_excl": ["POR_strict_neutrality_in_the_spanish_civil_war", "POR_support_the_spanish_nationalists", "POR_support_the_spanish_republic"], "reward": {"pp": 120}},
+        {"id": "POR_luso_tropicalism", "name": "Luso-Tropicalism", "col": 0, "row": 2, "days": 35, "req": ["POR_colonial_assimilation_policy"], "mut_excl": ["POR_limited_self_rule"], "reward": {"pp": 25}, "need": {"not_ideology": ["Fascist"]}},
+        {"id": "POR_limited_self_rule", "name": "Limited Self-Rule", "col": 1, "row": 2, "days": 70, "req": ["POR_colonial_army"], "mut_excl": ["POR_luso_tropicalism"], "reward": {"pp": 120, "manpower": 300}},
+        {"id": "POR_restart_investment_into_timor", "name": "Restart Investment into Timor", "col": 3, "row": 2, "days": 35, "req": ["POR_colonial_assimilation_policy"], "mut_excl": [], "reward": {"civ_factory": 1, "infra": 1, "res": {"rubber": 4}, "slots": 1}},
+        {"id": "POR_infrastructure_in_angola", "name": "Infrastructure in Angola", "col": 6, "row": 2, "days": 70, "req": ["POR_colonial_assimilation_policy"], "mut_excl": [], "reward": {"naval_base": 5, "infra": 2, "slots": 2}},
+        {"id": "POR_roads_bridges_and_dams", "name": "Roads, Bridges, and Dams", "col": 8, "row": 2, "days": 70, "req": ["POR_instituto_superior_tecnico"], "mut_excl": [], "reward": {"civ_factory": 1, "naval_base": 2, "infra": 4, "slots": 6}},
+        {"id": "POR_ogme", "name": "OGME", "col": 10, "row": 2, "days": 70, "req": ["POR_instituto_superior_tecnico"], "mut_excl": [], "reward": {"mil_factory": 1, "slots": 1}},
+        {"id": "POR_ogma", "name": "OGMA", "col": 12, "row": 2, "days": 70, "req": ["POR_instituto_superior_tecnico"], "mut_excl": [], "reward": {"mil_factory": 1, "slots": 1}},
+        {"id": "POR_industrial_modernization", "name": "Industrial Modernization", "col": 13, "row": 2, "days": 70, "req": ["POR_instituto_superior_tecnico"], "mut_excl": ["POR_food_industries"], "reward": {"research": [[["industry"], 1.0, 2, 0.0]]}},
+        {"id": "POR_food_industries", "name": "Food Industries", "col": 14, "row": 2, "days": 70, "req": ["POR_continue_the_public_works"], "mut_excl": ["POR_industrial_modernization"], "reward": {"civ_factory": 2, "slots": 2}},
+        {"id": "POR_merchant_marine_protection", "name": "Merchant Marine Protection", "col": 16, "row": 2, "days": 70, "req": ["POR_a_powerful_merchant_marine"], "mut_excl": [], "reward": {"pp": 8, "research": [[["dd_tech"], 1.0, 2, 0.0]]}},
+        {"id": "POR_national_cruiser_production", "name": "National Cruiser Production", "col": 18, "row": 2, "days": 70, "req": ["POR_arsenal_do_alfeite"], "mut_excl": [], "reward": {"navy_xp": 50, "research": [[["ca_tech"], 1.0, 1, 0.0], [["ca_tech"], 1.0, 1, 0.0]]}},
+        {"id": "POR_standardization", "name": "Standardization", "col": 21, "row": 2, "days": 70, "req": ["POR_metropolitan_army"], "mut_excl": [], "reward": {"ind": 1}},
+        {"id": "POR_staff_wargames", "name": "Staff Wargames", "col": 23, "row": 2, "days": 70, "req": ["POR_corpo_do_estado_maior"], "mut_excl": [], "reward": {"atk": 1}},
+        {"id": "POR_unify_leftist_youth_wings", "name": "Unify Leftist Youth Wings", "col": 25, "row": 2, "days": 70, "req": ["POR_nation_in_arms"], "mut_excl": [], "reward": {"pp": 20}},
+        {"id": "POR_nationalize_industry", "name": "Nationalize Industry", "col": 27, "row": 2, "days": 70, "req": ["POR_nation_in_arms"], "mut_excl": [], "reward": {"civ_factory": 5, "pp": -40, "slots": 5}},
+        {"id": "POR_workers_of_iberia_unite", "name": "Workers of Iberia, Unite!", "col": 28, "row": 2, "days": 70, "req": ["POR_support_the_spanish_republic"], "mut_excl": ["POR_visit_the_front"], "reward": {"pp": 25}},
+        {"id": "POR_visit_the_front", "name": "Visit the Front", "col": 30, "row": 2, "days": 70, "req": ["POR_support_the_spanish_republic"], "mut_excl": ["POR_workers_of_iberia_unite"], "reward": {"atk": 1, "research": [[["light_air"], 0.5, 1, 0.0], [["cat_light_armor"], 0.5, 1, 0.0]]}},
+        {"id": "POR_british_investment_in_mines", "name": "British Investment in Mines", "col": 31, "row": 2, "days": 70, "req": ["POR_strict_neutrality_in_the_spanish_civil_war"], "mut_excl": [], "reward": {"research": [[["industry"], 0.5, 2, 0.0]], "research_speed": 0.015, "res": {"tungsten": 50}}, "need": {"not_ideology": ["Communist"]}},
+        {"id": "POR_british_guns", "name": "British Guns", "col": 33, "row": 2, "days": 70, "req": ["POR_strict_neutrality_in_the_spanish_civil_war"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_portuguese_legion", "name": "Portuguese Legion", "col": 39, "row": 2, "days": 70, "req": ["POR_support_the_spanish_nationalists"], "mut_excl": [], "reward": {"research": [[["military_police_tech"], 0.5, 1, 0.0]]}},
+        {"id": "POR_revert_the_local_autonomy_policies", "name": "Revert the Local Autonomy Policies", "col": 2, "row": 3, "days": 35, "req": ["POR_restart_investment_into_timor"], "mut_excl": ["POR_invest_in_sandalwood_and_coffee_production"], "reward": {"pp": 25}},
+        {"id": "POR_invest_in_sandalwood_and_coffee_production", "name": "Invest in Sandalwood and Coffee Production", "col": 4, "row": 3, "days": 70, "req": ["POR_restart_investment_into_timor"], "mut_excl": ["POR_revert_the_local_autonomy_policies"], "reward": {"ind": 2}},
+        {"id": "POR_develop_north_angola", "name": "Develop North Angola", "col": 6, "row": 3, "days": 70, "req": ["POR_infrastructure_in_angola", "POR_roads_bridges_and_dams"], "mut_excl": [], "reward": {"civ_factory": 1, "infra": 1, "res": {"steel": 8}, "slots": 2}},
+        {"id": "POR_extraction_industries", "name": "Extraction Industries", "col": 8, "row": 3, "days": 70, "req": ["POR_roads_bridges_and_dams"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_portuguese_artillery", "name": "Portuguese Artillery", "col": 9, "row": 3, "days": 70, "req": ["POR_ogme"], "mut_excl": [], "reward": {"mil_factory": 2, "research": [[["artillery"], 1.0, 1, 0.0]], "slots": 2}},
+        {"id": "POR_military_vehicles", "name": "Military Vehicles", "col": 10, "row": 3, "days": 70, "req": ["POR_ogme"], "mut_excl": [], "reward": {"mil_factory": 1, "research": [[["motorized_equipment"], 1.0, 1, 0.0]], "slots": 1}},
+        {"id": "POR_light_aircraft_focus", "name": "Light Aircraft Focus", "col": 12, "row": 3, "days": 70, "req": ["POR_ogma"], "mut_excl": [], "reward": {"mil_factory": 1, "research": [[["light_air"], 1.0, 1, 0.0]], "slots": 1}},
+        {"id": "POR_a_new_industry", "name": "A New Industry", "col": 13, "row": 3, "days": 70, "req": ["POR_industrial_modernization"], "mut_excl": [], "reward": {"civ_factory": 2, "ind": 1, "slots": 2}},
+        {"id": "POR_textile_industry", "name": "Textile Industry", "col": 14, "row": 3, "days": 70, "req": ["POR_food_industries"], "mut_excl": [], "reward": {"civ_factory": 3, "slots": 3}},
+        {"id": "POR_battleship_effort", "name": "Battleship Effort", "col": 17, "row": 3, "days": 70, "req": ["POR_national_cruiser_production"], "mut_excl": [], "reward": {"navy_xp": 10, "research": [[["bb_tech"], 0.75, 2, 0.0]]}},
+        {"id": "POR_carrier_effort", "name": "Carrier Effort", "col": 19, "row": 3, "days": 70, "req": ["POR_national_cruiser_production"], "mut_excl": [], "reward": {"navy_xp": 10, "research": [[["cv_tech"], 1.0, 2, 0.0]]}},
+        {"id": "POR_defend_the_borders", "name": "Defend the Borders", "col": 20, "row": 3, "days": 70, "req": ["POR_standardization"], "mut_excl": ["POR_rebuild_the_lines_of_torres_vedras"], "reward": {"def": 1}},
+        {"id": "POR_rebuild_the_lines_of_torres_vedras", "name": "Rebuild the Lines of Torres Vedras", "col": 22, "row": 3, "days": 70, "req": ["POR_standardization"], "mut_excl": ["POR_defend_the_borders"], "reward": {"def": 1}},
+        {"id": "POR_field_maneuvers", "name": "Field Maneuvers", "col": 24, "row": 3, "days": 70, "req": ["POR_staff_wargames"], "mut_excl": [], "reward": {"atk": 1}},
+        {"id": "POR_reorganization_of_the_communist_party", "name": "Reorganization of the Communist Party", "col": 26, "row": 3, "days": 70, "req": ["POR_nationalize_industry", "POR_unify_leftist_youth_wings"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_the_iberian_socialist_union", "name": "The Iberian Socialist Union", "col": 28, "row": 3, "days": 70, "req": ["POR_workers_of_iberia_unite"], "mut_excl": [], "reward": {"pp": 25}, "need": {"ideology": ["Communist"], "cw": "over"}},
+        {"id": "POR_british_industrial_investments", "name": "British Industrial Investments", "col": 32, "row": 3, "days": 70, "req": [["POR_british_investment_in_mines", "POR_british_guns"]], "mut_excl": [], "reward": {"civ_factory": 4, "slots": 4}},
+        {"id": "POR_observation_mission", "name": "Observation Mission", "col": 35, "row": 3, "days": 70, "req": ["POR_portuguese_legion"], "mut_excl": [], "reward": {"research": [[["light_air"], 0.5, 1, 0.0], [["cat_light_armor"], 0.5, 1, 0.0]], "air_xp": 20}},
+        {"id": "POR_strengthen_the_regime", "name": "Strengthen the Regime", "col": 39, "row": 3, "days": 70, "req": ["POR_portuguese_legion"], "mut_excl": ["POR_national_syndicalism"], "reward": {"ind": 1, "pp": -20, "mods": {"build": 0.05}}},
+        {"id": "POR_national_syndicalism", "name": "National Syndicalism", "col": 43, "row": 3, "days": 70, "req": ["POR_portuguese_legion"], "mut_excl": ["POR_strengthen_the_regime"], "reward": {"pp": -40, "ws": 10}},
+        {"id": "POR_the_return_of_duarte", "name": "The Return of Duarte", "col": 51, "row": 3, "days": 70, "req": ["POR_a_royal_wedding"], "mut_excl": [], "reward": {"pp": -40}},
+        {"id": "POR_develop_south_angola", "name": "Develop South Angola", "col": 6, "row": 4, "days": 70, "req": ["POR_develop_north_angola"], "mut_excl": [], "reward": {"civ_factory": 1, "naval_base": 2, "infra": 1, "res": {"steel": 8, "rubber": 4}, "slots": 4}},
+        {"id": "POR_hydroelectricity", "name": "Hydroelectricity", "col": 8, "row": 4, "days": 70, "req": ["POR_extraction_industries"], "mut_excl": [], "reward": {"civ_factory": 1, "ind": 1, "slots": 2}},
+        {"id": "POR_military_research_facilities", "name": "Military Research Facilities", "col": 10, "row": 4, "days": 70, "req": [["POR_military_vehicles", "POR_portuguese_artillery", "POR_light_aircraft_focus"]], "mut_excl": [], "reward": {"research_slot": 1}},
+        {"id": "POR_fuzileiros", "name": "Fuzileiros", "col": 15, "row": 4, "days": 70, "req": ["POR_submarine_effort", "POR_merchant_marine_protection"], "mut_excl": [], "reward": {"research": [[["marine_tech"], 0.5, 2, 0.0], [["tp_tech"], 1.0, 2, 0.0]]}},
+        {"id": "POR_atlantic_defense_strategy", "name": "Atlantic Defense Strategy", "col": 18, "row": 4, "days": 70, "req": ["POR_national_cruiser_production"], "mut_excl": [], "reward": {"def": 2}},
+        {"id": "POR_tropas_paraquedistas", "name": "Tropas Paraquedistas", "col": 21, "row": 4, "days": 70, "req": [["POR_defend_the_borders", "POR_rebuild_the_lines_of_torres_vedras"]], "mut_excl": [], "reward": {"research": [[["para_tech"], 1.0, 1, 0.0]]}},
+        {"id": "POR_join_the_comintern", "name": "Join the Comintern", "col": 26, "row": 4, "days": 35, "req": ["POR_reorganization_of_the_communist_party"], "mut_excl": ["POR_the_popular_front_bloc"], "reward": {"join_faction_of": "Soviet Union"}, "need": {"ideology": ["Communist"]}},
+        {"id": "POR_the_popular_front_bloc", "name": "The Popular Front Bloc", "col": 28, "row": 4, "days": 70, "req": ["POR_the_iberian_socialist_union"], "mut_excl": ["POR_join_the_comintern"], "reward": {"pp": 25}, "need": {"cw": "over", "ideology": ["Communist"]}},
+        {"id": "POR_they_need_our_help", "name": "They Need Our Help", "col": 30, "row": 4, "days": 70, "req": ["POR_visit_the_front"], "mut_excl": [], "reward": {"pp": 25}, "need": {"ideology": ["Communist"]}},
+        {"id": "POR_allow_free_elections", "name": "Allow Free Elections", "col": 32, "row": 4, "days": 70, "req": ["POR_british_industrial_investments"], "mut_excl": [], "reward": {"pp": 25}, "need": {"war": False}},
+        {"id": "POR_send_assistance", "name": "Send Assistance", "col": 35, "row": 4, "days": 70, "req": ["POR_observation_mission"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_the_capital_of_espionage", "name": "The Capital of Espionage", "col": 37, "row": 4, "days": 70, "req": ["POR_strengthen_the_regime"], "mut_excl": [], "reward": {"pp": 25}, "need": {"war": False}},
+        {"id": "POR_appease_monarchists", "name": "Appease Monarchists", "col": 39, "row": 4, "days": 70, "req": ["POR_strengthen_the_regime"], "mut_excl": [], "reward": {"ind": 1, "pp": 91, "mods": {"build": 0.05}}},
+        {"id": "POR_ditadura_militar", "name": "Ditadura Militar", "col": 43, "row": 4, "days": 70, "req": ["POR_national_syndicalism"], "mut_excl": [], "reward": {"pp": 25}, "need": {"war": False}},
+        {"id": "POR_refuse_the_naval_blockade", "name": "Refuse the Naval Blockade", "col": 46, "row": 4, "days": 70, "req": [["POR_national_syndicalism", "POR_the_return_of_duarte"]], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_monarchist_uprising_in_brazil", "name": "Monarchist Uprising in Brazil", "col": 50, "row": 4, "days": 70, "req": ["POR_the_return_of_duarte"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_promote_the_monarchist_cause_in_portugal", "name": "Promote the Monarchist Cause in Portugal", "col": 51, "row": 4, "days": 70, "req": ["POR_the_return_of_duarte"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_support_a_spanish_monarchy_in_the_war", "name": "Support a Spanish Monarchy in the War", "col": 53, "row": 4, "days": 70, "req": ["POR_the_return_of_duarte"], "mut_excl": [], "reward": {"inf_eq": 100}},
+        {"id": "POR_portuguese_oil", "name": "Portuguese Oil", "col": 5, "row": 5, "days": 70, "req": ["POR_develop_south_angola"], "mut_excl": [], "reward": {"res": {"oil": 12}}},
+        {"id": "POR_develop_mozambique", "name": "Develop Mozambique", "col": 7, "row": 5, "days": 70, "req": ["POR_develop_south_angola"], "mut_excl": [], "reward": {"civ_factory": 1, "naval_base": 2, "infra": 1, "res": {"aluminium": 12}, "slots": 4}},
+        {"id": "POR_advanced_artillery", "name": "Advanced Artillery", "col": 9, "row": 5, "days": 70, "req": ["POR_portuguese_artillery", "POR_military_research_facilities"], "mut_excl": [], "reward": {"atk": 1, "research": [[["artillery"], 1.0, 2, 0.0]]}},
+        {"id": "POR_armor_focus", "name": "Armor Focus", "col": 10, "row": 5, "days": 70, "req": ["POR_military_research_facilities"], "mut_excl": ["POR_advanced_light_aircraft"], "reward": {"mil_factory": 1, "research": [[["armor"], 1.0, 1, 0.0]], "slots": 1}},
+        {"id": "POR_advanced_light_aircraft", "name": "Advanced Light Aircraft", "col": 12, "row": 5, "days": 70, "req": ["POR_light_aircraft_focus"], "mut_excl": ["POR_armor_focus"], "reward": {"research": [[["light_air"], 1.0, 1, 0.0]]}},
+        {"id": "POR_naval_research_institute", "name": "Naval Research Institute", "col": 15, "row": 5, "days": 70, "req": ["POR_fuzileiros"], "mut_excl": [], "reward": {"navy_xp": 50, "research_slot": 1}},
+        {"id": "POR_endless_sea", "name": "Endless Sea", "col": 18, "row": 5, "days": 140, "req": ["POR_atlantic_defense_strategy"], "mut_excl": [], "reward": {"def": 2, "mods": {"dock_output": 0.1}}},
+        {"id": "POR_regimento_de_comandos", "name": "Regimento de Comandos", "col": 21, "row": 5, "days": 70, "req": ["POR_tropas_paraquedistas"], "mut_excl": [], "reward": {"research": [[["marines", "marines2", "tech_mountaineers", "tech_mountaineers2"], 1.0, 2, 0.0]]}},
+        {"id": "POR_research_collaboration", "name": "Research Collaboration", "col": 25, "row": 5, "days": 70, "req": ["POR_join_the_comintern"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_cooperate_with_french_militants", "name": "Cooperate with French Militants", "col": 27, "row": 5, "days": 70, "req": [["POR_join_the_comintern", "POR_the_popular_front_bloc"]], "mut_excl": [], "reward": {"inf_eq": 50}},
+        {"id": "POR_latin_american_communism", "name": "Latin American Communism", "col": 28, "row": 5, "days": 70, "req": ["POR_the_popular_front_bloc"], "mut_excl": [], "reward": {"pp": 25}, "need": {"cw": "over", "ideology": ["Communist"]}},
+        {"id": "POR_protect_chinese_civilians", "name": "Protect Chinese Civilians", "col": 29, "row": 5, "days": 70, "req": [["POR_they_need_our_help", "POR_allow_free_elections", "POR_the_popular_front_bloc"]], "mut_excl": [], "reward": {"pp": 25}, "need": {"cw": "over"}},
+        {"id": "POR_intervention_in_spain", "name": "Intervention in Spain", "col": 30, "row": 5, "days": 70, "req": [["POR_they_need_our_help", "POR_allow_free_elections"]], "mut_excl": [], "reward": {"pp": 25}, "need": {"cw": "over", "ideology": ["Democracy", "Communist"]}},
+        {"id": "POR_securing_the_free_world", "name": "Securing the Free World", "col": 31, "row": 5, "days": 70, "req": ["POR_allow_free_elections"], "mut_excl": [], "reward": {"pp": 25}, "need": {"cw": "over", "ideology": ["Democracy"]}},
+        {"id": "POR_iberian_summit", "name": "Iberian Summit", "col": 33, "row": 5, "days": 70, "req": [["POR_allow_free_elections", "POR_send_assistance"]], "mut_excl": ["POR_nationalist_intervention"], "reward": {"pp": 25}, "need": {"cw": "over", "war": False, "not_ideology": ["Communist"]}},
+        {"id": "POR_nationalist_intervention", "name": "Nationalist Intervention", "col": 35, "row": 5, "days": 70, "req": ["POR_send_assistance"], "mut_excl": ["POR_iberian_summit"], "reward": {"pp": 25}, "need": {"cw": "over"}},
+        {"id": "POR_concordat_with_the_holy_see", "name": "Concordat with the Holy See", "col": 38, "row": 5, "days": 70, "req": ["POR_appease_monarchists"], "mut_excl": [], "reward": {"ind": 1, "pp": 162, "mods": {"build": 0.05}}},
+        {"id": "POR_national_gold_reserves", "name": "National Gold Reserves", "col": 40, "row": 5, "days": 70, "req": ["POR_appease_monarchists"], "mut_excl": [], "reward": {"ind": 2}, "need": {"war": False}},
+        {"id": "POR_camisas_azuis", "name": "Camisas Azuis", "col": 43, "row": 5, "days": 70, "req": ["POR_ditadura_militar"], "mut_excl": [], "reward": {"manpower": 100, "ws": 1}, "need": {"ideology": ["Fascist"]}},
+        {"id": "POR_mapa_cor_de_rosa", "name": "Mapa Cor-de-Rosa", "col": 46, "row": 5, "days": 70, "req": ["POR_refuse_the_naval_blockade"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_the_empire_of_brazil", "name": "The Empire of Brazil", "col": 50, "row": 5, "days": 70, "req": ["POR_monarchist_uprising_in_brazil"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_restoration_of_the_monarchy", "name": "Restoration of the Monarchy", "col": 51, "row": 5, "days": 70, "req": ["POR_promote_the_monarchist_cause_in_portugal"], "mut_excl": [], "reward": {"ind": -1, "pp": -101}, "need": {"ideology": ["Non-Aligned"]}},
+        {"id": "POR_assist_the_requetes", "name": "Assist the Requetés", "col": 53, "row": 5, "days": 70, "req": ["POR_support_a_spanish_monarchy_in_the_war"], "mut_excl": [], "reward": {"atk": 1, "research": [[["mountaineers_tech"], 1.0, 1, 0.0]], "air_xp": 20}},
+        {"id": "POR_mechanized_focus", "name": "Mechanized Focus", "col": 10, "row": 6, "days": 70, "req": ["POR_armor_focus"], "mut_excl": [], "reward": {"research": [[["cat_mechanized_equipment"], 1.0, 1, 0.0]]}},
+        {"id": "POR_jet_research", "name": "Jet Research", "col": 12, "row": 6, "days": 70, "req": ["POR_advanced_light_aircraft"], "mut_excl": [], "reward": {"def": 1}},
+        {"id": "POR_air_naval_research", "name": "Air Naval Research", "col": 15, "row": 6, "days": 70, "req": ["POR_naval_research_institute", "POR_advanced_light_aircraft"], "mut_excl": [], "reward": {"navy_xp": 50}},
+        {"id": "POR_anti_fascism", "name": "Anti-Fascism", "col": 27, "row": 6, "days": 70, "req": ["POR_cooperate_with_french_militants"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_our_comrades_overseas", "name": "Our Comrades Overseas", "col": 28, "row": 6, "days": 70, "req": ["POR_latin_american_communism"], "mut_excl": [], "reward": {"pp": 25}, "need": {"cw": "over", "ideology": ["Communist"]}},
+        {"id": "POR_join_the_allies", "name": "Join the Allies", "col": 32, "row": 6, "days": 35, "req": ["POR_allow_free_elections"], "mut_excl": [], "reward": {"join_faction_of": "British Empire"}},
+        {"id": "POR_honor_anglo_portuguese_alliance", "name": "Honor Anglo-Portuguese Alliance", "col": 37, "row": 6, "days": 70, "req": ["POR_concordat_with_the_holy_see"], "mut_excl": ["POR_proudly_alone"], "reward": {"join_faction_of": "British Empire"}, "need": {"war": False}},
+        {"id": "POR_proudly_alone", "name": "Proudly Alone", "col": 40, "row": 6, "days": 70, "req": ["POR_national_gold_reserves", "POR_concordat_with_the_holy_see"], "mut_excl": ["POR_honor_anglo_portuguese_alliance"], "reward": {"ind": 2, "pp": 62, "ws": 10, "mods": {"build": 0.05}}, "need": {"ideology": ["Non-Aligned"], "war": False}},
+        {"id": "POR_join_the_axis", "name": "Join the Axis", "col": 42, "row": 6, "days": 35, "req": ["POR_camisas_azuis"], "mut_excl": ["POR_the_fifth_empire"], "reward": {"join_faction_of": "German Reich"}, "need": {"ideology": ["Fascist"]}},
+        {"id": "POR_the_fifth_empire", "name": "The Fifth Empire", "col": 44, "row": 6, "days": 70, "req": ["POR_camisas_azuis"], "mut_excl": ["POR_join_the_axis"], "reward": {"manpower": 100, "ws": 15}, "need": {"ideology": ["Fascist"]}},
+        {"id": "POR_recover_the_east_indies", "name": "Recover the East Indies", "col": 46, "row": 6, "days": 70, "req": ["POR_mapa_cor_de_rosa"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_join_the_carlist_fight", "name": "Join the Carlist Fight", "col": 53, "row": 6, "days": 70, "req": ["POR_assist_the_requetes"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_research_sharing", "name": "Research Sharing", "col": 34, "row": 7, "days": 70, "req": [["POR_join_the_allies", "POR_honor_anglo_portuguese_alliance"]], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_oppose_germany", "name": "Oppose Germany", "col": 36, "row": 7, "days": 70, "req": [["POR_join_the_allies", "POR_honor_anglo_portuguese_alliance"]], "mut_excl": [], "reward": {"wargoal_against": "German Reich"}},
+        {"id": "POR_the_eastern_menace", "name": "The Eastern Menace", "col": 39, "row": 7, "days": 70, "req": ["POR_proudly_alone"], "mut_excl": [], "reward": {"wargoal_against": "Empire of Japan"}},
+        {"id": "POR_research_agreements", "name": "Research Agreements", "col": 41, "row": 7, "days": 70, "req": ["POR_join_the_axis"], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_expand_the_chinese_territories", "name": "Expand the Chinese Territories", "col": 43, "row": 7, "days": 70, "req": [["POR_join_the_axis", "POR_the_fifth_empire"]], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_deal_with_the_japanese_threat", "name": "Deal with the Japanese Threat", "col": 45, "row": 7, "days": 70, "req": ["POR_the_fifth_empire", "POR_recover_the_east_indies"], "mut_excl": [], "reward": {"wargoal_against": "Empire of Japan"}},
+        {"id": "POR_recover_brazil", "name": "Recover Brazil", "col": 47, "row": 7, "days": 70, "req": ["POR_mapa_cor_de_rosa"], "mut_excl": ["POR_the_kingdom_reunited"], "reward": {"pp": 25}},
+        {"id": "POR_the_kingdom_reunited", "name": "The Kingdom Reunited", "col": 49, "row": 7, "days": 70, "req": ["POR_restoration_of_the_monarchy", "POR_the_empire_of_brazil"], "mut_excl": ["POR_recover_brazil"], "reward": {"pp": 40, "manpower": 300, "ws": 15}, "need": {"ideology": ["Non-Aligned"]}},
+        {"id": "POR_remember_olivenca", "name": "Remember Olivença", "col": 51, "row": 7, "days": 70, "req": ["POR_restoration_of_the_monarchy"], "mut_excl": ["POR_the_royal_iberian_alliance"], "reward": {"wargoal_against": "Spain"}},
+        {"id": "POR_the_royal_iberian_alliance", "name": "The Royal Iberian Alliance", "col": 53, "row": 7, "days": 35, "req": ["POR_join_the_carlist_fight"], "mut_excl": ["POR_remember_olivenca"], "reward": {"pp": 25}, "need": {"cw": "over"}},
+        {"id": "POR_latin_america", "name": "Latin America", "col": 48, "row": 8, "days": 70, "req": [["POR_the_kingdom_reunited", "POR_recover_brazil"]], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_deal_with_fascism", "name": "Deal with Fascism", "col": 52, "row": 8, "days": 70, "req": [["POR_remember_olivenca", "POR_the_royal_iberian_alliance"]], "mut_excl": [], "reward": {"pp": 25}},
+        {"id": "POR_the_communist_threat", "name": "The Communist Threat", "col": 40, "row": 9, "days": 70, "req": [["POR_latin_america", "POR_proudly_alone"]], "mut_excl": [], "reward": {"pp": 25}},
+    ],
 }
 
-# AI majors take focuses in Hearts of Iron IV's own historical order (first available one wins);
-# other countries, and anything not listed, pick at random.
+# AI majors (and Yugoslavia, Romania, Spain and Portugal) take focuses in Hearts of Iron IV's own historical
+# order (first available one wins); other countries, and anything not listed, pick at random.
 # ---- FOCUS DESCRIPTIONS ----------------------------------------------------------------------------------------
 # Written for toi4 (2026-10-18) from the history of each country and what the focus does in the game - none of it
 # is taken from Hearts of Iron IV. The focuses in FOCUS_TREES get their text from here when the game loads.
@@ -4051,10 +4682,2041 @@ FOCUS_DESC = {
     "POL_sea_to_sea":
         "From the Baltic to the Black Sea, Poland will once again be a great power. The dream of Międzymorze will "
         "become reality.",
+    # Yugoslavia (HOI4 1.19's tree)
+    "YUG_western_focus":
+        "Prince Paul governs for the boy king Peter and looks to London and Paris for his models. Tying Belgrade's "
+        "future to the Western powers and their money will give the regency the authority it badly lacks at home.",
+    "YUG_recognize_the_soviet_union":
+        "Belgrade still refuses to recognise the Soviet state that murdered the Romanovs, cousins of our own dynasty. "
+        "Opening relations with Moscow would end that isolation and give our banned communists a powerful friend.",
+    "YUG_industrialization_program":
+        "Yugoslavia is a land of peasants, mines and a handful of mills around Belgrade, Zagreb and Ljubljana. A "
+        "state programme of loans, tariffs and engineers trained abroad can give the young kingdom an industry of its "
+        "own.",
+    "YUG_modernize_the_air_force":
+        "The Royal Yugoslav Air Force flies a mixture of French, British and German machines bought over fifteen "
+        "years. A plan to standardise and modernise it is overdue if our skies are ever to be defended.",
+    "YUG_army_modernization":
+        "The Royal Army can call up a million men, but it marches on foot and its rifles and guns date from the Great "
+        "War. Reforming its equipment and its organisation is the first duty of the general staff.",
+    "YUG_expand_the_split_shipyards":
+        "Split is the largest port on our Dalmatian coast and its yards can build more than fishing boats. New "
+        "slipways and cranes will let them lay down the warships the Adriatic demands.",
+    "YUG_expand_the_serbian_shipyards":
+        "River yards on the Danube and the Sava build tugs and monitors for the river flotilla. Expanding them gives "
+        "the navy a second shipbuilding centre far from any enemy fleet.",
+    "YUG_friendship_treaty_with_italy":
+        "Mussolini has long sheltered the Ustasha terrorists who murdered King Alexander. A treaty of friendship with "
+        "Rome, as Stojadinovic proposes, would buy peace on the Adriatic and cut those exiles off from their patron.",
+    "YUG_reinforce_old_alliances":
+        "The Little Entente with Czechoslovakia and Romania and the Balkan Pact have kept the revisionist powers at "
+        "bay since the 1920s. Renewing our pledges to our friends will show that Belgrade keeps its word.",
+    "YUG_form_peasant_councils":
+        "In the villages, communist organisers are setting up councils of poor peasants to manage land and grain. "
+        "Supporting them builds a base for a new order rooted in the countryside, not the court.",
+    "YUG_mutual_economic_aid":
+        "Soviet credits and Soviet machinery could do for Yugoslavia what they did for the Urals. An agreement on "
+        "mutual economic aid would bring both, in exchange for our ores and grain.",
+    "YUG_expand_the_mining_industry":
+        "Bor's copper, Trepca's lead and zinc and the bauxite of Dalmatia are among the richest deposits in Europe, "
+        "but foreign companies take most of the profit. New state mines will put that wealth to work for us.",
+    "YUG_local_developers":
+        "Ikarus, Rogozarski and Zmaj already build aircraft under licence near Belgrade and Novi Sad. Backing their "
+        "own design offices will free us from foreign suppliers.",
+    "YUG_purchase_foreign":
+        "Our factories cannot yet build modern fighters and bombers. Buying them abroad - from Britain, Germany or "
+        "Italy - is the quickest way to give our pilots machines that can fight.",
+    "YUG_motorize_the_cavalry":
+        "Horse cavalry was the pride of the Serbian army in the Balkan Wars, but it has no future against machine "
+        "guns and aircraft. Trucks and motorcycles will give our mounted divisions a new kind of speed.",
+    "YUG_small_arms":
+        "Our infantry still carries rifles of many makes. A single modern pattern rifle, built at the Kragujevac "
+        "arsenal, will simplify training, supply and repair across the whole army.",
+    "YUG_mountain_brigades":
+        "Most of our country is mountains, from the Julian Alps to the hills of Macedonia. Brigades trained and "
+        "equipped for mountain warfare will turn that terrain into our strongest defence.",
+    "YUG_army_maneuvers":
+        "An army that never trains together cannot fight together. Large manoeuvres, with whole divisions moving and "
+        "supplying themselves in the field, will expose our weaknesses before an enemy does.",
+    "YUG_contest_the_adriatic":
+        "Italy treats the Adriatic as its own lake. A navy able to challenge that claim, even locally, would protect "
+        "our long coast and keep the sea lanes to Split and Kotor open.",
+    "YUG_coastal_defense":
+        "Our coastline is long and full of islands an enemy could seize. Batteries, minefields and patrol craft "
+        "around Kotor, Split and Sibenik will make any landing a costly affair.",
+    "YUG_attract_axis_capital":
+        "Germany buys our grain, ores and timber in great quantities and pays with machinery. Inviting German and "
+        "Italian investment would bring factories and railways, at the price of closer ties to Berlin and Rome.",
+    "YUG_brigadistas":
+        "Hundreds of young Yugoslavs have gone to Spain to fight in the International Brigades. Their experience of "
+        "modern war, brought home, could be of real value to our own forces.",
+    "YUG_attract_allied_capital":
+        "French banks and British mining firms already hold large stakes in our economy. Encouraging them to invest "
+        "further would build industry while keeping us close to the Western democracies.",
+    "YUG_local_militias":
+        "Every village in the hills has men who know how to shoot and know every path. Organising them into local "
+        "militias adds a reserve the army can call on when the enemy comes.",
+    "YUG_abolish_the_monarchy":
+        "The Karadjordjevic crown stands for Serbian dominance and a corrupt court. Abolishing the monarchy would "
+        "clear the way for a state of equal peoples and a government of workers and peasants.",
+    "YUG_rare_minerals_exploitation":
+        "Chromium, antimony and molybdenum lie in our southern mountains, metals every armaments industry needs. "
+        "Exploiting them properly will make Yugoslavia a valued supplier - or a self-sufficient one.",
+    "YUG_develop_civilian_industry":
+        "Textiles, cement, chemicals and machine shops will employ the surplus labour of our villages. Building up "
+        "civilian industry is the foundation for everything else the state hopes to do.",
+    "YUG_develop_military_industry":
+        "The Kragujevac arsenal and the works at Sarajevo and Uzice must be expanded and modernised. Without our own "
+        "arms industry, any war would be lost the day the foreign deliveries stop.",
+    "YUG_ikarus":
+        "Ikarus of Novi Sad and Zemun is our oldest aircraft builder. State orders and new workshops will let it "
+        "build modern designs in useful numbers.",
+    "YUG_rogozarski":
+        "The Rogozarski works in Belgrade has a talented design office. Funding its engineers could produce a fighter "
+        "that is truly our own.",
+    "YUG_zmaj":
+        "Zmaj at Zemun builds trainers and licensed aircraft and maintains much of the air force. Expanding the "
+        "factory gives our squadrons a reliable home industry.",
+    "YUG_license_production":
+        "If we cannot design the best aircraft ourselves, we can build them. Licences to produce proven foreign types "
+        "in Yugoslav factories combine quality with independence of supply.",
+    "YUG_motorized_logistics":
+        "A modern army lives on fuel, spare parts and ammunition brought forward by truck. Motorised supply columns "
+        "and field hospitals will keep our divisions fighting far from the railheads.",
+    "YUG_armored_cavalry":
+        "The cavalry's future lies in armoured cars and tracked carriers. Converting mounted regiments into armoured "
+        "reconnaissance units will keep their spirit while giving them modern teeth.",
+    "YUG_domestic_artillery_production":
+        "We have bought our guns from Skoda and Schneider for years. A domestic gun works will keep the artillery "
+        "supplied with tubes, carriages and shells even in wartime.",
+    "YUG_independent_engineer_regiments":
+        "Bridges, mountain roads and fortifications need trained engineers. Independent engineer regiments can be "
+        "sent wherever the army must cross a river or dig in quickly.",
+    "YUG_supremacy_of_offense":
+        "Some officers argue that only a rapid offensive, carried into the enemy's territory, can save a country "
+        "surrounded by rivals. Training the army to attack will make it a weapon, not a wall.",
+    "YUG_supremacy_of_defense":
+        "Others say our mountains and rivers are our best allies and the army should hold them at any cost. Training "
+        "for a stubborn defence suits a country that wants nothing from its neighbours.",
+    "YUG_replace_the_dalmacija":
+        "The cruiser Dalmacija was built for the Kaiser's navy before the turn of the century. A modern replacement "
+        "would give the fleet a real flagship.",
+    "YUG_naval_bombers":
+        "Aircraft can strike enemy ships long before our own guns could reach them. Naval bomber squadrons based "
+        "along the coast will make the Adriatic dangerous for any invading fleet.",
+    "YUG_expand_the_submarine_fleet":
+        "Our four submarines are a small but real threat to any fleet in the Adriatic. More boats, built at home or "
+        "abroad, would make that threat serious.",
+    "YUG_evolution":
+        "Change can come without revolution: step by step, through reforms that give each people a fairer share of "
+        "power. The government will begin cautiously, though every concession angers someone.",
+    "YUG_limited_self_government":
+        "Croats, Slovenes and others want to run their own affairs. Granting the regions limited self-government may "
+        "defuse the tensions that threaten to tear the kingdom apart.",
+    "YUG_join_comintern":
+        "A socialist Yugoslavia belongs at the side of the Soviet Union. Joining Moscow's alliance would protect the "
+        "revolution against the capitalist powers on our borders.",
+    "YUG_yugoslavian_path_to_communism":
+        "Our revolution need not copy Moscow in every detail. A Yugoslav road to socialism, built on our own peoples "
+        "and conditions, will rally far more support than imported dogma.",
+    "YUG_exploit_the_pannonian_deposits":
+        "Beneath the plains of the north lie coal, oil and gas that have barely been touched. Surveys and new wells "
+        "in the Pannonian basin could supply our industry with its own fuel.",
+    "YUG_expand_the_university_of_zagreb":
+        "The University of Zagreb is the oldest in our lands and a centre of Croatian learning. Funding new faculties "
+        "of engineering and science will serve the whole country - and please the Croats.",
+    "YUG_the_ik_3":
+        "Rogozarski's engineers have designed a fast, modern monoplane fighter, the IK-3. Putting it into production "
+        "would give us a fighter equal to the best in Europe.",
+    "YUG_fighter_license":
+        "A licence to build a proven foreign fighter, such as the Hurricane or the Messerschmitt, will put modern "
+        "aircraft into our squadrons within a few years.",
+    "YUG_bomber_license":
+        "Our bomber force needs modern twin-engine machines. Licensed production of a foreign bomber, perhaps the "
+        "Bristol Blenheim, is the fastest way to get them.",
+    "YUG_tank_conversions":
+        "We own only a few dozen old French light tanks. Rebuilding them with better engines and guns, and converting "
+        "other vehicles, will stretch what little armour we have.",
+    "YUG_modern_tanks":
+        "If we are to resist a modern invader, our army needs modern tanks of its own. Buying or building them must "
+        "become a priority of the war ministry.",
+    "YUG_anti_tank_defenses":
+        "Most of our neighbours have more tanks than we do. Anti-tank guns and obstacles in every division will be "
+        "the cheapest answer to that danger.",
+    "YUG_motorized_recon_companies":
+        "Divisions moving through broken country need eyes ahead of them. Motorised reconnaissance companies can "
+        "scout roads and valleys far faster than horsemen.",
+    "YUG_artillery_regiments":
+        "Whatever doctrine we choose, it will rest on the guns. Additional artillery regiments under army and corps "
+        "command will support the infantry where the fighting is hardest.",
+    "YUG_heavy_cruiser_project":
+        "A heavy cruiser of our own would give the Royal Navy a ship able to meet anything the Italians send down the "
+        "coast short of a battleship.",
+    "YUG_modern_destroyers":
+        "The destroyer Dubrovnik, built in Britain, is one of the most modern in the Mediterranean. More ships of her "
+        "kind, some built at Split, will form the core of the fleet.",
+    "YUG_crush_the_ustasa":
+        "Pavelic's Ustasha killed King Alexander and plot more murders from their Italian refuge. Hunting down their "
+        "cells and cutting off their money will show that the state cannot be intimidated.",
+    "YUG_establish_the_banovina_of_croatia":
+        "An agreement with Macek's Croatian Peasant Party could create a single Croatian province with its own "
+        "assembly. It would satisfy most Croats, though many Serbs will see it as a betrayal.",
+    "YUG_united_autonomous_croatia":
+        "All lands with a Croat majority could be united in one autonomous Croatia under the crown. It is the boldest "
+        "answer to the Croatian question, and a risky one.",
+    "YUG_devolved_croatia":
+        "Croatia can be given wide powers over its schools, police and economy while Belgrade keeps the army and "
+        "foreign affairs. A devolved Croatia keeps the kingdom whole.",
+    "YUG_research_collaboration":
+        "Soviet institutes can train our engineers and share their designs. Close scientific cooperation will speed "
+        "up our progress in industry and arms.",
+    "YUG_form_the_federal_republic":
+        "Serbs, Croats, Slovenes, Macedonians, Montenegrins and Bosnians will each have their own republic within one "
+        "federation. It is the answer to the national question that the monarchy never found.",
+    "YUG_pan_slavic_workers_congress":
+        "Communists from every South Slav land could meet to plan a common future. A congress of Slavic workers would "
+        "make Belgrade the centre of the movement in the Balkans.",
+    "YUG_integrated_rail_network":
+        "The railways were built by different empires to different plans, and many regions are badly connected. An "
+        "integrated network will tie Croatia, Bosnia and Serbia together.",
+    "YUG_improve_serbian_rail_network":
+        "Serbia's single-track lines cannot carry the traffic a modern economy or a mobilising army needs. Doubling "
+        "the main lines and adding new branches is long overdue.",
+    "YUG_heavy_fighter_project":
+        "A twin-engine fighter with long range could escort bombers and hunt enemy raiders. Our designers believe "
+        "they can build one.",
+    "YUG_bomber_project":
+        "A domestic bomber design would free us from foreign deliveries. The project will draw on the experience our "
+        "factories gained building licensed aircraft.",
+    "YUG_tank_licenses":
+        "Buying the right to build foreign tanks in our own factories is cheaper than importing them one by one. "
+        "Czech or French designs could suit us well.",
+    "YUG_form_parachute_battalions":
+        "Soldiers dropped from the air could seize bridges and passes ahead of the army. Forming parachute battalions "
+        "will give the general staff a new and surprising weapon.",
+    "YUG_medal_for_extreme_bravery":
+        "Courage must be honoured if it is to be repeated. A new decoration for extraordinary bravery in the field "
+        "will inspire every soldier in the army.",
+    "YUG_slovenia_for_support":
+        "Rome covets parts of Slovenia, and Berlin would welcome Italian goodwill. Ceding territory there could buy "
+        "powerful protection, but it would wound the nation deeply.",
+    "YUG_ban_slovene_nationalist_parties":
+        "Slovene nationalists demand more than autonomy and look abroad for support. Banning their parties will "
+        "protect the unity of the kingdom, at the cost of resentment in Ljubljana.",
+    "YUG_divide_bosnia":
+        "Bosnia could be split between Croat and Serb areas of influence. Dividing it settles the claims of both "
+        "peoples, but leaves the Bosnian Muslims with nothing.",
+    "YUG_safeguard_bosnia":
+        "Bosnia's Serbs, Croats and Muslims have lived together for centuries. Keeping Bosnia whole and under the "
+        "protection of Belgrade prevents a struggle that could set the whole country ablaze.",
+    "YUG_dissolve_serbia":
+        "A powerful Serbian administration overshadows every other region. Dissolving the Banate of Serbia into "
+        "smaller provinces will reassure the other peoples that Belgrade does not rule for Serbs alone.",
+    "YUG_federal_defense_council":
+        "The defence of the federation will be directed by a council of all its republics. A unified command, chosen "
+        "by all, will make the army truly belong to every people.",
+    "YUG_invite_bulgaria":
+        "Bulgarians and Yugoslavs are brother Slavs separated by kings and old wars. Inviting a socialist Bulgaria "
+        "into our union is the first step towards a Balkan federation.",
+    "YUG_invite_albania":
+        "Albania is small and poor and lies under Italy's shadow. Bringing it into a Balkan union would protect it "
+        "from Rome and close the Adriatic to the fascists.",
+    "YUG_improve_light_industry":
+        "Shoes, textiles, furniture and tools - light industry produces what ordinary people need and employs many "
+        "workers. Investment here raises living standards quickly.",
+    "YUG_serbian_steel":
+        "The steelworks at Zenica and smelters in Serbia are small by European standards. Expanding them will give "
+        "our factories and arsenals the steel they lack.",
+    "YUG_surrender_macedonia":
+        "Bulgaria has never accepted the loss of Macedonia. Handing parts of it over might win Sofia's friendship and "
+        "the favour of its patrons, but many will call it treason.",
+    "YUG_concessions_for_macedonians":
+        "The Macedonians feel neither Serbian nor Bulgarian, and the IMRO feeds on their grievances. Concessions on "
+        "language and local government could win their loyalty.",
+    "YUG_fortify_banat":
+        "The Banat plain is open ground on our northern frontier, facing Hungary and Romania. Fortifications along "
+        "its rivers and canals will make any advance on Belgrade a slow, bloody affair.",
+    "YUG_banat_for_support":
+        "Romania and Hungary both claim parts of the Banat. Ceding territory there could secure their friendship or "
+        "that of their patrons, at the cost of our own pride.",
+    "YUG_autonomous_transylvania":
+        "Slavic communities in Romanian Transylvania look to Belgrade for protection. Championing their autonomy wins "
+        "sympathy at home and gives us a voice in our neighbour's affairs.",
+    "YUG_pan_balkan_workers_congress":
+        "The workers of all the Balkan nations share the same enemies and the same hopes. A Balkan federation of "
+        "socialist states, led from Belgrade, would end centuries of division.",
+    "YUG_develop_slovenian_industry":
+        "Slovenia is the most industrial corner of the kingdom, with skilled workers and old ironworks. Investing "
+        "there brings quick returns in both civilian goods and arms.",
+    "YUG_expand_the_university_of_belgrad":
+        "The University of Belgrade trains the officials, engineers and officers of the state. New laboratories and "
+        "institutes will make it a centre of research for the whole country.",
+    "YUG_invite_german_military_mission":
+        "German officers could teach our army the methods that have made the Wehrmacht so feared. A military mission "
+        "from Berlin would bring modern doctrine and modern equipment.",
+    "YUG_join_axis":
+        "Surrounded by Axis states, Yugoslavia may have no choice but to sign the Tripartite Pact. Joining Berlin and "
+        "Rome protects us from invasion - for as long as they find us useful.",
+    "YUG_end_the_regency":
+        "The regency of Prince Paul was meant to last only until King Peter came of age. Ending it early would place "
+        "the young king on the throne and give the crown a fresh start.",
+    "YUG_towards_independence":
+        "No great power should decide Yugoslavia's fate. Building our own strength and our own alliances will keep us "
+        "independent of Rome, Berlin and Moscow alike.",
+    "YUG_united_kingdom":
+        "Serbs, Croats and Slovenes are one people with three names, as the founders of the kingdom said. A united "
+        "kingdom with a single loyalty is the surest defence against the dismemberment our enemies want.",
+    "YUG_invite_romania":
+        "Romania faces the same threats from Hungary and the Soviet Union as we do. Inviting it into our federation "
+        "turns an old ally into a partner.",
+    "YUG_invite_greece":
+        "Greece and Yugoslavia share a frontier and a fear of Italy and Bulgaria. Bringing Athens into our union "
+        "secures our southern flank and the port of Salonika.",
+    "YUG_invite_hungary":
+        "Hungary has been our enemy since 1918, but its workers have no quarrel with ours. A socialist Hungary could "
+        "become a partner in the federation instead of a rival.",
+    "YUG_expand_the_university_of_ljubljana":
+        "Ljubljana's young university is the heart of Slovene scholarship. New technical faculties will tap the "
+        "talent of the kingdom's most industrial region.",
+    "YUG_local_self_management":
+        "Factories run by their own workers' councils, not by distant ministries, will be more efficient and more "
+        "just. Local self-management is the Yugoslav answer to bureaucracy.",
+    "YUG_central_management":
+        "A planned economy needs a single plan. Central management from Belgrade will direct investment where the "
+        "country needs it most.",
+    "YUG_surrender_italian_claims":
+        "Italy has long claimed Dalmatia and its islands. Giving up some of our coast may satisfy Rome and secure our "
+        "place in the Axis, though it betrays the Croats who live there.",
+    "YUG_zara_for_axis":
+        "The Italian enclave of Zara sits on our coast. In exchange for joining the Axis, we will ask Rome to hand it "
+        "over to us.",
+    "YUG_coronation":
+        "With the regency over, King Peter II will be crowned in Belgrade with all the ceremony of the Serbian "
+        "church. A crowned king will rally the nation around the throne.",
+    "YUG_royal_wedding":
+        "A royal marriage to a princess of a great European house would bring the dynasty prestige and powerful "
+        "friends. All Belgrade would turn out for the celebration.",
+    "YUG_defence_army_of_yugoslavia":
+        "A defence army, built around mountain fortresses and a trained reserve, is better suited to our country than "
+        "a copy of a foreign model. Every man will know his place when the call comes.",
+    "YUG_guarantee_religious_liberties":
+        "Orthodox, Catholics and Muslims all live under the crown. A solemn guarantee of religious freedom will "
+        "reassure every faith that it has a place in the kingdom.",
+    "YUG_invite_turkey":
+        "Turkey guards the Straits and has been our partner in the Balkan Pact. Inviting Ankara to join would give "
+        "the federation a strong ally in the east.",
+    "YUG_expand_the_sarajevo_arsenals":
+        "Sarajevo, in the heart of the mountains, is far from every frontier. Expanding its arsenals gives us arms "
+        "factories that are hard for an invader to reach.",
+    "YUG_claim_macedonia":
+        "Greek Macedonia, with Salonika, would give Yugoslavia a port on the Aegean. With the Axis behind us, the "
+        "claim can finally be pressed.",
+    "YUG_invite_italian_naval_experts":
+        "Italian naval officers could help build and train a modern Yugoslav fleet. As allies, they have every reason "
+        "to share their knowledge.",
+    "YUG_enforced_neutrality":
+        "Yugoslavia will take no side in the wars of the great powers. A well-armed neutrality, backed by a strong "
+        "army, may keep the storm away from our borders.",
+    "YUG_join_allies":
+        "The king's family has close ties to the British crown. A royal alliance with London would place Yugoslavia "
+        "firmly on the side of the democracies.",
+    "YUG_defence_league":
+        "A league of Yugoslav defenders, open to every citizen, will train the people in arms and fieldcraft. It "
+        "turns the whole nation into a reserve for the army.",
+    "YUG_reunite_the_kingdom":
+        "The lands lost or never won - Bulgarian Macedonia above all - belong in the kingdom. Reuniting them under "
+        "the Karadjordjevic crown completes the work of 1918.",
+    "YUG_greater_yugoslavia":
+        "With Greek Macedonia secured, the rest of the South Slav lands are within reach. A Greater Yugoslavia "
+        "stretching from the Alps to the Black Sea is no longer a dream.",
+    "YUG_fortress_yugoslavia":
+        "The mountains of Bosnia and Montenegro will become a national redoubt, stocked with arms and supplies. If "
+        "the plains fall, the army will fight on from Fortress Yugoslavia.",
+    "YUG_allied_air_combat_school":
+        "British instructors and British aircraft can train our pilots to fight the modern way. An air combat school "
+        "run with our allies will raise the quality of every squadron.",
+    "YUG_all_yugoslavian_regiments":
+        "Regiments that mix men from every region and every faith will be the school of a united nation. Serbs, "
+        "Croats and Slovenes will learn to fight - and live - side by side.",
+    # Romania (HOI4 1.19's tree)
+    "ROM_preserve_greater_romania":
+        "The union of 1918 doubled the size of the kingdom, adding Transylvania, Bessarabia and Bukovina. Hungary, "
+        "Bulgaria and the Soviet Union all want their share back, and keeping Greater Romania whole is the first task "
+        "of every government.",
+    "ROM_balkans_dominance":
+        "Romania is the largest and richest state in the Balkans, with oil, grain and an army bigger than any "
+        "neighbour's. It is time Bucharest acted like the regional power it is.",
+    "ROM_institute_royal_dictatorship":
+        "King Carol II has little patience for quarrelling parties and corrupt ministers. Suspending the constitution "
+        "and ruling by royal decree would end the chaos - and put all power in the hands of the palace.",
+    "ROM_expand_the_air_force":
+        "Our air force is small and flies a mix of Polish, French and British machines. More squadrons and more "
+        "airfields are needed if the army is to have cover from above.",
+    "ROM_army_maneuvers":
+        "Large-scale manoeuvres in Moldavia and Transylvania will test our mobilisation plans, our railways and our "
+        "officers. Every mistake found in peace is a disaster avoided in war.",
+    "ROM_expand_the_galati_shipyards":
+        "Galati on the lower Danube is our main shipbuilding centre, where river monitors and small warships are "
+        "built. New slipways will let it build for the Black Sea fleet as well.",
+    "ROM_a_deal_with_the_devil":
+        "The Soviet Union has never recognised our rule in Bessarabia, yet it may be the only power able to protect "
+        "us from Germany. A treaty with Moscow would be dangerous, but so is standing alone.",
+    "ROM_trade_treaty_with_germany":
+        "Germany wants our oil and grain and offers machinery and weapons in return. A long-term trade treaty would "
+        "bind our economy to the Reich, for better or worse.",
+    "ROM_renew_the_romanian_polish_alliance":
+        "Romania and Poland have been allies against the Soviet Union since 1921. Renewing and strengthening the "
+        "treaty will show Moscow that our eastern frontier is not alone.",
+    "ROM_civil_works":
+        "Roads, bridges, irrigation and power stations will lift the countryside out of poverty. A programme of "
+        "public works also gives employment to thousands of men who would otherwise drift to the extremists.",
+    "ROM_national_defense_industry":
+        "The Resita works, the Malaxa factories and the state arsenals must be able to arm the army without foreign "
+        "help. A national defence industry is a matter of survival.",
+    "ROM_puppet_bulgaria":
+        "Bulgaria has never forgiven us for southern Dobruja. Bringing Sofia under our control would end that danger "
+        "for good and make Bucharest the master of the eastern Balkans.",
+    "ROM_align_hungary":
+        "Hungary is our oldest rival, but a common fear of greater powers may bring us together. An understanding "
+        "with Budapest, on our terms, would secure Transylvania's western border.",
+    "ROM_fortify_the_borders":
+        "Our frontiers face three hostile neighbours along hundreds of kilometres. A programme of bunkers, anti-tank "
+        "ditches and coastal batteries will give the army a line to hold.",
+    "ROM_revise_the_constitution":
+        "A new constitution will give the king the authority to govern above the parties. It ends the old "
+        "parliamentary game and places the state's resources at the throne's disposal.",
+    "ROM_crack_down_on_extremism":
+        "The Iron Guard preaches murder and its legionaries already kill ministers. Arresting its leaders and banning "
+        "its organisations will restore order, by force if necessary.",
+    "ROM_white_squadron_focus":
+        "Romanian women pilots have formed an air ambulance squadron to carry the wounded from the front. Their "
+        "courage will save lives and inspire the nation.",
+    "ROM_army_war_college":
+        "The higher war school in Bucharest trains the officers who will lead our divisions. Expanding it and "
+        "modernising its teaching will raise the quality of the whole command.",
+    "ROM_royal_guards_divisions":
+        "A Guards division loyal to the crown will be the elite of the army, recruited from the best men and given "
+        "the best equipment. It will also protect the throne from any coup.",
+    "ROM_coastal_defense_navy":
+        "The Black Sea coast and the Danube delta can be defended by mines, coastal guns and small fast ships. A navy "
+        "built for defence costs little and fits our needs.",
+    "ROM_black_sea_dominance":
+        "The Soviet Black Sea Fleet outguns ours many times over. Only a serious investment in warships can make "
+        "Romania a naval power on its own sea.",
+    "ROM_form_peasant_militias":
+        "The peasants are the backbone of the nation and they know how to fight for their land. Militias organised in "
+        "the villages will add a vast reserve to the army.",
+    "ROM_the_cordon_sanitaire":
+        "Romania and Poland form a barrier between Bolshevism and the rest of Europe. Presenting ourselves as that "
+        "barrier will win the support of the Western powers.",
+    "ROM_agrarian_reform":
+        "Most Romanians are peasants farming tiny plots with wooden ploughs. Credit, machinery and land consolidation "
+        "will raise yields and free labour for the factories.",
+    "ROM_secure_greece":
+        "With Bulgaria in our hands, Greece lies open to the south. Bringing it under our influence would give "
+        "Romania access to the Aegean and the Mediterranean.",
+    "ROM_divide_yugoslavia":
+        "Yugoslavia is a fragile union of quarrelling peoples. If it falls apart, Romania must make sure the Banat "
+        "and the eastern lands come to us.",
+    "ROM_split_czechoslovakia":
+        "Czechoslovakia is surrounded and crumbling. Taking a part of Ruthenia would give Romania a common border "
+        "with Poland, our ally.",
+    "ROM_his_majestys_loyal_government":
+        "The king will govern through a single party of national rebirth, loyal to the crown alone. Every official, "
+        "soldier and teacher will owe his place to the throne.",
+    "ROM_flexible_foreign_policy":
+        "Romania cannot afford to tie itself to one great power too early. A flexible foreign policy, keeping options "
+        "open in every capital, is the wisest course for a country in our position.",
+    "ROM_the_royal_foundation":
+        "The Royal Foundation of King Carol II supports science, art and education across the country. Expanding its "
+        "laboratories and scholarships will give Romania a research establishment worthy of a modern state.",
+    "ROM_acquire_licenses":
+        "Building foreign aircraft under licence at the IAR works in Brasov is the quickest way to modernise the air "
+        "force while training our own engineers.",
+    "ROM_local_development":
+        "The engineers at IAR believe they can design a fighter as good as any in Europe. Backing their work will "
+        "give Romania an air industry of its own.",
+    "ROM_the_zb_53":
+        "The Czechoslovak ZB-53 is one of the best machine guns in the world. Building it under licence at home will "
+        "give every infantry battalion modern firepower.",
+    "ROM_reserve_divisions":
+        "Behind the active army stand millions of trained reservists. Organising them into reserve divisions with "
+        "their own equipment depots will double our strength on mobilisation.",
+    "ROM_the_armored_division":
+        "A single armoured division, built around modern Czech tanks, would give the army a striking force no "
+        "neighbour can easily match.",
+    "ROM_coastal_defense_ships":
+        "Gunboats, minelayers and monitors can guard the Danube mouths and the port of Constanta against raids. They "
+        "are cheap to build in our own yards.",
+    "ROM_modern_destroyers":
+        "The destroyers Regina Maria and Regele Ferdinand are the pride of the navy. More ships of the same class "
+        "would make the fleet a real force on the Black Sea.",
+    "ROM_capital_ships":
+        "Cruisers and even a battleship would let Romania contest the Black Sea with the Soviet fleet. It is an "
+        "expensive ambition, but a sea power must have a battle line.",
+    "ROM_basing_rights_for_soviet_union":
+        "Allowing the Red Army and Red Fleet to use bases on our territory would make the alliance with Moscow real. "
+        "Many Romanians will see it as an occupation by invitation.",
+    "ROM_invite_german_advisors":
+        "German officers and engineers can reorganise our army and our industry on the Prussian model. Their help "
+        "will be valuable, though Berlin never gives anything for free.",
+    "ROM_demand_a_western_guarantee":
+        "Britain and France must declare that they will defend Romania's independence. A formal guarantee from the "
+        "Western powers would make any aggressor think twice.",
+    "ROM_danubian_transport_network":
+        "The Danube is the great highway of our country. Ports, barges and railways linked to the river will carry "
+        "oil, grain and timber to market far more cheaply.",
+    "ROM_secure_the_bosporus":
+        "Whoever holds the Straits holds the key to the Black Sea. Romania's trade depends on them, and in alliance "
+        "with our partners we can now demand a say in their control.",
+    "ROM_militarize_the_sentinels":
+        "The Straja Tarii youth movement already enrols hundreds of thousands of boys in uniform. Giving them "
+        "military training will create a disciplined reserve loyal to the king.",
+    "ROM_appoint_allied_friendly_government":
+        "A government friendly to London and Paris would reassure the Western powers that Romania stands with them. "
+        "The pro-German factions will not take it quietly.",
+    "ROM_appoint_soviet_friendly_government":
+        "Ministers sympathetic to Moscow would prepare the way for a closer alliance with the Soviet Union. The king "
+        "himself may have reason to fear such a government.",
+    "ROM_appoint_german_friendly_government":
+        "With Germany the strongest power in Europe, a cabinet friendly to Berlin may be the only way to keep Romania "
+        "safe. It will open the door to the Axis and to the Iron Guard.",
+    "ROM_air_defense":
+        "Ploiesti's oilfields will be the first target of any enemy bomber. Fighters, anti-aircraft guns and an early "
+        "warning network around them are vital to the war economy.",
+    "ROM_ground_support":
+        "Aircraft that fly over the battlefield, bombing enemy positions and columns, can make up for our shortage of "
+        "artillery. Ground support will be the air force's first mission.",
+    "ROM_air_superiority":
+        "An air force that cannot win the sky above its own country cannot do anything else. Fighters come first, and "
+        "our designers must give them the best machines we can build.",
+    "ROM_strategic_bomber_force":
+        "Bombers able to reach the enemy's cities and industry would give Romania a weapon of deterrence. It is a "
+        "costly project for a country of our means.",
+    "ROM_vanatori_de_munte":
+        "The Vanatori de Munte, our mountain hunters, are the elite of the infantry. Expanding them will turn the "
+        "Carpathians into a fortress no invader can easily cross.",
+    "ROM_artillery_modernization":
+        "Our guns are a mix of old French, German and Austrian models. Modern artillery, with standard calibres and "
+        "enough shells, is the foundation of any defence.",
+    "ROM_acquire_modern_tanks":
+        "The few tanks we have will be obsolete by the time a war begins. Buying modern designs, and the right to "
+        "build them, will keep our armour relevant.",
+    "ROM_torpedo_boats":
+        "Fast torpedo boats can strike at larger ships from the shelter of the coast and the Danube delta. They are "
+        "cheap, quick to build and well suited to our waters.",
+    "ROM_modern_submarines":
+        "The submarine Delfinul shows what even one boat can do. A small flotilla of modern submarines would threaten "
+        "any enemy fleet on the Black Sea.",
+    "ROM_torpedo_bombers":
+        "Aircraft armed with torpedoes can sink warships far from our coast. Torpedo bomber squadrons will give the "
+        "navy a long arm it could never afford in ships.",
+    "ROM_expand_the_marine_regiment":
+        "A regiment of naval infantry can defend the delta and the ports, and land on enemy coasts. Expanding it "
+        "gives the navy troops of its own.",
+    "ROM_romanian_volunteer_brigades":
+        "Romanians who want to fight fascism alongside our new ally can serve in volunteer brigades. Their experience "
+        "will strengthen the army when they return.",
+    "ROM_license_german_equipment":
+        "German factories produce some of the best weapons in the world. Licences to build them at home will "
+        "modernise the army quickly and tie us closer to Berlin.",
+    "ROM_military_modernization":
+        "With Western help, the army can be rebuilt along modern lines: new weapons, new doctrine and officers "
+        "trained in French and British staff colleges.",
+    "ROM_malaxa":
+        "Nicolae Malaxa's works in Bucharest build locomotives, steel tubes and weapons. State orders and new capital "
+        "will make them one of the great industrial concerns of the Balkans.",
+    "ROM_invite_foreign_motor_companies":
+        "Romania has no car industry of its own. Inviting foreign motor companies to build plants here would bring "
+        "trucks, tractors and skilled jobs.",
+    "ROM_all_parties_must_end":
+        "Parties divide the nation and serve foreign interests. Dissolving them all, and replacing them with a single "
+        "national front, will bind Romanians together under the crown.",
+    "ROM_constitutional_guarantees":
+        "Restoring the constitution and guaranteeing civil liberties will win back the trust of the democratic "
+        "parties and the Western powers.",
+    "ROM_securitate":
+        "A new security service, trained by Soviet advisers, will root out spies, saboteurs and enemies of the new "
+        "order. Its reach will extend into every home.",
+    "ROM_iron_guard":
+        "The Legion of the Archangel Michael has hundreds of thousands of followers and a mystical cult of death. "
+        "Bringing the Iron Guard into government will harness its fanaticism for the state.",
+    "ROM_national_christian_party":
+        "Goga and Cuza's National Christian Party offers a nationalist government without the Guard's violence. It is "
+        "an alternative for those who want order and alignment with Germany.",
+    "ROM_acquire_fighters":
+        "Our fighter squadrons need modern machines now, not in five years. Buying fighters abroad will close the gap "
+        "while our own factories catch up.",
+    "ROM_medium_bombers":
+        "Twin-engine medium bombers can strike enemy troops, railways and airfields across the front. They are the "
+        "right weapon for a country of Romania's size.",
+    "ROM_iar_80":
+        "The IAR 80 is a modern monoplane fighter designed and built in Brasov. Putting it into large-scale "
+        "production will give our pilots an aircraft to be proud of.",
+    "ROM_cas":
+        "Dive bombers can hit tanks and bunkers with an accuracy no artillery can match. A force of close support "
+        "aircraft will back the army in every offensive.",
+    "ROM_heavy_bombers":
+        "Four-engine bombers would let Romania strike targets deep in enemy territory. It is a symbol of a modern "
+        "power, and a demanding one for our industry.",
+    "ROM_mountain_artillery":
+        "Light guns that can be carried by mules over mountain paths will give the Vanatori de Munte firepower "
+        "wherever they go.",
+    "ROM_modern_at_guns":
+        "Our infantry needs anti-tank guns that can stop modern armour. New designs, built or licensed at home, must "
+        "reach every division.",
+    "ROM_mobile_tank_destroyers":
+        "A low, cheap vehicle carrying a powerful gun could hunt enemy tanks without the cost of a full tank. Our "
+        "engineers have ideas for just such a machine.",
+    "ROM_join_comintern":
+        "Romania will stand with the Soviet Union in its alliance of workers' states. Joining the Comintern ends our "
+        "isolation, but it ends the old Romania too.",
+    "ROM_join_axis":
+        "Germany and Italy are the rising powers of Europe and the enemies of Bolshevism. Joining the Axis may be the "
+        "only way to keep the Soviets out of Bessarabia.",
+    "ROM_join_allies":
+        "With a Western guarantee in hand, Romania can go further and join the Allies in a formal alliance. Our oil "
+        "will be denied to the enemies of the democracies.",
+    "ROM_hunedoara_steel_works":
+        "The Hunedoara ironworks in Transylvania has the ore, the coal and the workforce for much more. New blast "
+        "furnaces will make it the steel heart of the kingdom.",
+    "ROM_invest_in_the_iar":
+        "Industria Aeronautica Romana in Brasov builds aircraft and engines. Investment in its plants will make it "
+        "able to supply the whole air force.",
+    "ROM_handle_the_king":
+        "King Carol's ambitions and his scandals have weakened the throne. A democratic government must find a way to "
+        "limit his power without starting a crisis.",
+    "ROM_force_abdication":
+        "Carol II has lost the trust of the army and the people. Forcing him to abdicate in favour of his son Michael "
+        "would end his reign, though not without turmoil.",
+    "ROM_nuclear_bomb_project":
+        "Scientists abroad speak of a weapon that splits the atom. Romania has uranium in its own mountains, and a "
+        "research programme could bring us into the atomic age.",
+    "ROM_the_maresal":
+        "Romanian engineers have designed the Maresal, a low tank destroyer that could be built in numbers with our "
+        "own industry. It could change the balance on the eastern front.",
+    "ROM_german_romanian_oil_exploitation_company":
+        "A joint company with Germany would develop new wells and refineries in Ploiesti, financed by German capital. "
+        "Our oil would flow to the Reich in greater quantities than ever.",
+    "ROM_demand_transnistria":
+        "Beyond the Dniester lie lands where Romanians have lived for centuries. With German support, Romania can "
+        "press its claim to Transnistria against the Soviet Union.",
+    "ROM_joint_allied_staff_college":
+        "Officers of the Allied armies can train together in a common staff college. Romanian officers will learn the "
+        "methods of the most modern armies in the world.",
+    "ROM_expand_ploiesti_oil_production":
+        "The Ploiesti fields are the richest in Europe outside the Soviet Union. New drilling, pipelines and "
+        "refineries will raise output and the state's revenue with it.",
+    "ROM_king_michaels_coup":
+        "Young King Michael can still save the country by dismissing the government and changing sides. A palace coup "
+        "is a gamble, but the throne may never get another chance.",
+    "ROM_expand_the_university_of_bucharest":
+        "The University of Bucharest trains doctors, chemists and engineers for the whole kingdom. Oil money can "
+        "build it the laboratories a modern research university needs.",
+    "ROM_exploit_the_baita_mines":
+        "The mines of Baita in the Bihor mountains hold rare metals, uranium among them. Developing them could give "
+        "Romania a strategic resource few countries possess.",
+    # Spain (HOI4 1.19's tree)
+    "SPA_a_great_spain":
+        "The Popular Front's victory at the polls has the right in uproar: churches burn, landowners flee and street "
+        "fighting fills the newspapers. Generals, monarchists and Catholics are coming together around one idea - a "
+        "great Spain restored to order.",
+    "SPR_the_popular_front":
+        "Republicans, socialists, communists and anarchist votes have given the Popular Front a narrow victory. Now "
+        "the coalition must govern, carry out its reforms and hold off the conspirators in the barracks.",
+    "SPA_hand_over_the_ceda_campaign_chest":
+        "Gil Robles' Catholic CEDA lost the election, but it still has money and supporters. Handing its campaign "
+        "funds to the plotters in the army gives the conspiracy the means to act.",
+    "SPR_secure_the_guardia_de_asalto":
+        "The Assault Guards were created by the Republic to keep order in the cities, and most of them are loyal. "
+        "Making sure of their officers will give the government a force it can count on when the rising comes.",
+    "SPR_secure_the_guardia_civil":
+        "The Civil Guard polices the countryside and has long been the landowners' instrument. Winning over its "
+        "commanders, or replacing them, could decide whether whole provinces stay with the Republic.",
+    "SPA_negotiate_carlist_support":
+        "The Carlists of Navarre have thousands of drilled Requetes waiting for the order to march. Their price for "
+        "joining the rising is a say in Spain's future and respect for their cause.",
+    "SPR_train_the_union_youth":
+        "The socialist and communist youth have merged into a single organisation with tens of thousands of members. "
+        "Training them in arms will give the Republic a militia ready for the day the generals rise.",
+    "SPA_the_army_of_africa":
+        "The Legion and the Moroccan Regulares are the only battle-hardened troops in the Spanish army. If the Army "
+        "of Africa can be brought across the Strait, the rising will have its hammer.",
+    "SPR_enlarge_the_weapon_caches":
+        "The unions have been hiding rifles in workers' centres and union halls. Enlarging these caches means that "
+        "when the generals strike, the people will not face them empty-handed.",
+    "SPA_secure_the_northern_garrisons":
+        "General Mola is organising the conspiracy in the garrisons of the north, from Pamplona to Burgos and "
+        "Valladolid. Securing them gives the rising a firm base in Old Castile and Navarre.",
+    "SPR_distribute_arms_to_the_people":
+        "The government hesitates to arm the workers, fearing revolution as much as the generals. Handing out rifles "
+        "to the unions now would save the Republic in the first days - and change it for ever.",
+    "SPA_sin_paquito":
+        "Franco keeps his distance from the plot and may never commit to it. The rising can go ahead without him, led "
+        "by Mola, Sanjurjo and the Falange - and the new Spain will not owe him anything.",
+    "SPA_con_paquito":
+        "General Franco commands the respect of the whole officer corps and the loyalty of the Army of Africa. With "
+        "him on board, the rising will have a leader every Nationalist can accept.",
+    "SPR_disband_the_army":
+        "Most officers are suspected of sympathy for the plotters. Dissolving the old army and replacing it with "
+        "workers' militias would strip the generals of their troops, though the Republic would have to build an army "
+        "from nothing.",
+    "SPA_the_phalanx_ascendant":
+        "With the generals divided, the Falange has become the soul of the Nationalist cause. Its blue shirts and its "
+        "programme of national syndicalism will shape the new state.",
+    "SPA_unify_the_nationalist_front":
+        "Falangists, Carlists, monarchists and Catholics all fight under one flag, but they want different things. "
+        "Franco will unite them in a single movement under a single command - his own.",
+    "SPA_supremacy_of_the_communion":
+        "The Traditionalist Communion has given the uprising its most devoted fighters. Now the Carlists demand to "
+        "lead it, in the name of God, the fatherland, the fueros and the king.",
+    "SPR_regional_defense_council_of_aragon":
+        "In Aragon, the anarchist columns have swept away the old authorities and founded their own council. The "
+        "Republic in the east is now a land of collectives and committees.",
+    "SPR_the_anti_fascist_workers_revolution":
+        "The rising has triggered a revolution in the cities, with the POUM and the anarchists taking over factories "
+        "and transport. The workers intend to win the war and the revolution at the same time.",
+    "SPR_maintain_the_second_republic":
+        "Despite the coup, the government in Madrid still stands and the constitution of 1931 remains the law. "
+        "Defending the legal Republic, not a revolution, is the cause that can win friends abroad.",
+    "SPA_bolster_offensive_infrastructure":
+        "The advance on Madrid needs roads, bridges and supply dumps behind the front. Improving them will let the "
+        "columns move faster and hit harder.",
+    "SPA_secure_the_national_defense_council":
+        "The Junta de Defensa Nacional in Burgos is the first government of Nationalist Spain. Making the Falange its "
+        "master will set the course of the new state.",
+    "SPA_the_corpo_truppe_volontarie":
+        "Mussolini is sending whole divisions of so-called volunteers to Spain. The Italian Corps of Volunteer Troops "
+        "brings men, tanks and guns - and a share of the glory Rome expects.",
+    "SPA_the_condor_legion":
+        "Germany's Condor Legion brings modern fighters, bombers, anti-tank guns and instructors. Its pilots will win "
+        "us the skies while testing Berlin's new weapons in combat.",
+    "SPA_save_the_alcazar":
+        "Colonel Moscardo's garrison is holding out in the Alcazar of Toledo against the militias. Diverting the army "
+        "to relieve it will cost time on the road to Madrid, but it will create a legend.",
+    "SPA_consolidate_the_north":
+        "The Republican zone along the Bay of Biscay is cut off from the rest of the Republic. Taking Bilbao, "
+        "Santander and Asturias will give us the heavy industry and the mines of the north.",
+    "SPA_a_methodical_approach":
+        "There will be no reckless gambles. The war will be won province by province, with every gain consolidated "
+        "and every enemy pocket cleared.",
+    "SPA_prepare_the_carlist_insurrection":
+        "The Carlists will not wait for the generals. Their own insurrection, prepared in Navarre and the Basque "
+        "hills, will strike for the king and the faith.",
+    "SPA_head_the_junta_nacional":
+        "The Carlist Junta Nacional will direct the struggle and govern the lands the Requetes liberate. It is the "
+        "first step towards a traditionalist Spain.",
+    "SPA_the_war_in_the_north":
+        "Navarre is the Carlist stronghold, and the Basque Country and Cantabria lie next to it. The war in the north "
+        "is our war, and we will win it first.",
+    "SPR_appropriate_the_means_of_production":
+        "Factories whose owners have fled or joined the rebels have been taken over by their workers. Recognising the "
+        "takeovers will keep the plants running for the war.",
+    "SPR_arm_the_people":
+        "Every worker who wants a rifle should have one. Arming the people, not just the militias, will make every "
+        "town a fortress against the fascists.",
+    "SPR_arm_the_workers_militias":
+        "The workers' militias of the unions and parties fight bravely but with too few weapons. Arming them properly "
+        "is the first duty of a revolutionary government.",
+    "SPR_demand_ministerial_positions":
+        "The workers' organisations carry the burden of the war and must have a voice in the government. Ministers "
+        "from the unions will make sure the revolution is not betrayed.",
+    "SPR_strengthen_the_euzko_gudarostea":
+        "The Basque government has raised its own army, the Euzko Gudarostea, to defend its autonomy. Supporting it "
+        "holds the northern front and keeps the Basques loyal to the Republic.",
+    "SPR_new_leadership":
+        "Largo Caballero's government has failed to organise the war. New leadership, determined to build a "
+        "disciplined state and army, is needed if the Republic is to survive.",
+    "SPR_ensure_loyalty":
+        "Officers who remained loyal to the Republic are few and their soldiers are suspicious of them. Political "
+        "commissars and careful selection will make sure the new army can be trusted.",
+    "SPR_enlist_the_carabineros":
+        "The Carabineros, the customs and border police, stayed largely loyal. Their trained men can form the core of "
+        "new army units.",
+    "SPA_the_fifth_column":
+        "General Mola boasts of four columns marching on Madrid - and a fifth already inside the city. Our "
+        "sympathisers behind the lines will spy, sabotage and wait for the signal.",
+    "SPA_emergency_munitions_corporations":
+        "Ammunition is consumed faster than it can be imported. Emergency munitions corporations, financed by the "
+        "state, will set up new production in our zone.",
+    "SPA_suspend_the_constitution":
+        "The constitution of the Republic is a dead letter in Nationalist Spain. Suspending it formally will give the "
+        "new authorities a free hand to govern by decree.",
+    "SPA_primo_de_rivera_prisoner_exchange":
+        "The Falange's founder, Jose Antonio, sits in a Republican prison in Alicante. Trading prisoners might bring "
+        "him back alive to lead his movement.",
+    "SPA_equipment_shipments":
+        "Germany and Italy are sending ships full of rifles, guns, aircraft and trucks. Organising the shipments "
+        "properly will put them in our soldiers' hands as quickly as possible.",
+    "SPA_martyrdom_for_primo_de_rivera":
+        "Jose Antonio has been executed by the Republic. His death makes him a martyr, and his memory will be used to "
+        "inspire the Nationalist cause.",
+    "SPA_caudillo_of_spain":
+        "Franco will be named head of state and Generalissimo of all the armed forces. The Caudillo will lead the "
+        "Nationalists to victory and rule the Spain that follows.",
+    "SPA_tackle_the_vulnerable_fronts":
+        "Some sectors of our long front are thinly held and could break under an enemy offensive. Strengthening them "
+        "before the enemy finds them will protect our gains.",
+    "SPA_portuguese_aid":
+        "Salazar's Portugal fears a red Spain as much as we do. Its ports, its roads and its volunteers can all help "
+        "the Nationalist cause.",
+    "SPA_contact_the_union_militar_espanola":
+        "The Spanish Military Union is a secret society of right-wing officers. Through it, the Carlists can reach "
+        "sympathisers in every garrison.",
+    "SPA_unite_the_requetes":
+        "The Requete units from Navarre, the Basque Country and Catalonia must be brought under a single command. "
+        "United, the Carlist militia will be a real army.",
+    "SPA_revive_the_spirit_of_the_carlist_wars":
+        "Three times in the last century the Carlists took up arms for their king. Reviving the memory of those wars "
+        "will fill our ranks with volunteers.",
+    "SPR_autogestion":
+        "In the collectivised factories, the workers manage production themselves through their committees. Self- "
+        "management will prove that the economy can run without bosses.",
+    "SPR_the_maximum_concession":
+        "The anarchists will cooperate with the government as far as they can without abandoning their principles. It "
+        "is the maximum concession they are prepared to make.",
+    "SPR_shared_burdens":
+        "In the collectives, the burdens of the war are shared equally. Rationing, work and sacrifice fall on "
+        "everyone alike.",
+    "SPR_international_brigades":
+        "Volunteers from fifty countries are arriving to fight fascism in Spain. Organised into International "
+        "Brigades, they will stand in the defence of Madrid.",
+    "SPR_hinder_nkvd_interference":
+        "Soviet agents are hunting POUM members and anarchists behind the lines. Stopping them is necessary if the "
+        "Republic is to remain its own master.",
+    "SPR_the_stalinist_doctrine":
+        "The Communist Party argues that the war must be won before the revolution. Following its line means "
+        "discipline, a regular army and close ties with Moscow.",
+    "SPR_fortify_the_iron_ring":
+        "Bilbao is surrounded by a ring of fortifications, the Cinturon de Hierro. Completing and manning it could "
+        "make the city impregnable.",
+    "SPR_the_future_of_the_republic":
+        "Negrin's government must decide what kind of Republic it is fighting for. Its programme will shape the war "
+        "effort and the peace that follows.",
+    "SPR_the_popular_army":
+        "The militias are being turned into a regular Popular Army, with mixed brigades, ranks and discipline. It is "
+        "the only way to fight the Nationalists' professional troops.",
+    "SPA_eliminate_the_carlists":
+        "The Carlists have become a threat to the unity of the Nationalist cause. Their leaders must be sidelined and "
+        "their militias placed under army command.",
+    "SPA_establish_the_directory":
+        "A directory of trusted leaders will govern Nationalist Spain and direct the war. It ends the chaos of rival "
+        "committees and juntas.",
+    "SPA_obtain_training_staff":
+        "German and Italian officers can train our new recruits in modern methods. Their help will raise the quality "
+        "of the Nationalist army.",
+    "SPA_doctrinal_advancements":
+        "The war in Spain is a laboratory for new tactics in the air and on the ground. Learning from our allies' "
+        "experience will advance our own doctrine.",
+    "SPA_extol_the_martyrs_of_the_war":
+        "Thousands have died for the Nationalist cause. Monuments, ceremonies and processions in their honour will "
+        "inspire the living to carry on.",
+    "SPA_foment_a_carlist_split":
+        "The Carlists are divided between those who support Franco and those who dream of their own king. Encouraging "
+        "that division will keep them from becoming a rival.",
+    "SPA_the_iberian_pact":
+        "Signing a pact of friendship with Lisbon, each side promising never to attack the other, will secure our "
+        "western border and bind the two Iberian states together.",
+    "SPA_no_compromise_on_carlist_ideals":
+        "The Carlist cause will not be watered down for the sake of alliances. God, the fatherland, the fueros and "
+        "the king - nothing less.",
+    "SPA_the_crusade_against_democracy":
+        "This is not a war but a crusade against liberalism, atheism and revolution. The Requetes march with the "
+        "cross and the rosary.",
+    "SPA_arms_modernization":
+        "The Requetes fight with old rifles and few machine guns. Modern weapons, bought or captured, will make them "
+        "a match for any enemy.",
+    "SPR_seize_public_transport":
+        "Trams, buses and railways in the Republican cities are now run by the unions. Their control of transport "
+        "will keep the cities moving and supply the front.",
+    "SPR_agrarian_collectivization":
+        "Peasants in Aragon, Catalonia and the Levante have collectivised the land of the great estates. Supporting "
+        "the collectives will feed the cities and the front.",
+    "SPR_seize_the_gold_reserves":
+        "Spain's gold reserves, among the largest in the world, sit in the vaults of the Bank of Spain. Whoever "
+        "controls them can pay for the war.",
+    "SPR_subvert_the_stalinists":
+        "The Communist Party is taking over the army and the police on Moscow's orders. Undermining its influence "
+        "will keep the revolution in Spanish hands.",
+    "SPR_secularize_the_new_state":
+        "The Church sided with the rebels. Separating it completely from the state and from education will free Spain "
+        "from its grip.",
+    "SPR_relocate_the_gold_reserves":
+        "Madrid is under siege and the gold reserves are not safe. Shipping them abroad - to Moscow or Paris - will "
+        "keep them out of rebel hands, at a price.",
+    "SPR_reaffirm_the_popular_front_strategy":
+        "Only the unity of all anti-fascist forces can win this war. Reaffirming the Popular Front will keep "
+        "republicans, socialists and communists working together.",
+    "SPR_petition_for_french_aid":
+        "Leon Blum's Popular Front government in Paris is sympathetic but cautious. A direct appeal might open the "
+        "border to arms and volunteers.",
+    "SPR_take_the_initiative":
+        "The Republic has spent the war defending. It is time to strike first, with an offensive that will catch the "
+        "enemy by surprise.",
+    "SPR_no_pasaran":
+        "They shall not pass! Madrid's defenders have stopped the Nationalists at the gates of the capital. Their "
+        "resistance will become the symbol of the whole war.",
+    "SPA_absorb_carlist_remnants":
+        "With the Carlist leadership gone, its followers can be absorbed into the single party. Their energy and "
+        "their militia will serve the new state.",
+    "SPA_a_one_party_state":
+        "Spain will have one party, one movement and one leader. All political activity will pass through the Falange "
+        "Espanola Tradicionalista.",
+    "SPA_expand_conscription":
+        "Volunteers alone cannot win a long war. Conscription across the whole Nationalist zone will provide the "
+        "divisions for the final offensives.",
+    "SPA_safeguard_the_freedom_of_worship":
+        "The Republic burned churches and killed priests. The new Spain will protect the Catholic faith and restore "
+        "it to its place in national life.",
+    "SPA_banish_the_party_leaders":
+        "Rival leaders of the Falange and the Carlists stand in the way of unity. Sending them into exile or prison "
+        "will leave only one voice in Nationalist Spain.",
+    "SPA_integrate_the_requetes":
+        "The Carlist Requetes will be integrated into the national army. Their courage will strengthen it, and the "
+        "army's discipline will tame them.",
+    "SPA_the_latin_bloc":
+        "Spain, Portugal and the Catholic states of Latin America share a language, a faith and a civilisation. "
+        "Together they could form a Latin bloc in world affairs.",
+    "SPA_confirm_the_fueros":
+        "The ancient charters of Navarre and the Basque provinces guaranteed their local liberties. Confirming the "
+        "fueros will reward the regions that rose for the cause.",
+    "SPA_expand_the_requetes":
+        "Every Catholic village in Navarre and beyond can send its young men to the Requetes. Expanding the militia "
+        "will give the Carlists the army they need to win.",
+    "SPA_defenders_of_catholicism":
+        "The Carlist soldier fights first of all for the faith. Proclaiming the Requetes defenders of Catholicism "
+        "will bring the Church and its faithful behind them.",
+    "SPA_the_third_dimension_of_warfare":
+        "Aircraft have changed war for ever. The Carlist cause needs an air arm of its own, trained by foreign "
+        "friends.",
+    "SPR_collectivization_and_workers_control":
+        "Factories, farms and transport are now under workers' control. Coordinating the collectives will turn the "
+        "revolution into a working economy.",
+    "SPR_mujeres_libres":
+        "The anarchist women's organisation Mujeres Libres teaches literacy, trains nurses and fights for women's "
+        "equality. Supporting it will free thousands of women to work and fight.",
+    "SPR_foreign_arms_purchases":
+        "The democracies refuse to sell us arms, but there are dealers everywhere willing to sell for gold. Buying "
+        "abroad will keep our soldiers supplied.",
+    "SPR_masters_of_our_own_fate":
+        "No foreign power will decide the fate of the Spanish revolution. We will win or lose this war on our own "
+        "terms.",
+    "SPR_class_war":
+        "The war is not only against the generals but against the whole class that supports them. Waging class war "
+        "will destroy the old order for good.",
+    "SPR_appropriate_church_riches":
+        "Monasteries, cathedrals and Church estates hold land, gold and art accumulated over centuries. Taking them "
+        "over for the state will help pay for the war and the schools of the new Spain.",
+    "SPR_an_army_of_all_classes":
+        "The Popular Army must draw on every class loyal to the Republic, not just the industrial workers. Peasants, "
+        "clerks and professionals will all serve under the same discipline.",
+    "SPR_crush_the_revolution":
+        "The anarchists and the POUM are fighting a revolution behind our lines while the fascists advance. The "
+        "government will restore its authority in Barcelona and elsewhere, by force if it must.",
+    "SPR_anti_fascist_unity":
+        "Every party that opposes fascism must put aside its quarrels until the war is won. Anti-fascist unity is the "
+        "Republic's only hope.",
+    "SPR_a_frontline_suited_for_intellectuals":
+        "Writers, scientists and artists from all over the world have rallied to the Republic. Giving them a role in "
+        "the war effort, from propaganda to research, turns their talent into strength.",
+    "SPA_develop_all_talent":
+        "The new state needs engineers, scientists and administrators of its own. Scholarships and new institutes "
+        "will develop the talent of every young Spaniard loyal to the regime.",
+    "SPA_regional_agrarian_commissions":
+        "Agricultural production has collapsed during the war. Regional commissions will organise the harvest, set "
+        "prices and bring the land back into production.",
+    "SPA_the_national_syndicalist_state":
+        "The Falange's programme will become the law: vertical syndicates of workers and employers, controlled by the "
+        "state, in place of unions and class struggle.",
+    "SPA_prepare_the_pyrenees_defenses":
+        "France's Popular Front sympathises with the Republic, and the Pyrenees are our only land border with a great "
+        "power. Fortifying the passes will secure the north.",
+    "SPA_fuse_the_parties":
+        "The Falange and the Carlist Communion will be merged by decree into a single party under Franco's "
+        "leadership. Their rivalry will be ended, whether they like it or not.",
+    "SPA_utilize_the_intellectuals":
+        "Traditionalist thinkers and Catholic scholars can give the Carlist cause the ideas it needs to govern. Their "
+        "universities and academies will serve the new order.",
+    "SPA_encourage_local_industrialization":
+        "The Carlist heartlands of Navarre and the Basque country have workshops and small industries. Encouraging "
+        "them will make the regions self-reliant and loyal.",
+    "SPA_militarize_the_masses":
+        "Every Carlist man of fighting age will be trained and armed. The whole traditionalist community will become "
+        "an army in the field.",
+    "SPA_battle_rites":
+        "Mass before battle, the blessing of the flags, the rosary in the trenches - the Requetes fight as crusaders. "
+        "Their rites will steel them for the hardest fighting.",
+    "SPA_a_modern_fighter_fleet":
+        "The skies over Spain have shown how quickly aircraft become obsolete. A modern fighter force is the only way "
+        "to protect our cities and troops.",
+    "SPR_literacy_programs":
+        "Half the peasants in some provinces cannot read. Schools in the collectives and at the front will teach "
+        "them, and an educated people will defend the revolution better.",
+    "SPR_all_must_bear_the_torch":
+        "Every man and woman in the liberated zone has a part to play in the struggle. Labour, training and sacrifice "
+        "will be shared by all.",
+    "SPR_united_under_socialism":
+        "The divisions on the left have cost us dearly. A united socialist movement, with a single programme and "
+        "leadership, will carry the Republic forward.",
+    "SPR_invite_socialist_intellectuals":
+        "Socialist thinkers and scientists from abroad can help build the new society. Inviting them will bring "
+        "knowledge and international support.",
+    "SPR_solidify_government_control":
+        "Militias, committees and regional governments all compete for power. The central government must take "
+        "control of the army, the police and the economy.",
+    "SPR_expand_soviet_aid":
+        "The Soviet Union is the only great power sending us arms in quantity. Expanding the aid programme will bring "
+        "more tanks, aircraft and advisers.",
+    "SPR_strengthen_the_anti_fascist_coalition":
+        "The coalition of republicans, socialists and communists is holding the line. Strengthening it will keep the "
+        "Republic united to the end.",
+    "SPA_strengthen_the_supreme_reality_of_spain":
+        "The Falange speaks of Spain as a supreme reality, a destiny greater than any individual or class. Every "
+        "policy of the state will serve that idea.",
+    "SPA_syndicalize_production":
+        "Industry will be organised in national syndicates, directed by the state for the good of the nation. "
+        "Production will serve Spain, not profit.",
+    "SPA_the_national_and_popular_army_of_spain":
+        "The army that won the war must become the army of the whole nation, trained, equipped and imbued with the "
+        "spirit of the movement.",
+    "SPA_join_the_axis":
+        "Germany and Italy helped us win the war, and their enemies are our enemies. Joining the Axis would repay the "
+        "debt and give Spain a place in the new Europe.",
+    "SPA_national_recovery":
+        "The war has left Spain ruined: towns destroyed, bridges blown and fields untilled. National recovery comes "
+        "before everything else.",
+    "SPA_join_the_allies":
+        "A Spain that has rejected fascism can find its place among the democracies. Joining the Allies would bring "
+        "credit, trade and security.",
+    "SPA_adopt_the_26_points":
+        "The Falange's twenty-six points set out a programme of national syndicalism and imperial ambition. Making "
+        "them the official doctrine of the state gives the regime a creed.",
+    "SPA_encourage_local_mining":
+        "The mountains of the north hold iron, coal and lead. Small local mines, supported by the state, can supply "
+        "the industries of the region.",
+    "SPA_settle_the_succession_question":
+        "The Carlists have their own claimant to the throne, Alfonso Carlos, who is old and childless. Settling the "
+        "succession now will give the movement a king to fight for.",
+    "SPA_cultivate_fanaticism":
+        "A soldier who believes he fights for God fears nothing. Cultivating that faith will give the Carlist army a "
+        "fighting spirit no enemy can match.",
+    "SPR_the_threats_abound":
+        "Fascist Portugal, fascist Italy and Nazi Germany surround the revolution. Its defence must be organised "
+        "against enemies on every side.",
+    "SPR_maintaining_the_fire":
+        "The revolutionary spirit of 1936 must not be allowed to die out. Its flame will be kept alive in the "
+        "collectives, the schools and the militias.",
+    "SPR_wealth_redistribution":
+        "The fortunes of the landowners and industrialists will be shared among the people. Wealth redistribution is "
+        "the heart of the new Spain.",
+    "SPR_land_redistribution":
+        "The great estates of the south have been the curse of rural Spain. Their land will be given to the peasants "
+        "who work it.",
+    "SPR_reeducate_the_bourgeoisie":
+        "The old middle classes must learn to serve the new society. Re-education will win over those who can be won "
+        "and expose those who cannot.",
+    "SPR_soviet_equipment_shipments":
+        "Soviet freighters reach Cartagena with T-26 tanks, Polikarpov fighters and artillery. Organising their "
+        "delivery will put them into action quickly.",
+    "SPR_soviet_military_advisors":
+        "Soviet officers serve as advisers to our commanders and train our tank crews and pilots. Their experience is "
+        "invaluable, though they answer to Moscow.",
+    "SPR_oppose_the_communists":
+        "The Communist Party is taking control of the army and the police on Moscow's orders. The democratic parties "
+        "must stand together to stop it.",
+    "SPR_end_fascism_at_all_costs":
+        "Nothing matters except defeating fascism. Every resource of the Republic, every ally and every sacrifice "
+        "will be thrown into the fight.",
+    "SPR_reprofessionalize_the_military":
+        "Enthusiasm is no substitute for training. Career officers, a regular command structure and proper staff work "
+        "will make the Popular Army a professional force.",
+    "SPR_revive_the_republican_navy":
+        "Most of the fleet stayed loyal to the Republic, but its officers were murdered or fled. Rebuilding the "
+        "navy's command and repairing its ships will let it control the Mediterranean coast.",
+    "SPA_glory_and_wealth_on_the_sea_lanes":
+        "Spain was once the greatest seafaring power in the world. Its glory and its wealth will be won again on the "
+        "ocean.",
+    "SPA_exemplify_the_art_and_science_of_warfare":
+        "The new state will be a model of military science, with academies, research institutes and the finest "
+        "officers in Europe.",
+    "SPA_mandatory_pre_military_training":
+        "Every young man will receive military training before he is called up. The nation will always have a trained "
+        "reserve ready to serve.",
+    "SPA_the_army_of_africa_model":
+        "The Army of Africa won the war with its discipline, its aggressiveness and its mobility. The whole army will "
+        "be rebuilt on its model.",
+    "SPA_fascist_economic_aid":
+        "Our allies in Berlin and Rome can send capital, machinery and engineers to rebuild Spain. Their aid comes "
+        "with conditions, but we cannot rebuild alone.",
+    "SPA_autarky":
+        "Spain will produce what it needs and depend on no foreign power. Autarky will build industries behind tariff "
+        "walls and make the most of our own resources.",
+    "SPA_the_stabilization_plan":
+        "Inflation, shortages and the black market are strangling the economy. A stabilisation plan, backed by "
+        "Western loans, will restore the currency and open Spain to trade.",
+    "SPA_direct_the_universities":
+        "The universities were nests of liberalism and revolution. Placing them under the direction of the movement "
+        "will train a new generation loyal to the state.",
+    "SPA_dictator_for_life":
+        "Franco will hold power for life, answerable only to God and history. The question of who rules Spain is "
+        "settled.",
+    "SPA_restore_the_monarchy":
+        "Spain is a kingdom without a king. Declaring the monarchy restored, with a successor to be named in due "
+        "course, will satisfy the monarchists without giving away power.",
+    "SPA_dios_patria_rey":
+        "God, Fatherland and King - the Carlist motto is now the creed of the state. Traditionalist Spain will be "
+        "governed according to its ancient laws and faith.",
+    "SPR_portuguese_anarchism":
+        "Portuguese anarchists have long looked to their Spanish comrades. Supporting their struggle against Salazar "
+        "would carry the revolution across the border.",
+    "SPR_a_new_way_of_warfare":
+        "The militias fought as no army had fought before. Their experience can be turned into a new way of waging "
+        "war, built on initiative and conviction.",
+    "SPR_freedom_of_thought":
+        "The revolution will not impose a single truth. Freedom of thought and speech, unknown under the old regime, "
+        "will make Spain a beacon of free ideas.",
+    "SPR_collective_recovery_efforts":
+        "With the war over, the collectives will rebuild what was destroyed. Working together, the communes will "
+        "restore the country faster than any state could.",
+    "SPR_expand_the_means_of_production":
+        "New factories, built and run by the workers, will give the revolution the industry it needs to defend "
+        "itself.",
+    "SPR_the_spanish_red_army":
+        "The Popular Army will become a Red Army on the Soviet model, with commissars, motorised divisions and modern "
+        "equipment.",
+    "SPR_soviet_industrial_aid":
+        "Soviet engineers and machinery can help build Spanish industry from the ground up. Their aid will make the "
+        "Republic a modern socialist state.",
+    "SPR_soviet_technological_advancements":
+        "Soviet designs for weapons, tanks and aircraft can be built in Spanish factories. Sharing technology will "
+        "raise our forces to the Soviet standard.",
+    "SPR_fortify_the_central_government":
+        "The central government must have the authority to rule the whole country. Its ministries, its police and its "
+        "army will be strengthened.",
+    "SPR_communists_in_the_government":
+        "The Communist Party has earned its place in the government through its discipline at the front. Its "
+        "ministers will strengthen the war effort.",
+    "SPR_experiences_from_the_civil_war":
+        "Three years of war have taught our officers lessons no academy could. Collecting and studying those "
+        "experiences will shape the army's doctrine.",
+    "SPR_navy_modernization":
+        "The Republican fleet needs new ships, modern guns and trained officers. Modernising it will make Spain a "
+        "naval power again.",
+    "SPA_improve_domestic_naval_facilities":
+        "The yards of Ferrol, Cartagena and Cadiz need modern equipment to build warships. Improving them will give "
+        "Spain a shipbuilding industry worthy of a great power.",
+    "SPA_commerce_protection":
+        "Spain's trade depends on its merchant fleet. Protecting it with cruisers and escorts will keep the sea lanes "
+        "open in war and peace.",
+    "SPA_the_will_to_empire":
+        "The Falange dreams of a new Spanish empire in Africa and beyond. The will to empire will guide our foreign "
+        "policy.",
+    "SPA_all_shall_serve":
+        "Every Spaniard owes service to the nation. Universal service, in the army or in labour, will bind the people "
+        "to the state.",
+    "SPA_motorization":
+        "The Army of Africa marched on foot and in requisitioned trucks. A motorised army will move across Spain's "
+        "vast distances in days instead of weeks.",
+    "SPA_facilitate_pyrenees_freight_transports":
+        "Goods from France and the Axis must cross the Pyrenees. Better roads and railway links through the passes "
+        "will speed up trade and supplies.",
+    "SPA_spanish_austerity":
+        "The state will spend only what it must, and Spaniards will tighten their belts for the sake of recovery. "
+        "Austerity is the price of independence.",
+    "SPA_expand_spanish_bases":
+        "Our allies want bases in Spain for their fleets and air forces. Expanding the ports and airfields will "
+        "benefit both them and us.",
+    "SPA_la_division_azul":
+        "Spanish volunteers will fight against Bolshevism on the eastern front. The Blue Division will repay the debt "
+        "of the civil war and show the world Spanish courage.",
+    "SPA_stamp_out_the_maquis":
+        "Republican guerrillas, the maquis, still hide in the mountains. The Civil Guard and the army will hunt them "
+        "down until the last one is gone.",
+    "SPA_restore_the_empire":
+        "Spain's empire once stretched across the world. Restoring it, piece by piece, is the destiny of the "
+        "traditionalist state.",
+    "SPA_found_the_academia_vazquez_de_mella":
+        "An academy named after the great traditionalist thinker Juan Vazquez de Mella will train scholars and "
+        "statesmen for the new Spain.",
+    "SPR_regional_defense_council_of_iberia":
+        "The council that governed Aragon can be extended to the whole peninsula. A Regional Defence Council of "
+        "Iberia would unite the anarchist movements of Spain and Portugal.",
+    "SPR_communal_military_strategies":
+        "Our militias elect their officers and decide together how to fight. Their communal methods will be developed "
+        "into a coherent military strategy.",
+    "SPR_torchbearers_of_tomorrow":
+        "The young people who grew up in the revolution are its future. Educated and inspired, they will carry the "
+        "torch to the next generation.",
+    "SPR_repair_and_expand_the_dockyards":
+        "The yards of Cartagena and Barcelona were damaged in the war. Repairing and expanding them will let the "
+        "revolution build its own ships.",
+    "SPR_all_must_do_their_part":
+        "Victory belongs to all, and so does the work of rebuilding. Every worker, peasant and soldier will do their "
+        "part.",
+    "SPR_nationalize_the_industry":
+        "The great industries will become the property of the nation. Their profits will fund the rebuilding of "
+        "Spain.",
+    "SPR_red_bulwark_in_the_west":
+        "A communist Spain will be the Soviet Union's bastion in western Europe. Joining Moscow's alliance makes us a "
+        "red bulwark against fascism.",
+    "SPR_soviet_recovery_aid":
+        "Soviet credits and engineers will help rebuild what the war destroyed. Our industry will rise again with "
+        "their help.",
+    "SPR_secure_democratic_principles":
+        "The Republic fought for democracy, and democracy must now be made secure. Free elections, civil rights and "
+        "an independent judiciary will be guaranteed.",
+    "SPR_stabilize_the_nation":
+        "After years of war, Spain needs peace and order. Stabilising the economy and the institutions will let the "
+        "Republic rebuild.",
+    "SPR_restore_higher_education":
+        "The universities were closed or emptied by the war. Reopening them and restoring their faculties will give "
+        "Spain the educated class it needs.",
+    "SPA_a_great_maritime_power":
+        "With modern yards and a growing fleet, Spain can once again be a great maritime power. Battleships and "
+        "carriers will carry the flag across the oceans.",
+    "SPA_unite_iberia":
+        "Portugal and Spain share one peninsula. Uniting them under a single state would complete the work of the "
+        "Catholic Monarchs.",
+    "SPA_reclaim_spanish_africa":
+        "France holds lands in North Africa that Spain has long claimed. The time has come to expand Spanish Africa "
+        "at France's expense.",
+    "SPA_embrace_the_spanish_destiny":
+        "Spain is called to greatness once more. Embracing that destiny will give the nation purpose and pride.",
+    "SPA_equipment_modernization":
+        "The weapons that won the civil war are already outdated. Modern rifles, guns and machine guns will bring the "
+        "army up to European standards.",
+    "SPA_an_armored_corps":
+        "German experience has shown what tanks can do. An armoured corps, built with Axis help, will give Spain a "
+        "modern striking force.",
+    "SPA_improve_cross_country_railways":
+        "Spain's railways run on a broad gauge that stops at the French border, and many lines were wrecked in the "
+        "war. Rebuilding and extending them will knit the country back together.",
+    "SPA_reduce_reliance_on_foreign_resources":
+        "Spain imports oil, rubber and much of its machinery. New mines and synthetic plants will reduce that "
+        "dependence and with it our vulnerability to blockade.",
+    "SPA_invest_in_naval_infrastructure":
+        "The naval bases of Ferrol, Cartagena and Cadiz need dry docks, workshops and modern defences. Investing in "
+        "them is the first step towards a real navy.",
+    "SPA_the_tangiers_enclave":
+        "Tangier is ruled by an international commission, though it lies in the heart of Spanish Morocco. With France "
+        "weakened, Spain can occupy it and end the arrangement.",
+    "SPA_defenses_against_strategic_bombing":
+        "The bombing of Guernica and Barcelona showed what aircraft can do to cities. Anti-aircraft guns, shelters "
+        "and fighter cover will protect our own.",
+    "SPA_strengthen_the_empire":
+        "The colonies in Africa must be developed and defended. Investment, settlers and garrisons will make the "
+        "empire a source of strength.",
+    "SPA_claim_the_french_throne":
+        "The Bourbons of Spain have a claim to the throne of France older than any republic. A traditionalist Spain "
+        "will not let it be forgotten.",
+    "SPA_a_fleet_worthy_of_a_king":
+        "A king needs a fleet to match his crown. New shipyards and new warships will restore Spanish sea power.",
+    "SPR_the_inevitable_counterblow":
+        "The capitalist and fascist powers will not tolerate a free Iberia for long. Their counterblow is inevitable, "
+        "and the communes must be ready for it.",
+    "SPR_faith_in_the_cause":
+        "Our militias have no officers' privileges and no priests, only their belief in freedom. That faith in the "
+        "cause will carry them through the hardest battles.",
+    "SPR_the_peoples_fleet":
+        "The sailors who mutinied against their fascist officers in 1936 saved the fleet for the people. Their ships, "
+        "run by elected committees, will defend the coasts of the revolution.",
+    "SPR_lessons_from_the_civil_war":
+        "The war against the generals taught us how to fight - and how not to. Learning its lessons will make our "
+        "forces ready for the next war.",
+    "SPR_beacon_of_socialism":
+        "A socialist Spain can light the way for the workers of Europe. Universities, research and culture will show "
+        "what a free people can achieve.",
+    "SPR_increase_arms_production":
+        "The workers' state must be able to defend itself. New arms factories will supply the army with everything it "
+        "needs.",
+    "SPR_appeal_for_increased_autonomy":
+        "Moscow's grip on our policies is tightening. Appealing for greater autonomy within the alliance will remind "
+        "the Soviets that Spain is a partner, not a province.",
+    "SPR_provide_for_the_people":
+        "Food, housing and medicine come first. A workers' government must provide for the people who fought for it.",
+    "SPR_subvert_soviet_control":
+        "Soviet advisers and agents have too much influence in Madrid. Quietly removing them from key posts will "
+        "return control of Spain to Spaniards.",
+    "SPR_engineering_advances":
+        "Spanish engineers trained in the Republic's universities can design modern machines and aircraft. Supporting "
+        "their work will speed up our technical progress.",
+    "SPR_a_new_military_academy":
+        "The officers who led the Popular Army need a proper academy to train their successors. A new military school "
+        "will produce a professional, republican officer corps.",
+    "SPR_expand_the_naval_academy":
+        "The naval academy will train officers loyal to the Republic, ending the old dominance of the reactionary "
+        "navy families.",
+    "SPA_absorb_the_portuguese_empire":
+        "With Portugal joined to Spain, its colonies in Africa and Asia should come under Madrid's rule as well.",
+    "SPA_reassert_american_dominance":
+        "Spain gave half of America its language and its faith. A strong Spain can again speak for the Hispanic "
+        "world.",
+    "SPA_artillery_modernization":
+        "Spanish artillery is a museum of foreign models. New guns, built at home or under licence, will give the "
+        "army modern firepower.",
+    "SPA_expand_the_special_forces":
+        "Mountain troops and naval infantry are needed for Spain's rugged terrain and long coasts. Expanding them "
+        "will give the army elite units for every task.",
+    "SPA_support_the_war_industry":
+        "Our allies' wars need materials Spain can supply. Supporting their industry with our ores and our factories "
+        "will bring us credit and favour.",
+    "SPA_expand_the_axis_gold_trade":
+        "Germany pays for our wolfram and iron in gold. Expanding the trade fills the treasury, though it angers the "
+        "Allies.",
+    "SPA_capitalist_economic_aid":
+        "American and British loans can rebuild Spanish industry quickly. Accepting their aid means opening the "
+        "economy to the West.",
+    "SPA_expand_the_slipways":
+        "Larger slipways at Ferrol and Cartagena will allow Spain to build cruisers and even capital ships of its "
+        "own.",
+    "SPA_demand_french_north_africa":
+        "France's collapse leaves its North African colonies without a protector. Spain will demand its share - Oran, "
+        "the Moroccan zone and more.",
+    "SPA_defenses_against_invasion":
+        "Spain's long coastline invites invasion. Coastal batteries, beach defences and mobile reserves will make any "
+        "landing a disaster for the enemy.",
+    "SPA_prosperity_of_the_empire":
+        "Roads, ports and railways in the colonies will make them prosper. A wealthy empire is a loyal empire.",
+    "SPA_retake_the_spanish_netherlands":
+        "The Low Countries were once Spanish possessions. A restored Catholic monarchy may look to claim them again.",
+    "SPA_rebuild_the_battlefleet":
+        "Spain's battleships were lost or worn out in the war. A new battle fleet will be the symbol of the restored "
+        "kingdom.",
+    "SPR_improve_military_infrastructure":
+        "Roads to the front, barracks and supply depots must be built if the communes are to defend themselves. The "
+        "work will be done by the workers themselves.",
+    "SPR_militarize_the_industry":
+        "In a war for survival, every factory must produce for the front. The collectives will turn their workshops "
+        "over to arms production.",
+    "SPR_militarize_the_people":
+        "Every worker will be trained to bear arms. A people in arms needs no standing army to defend its freedom.",
+    "SPR_the_red_tide":
+        "The revolution has survived the war and now it can spread. A red tide will sweep across the peninsula and "
+        "beyond.",
+    "SPR_unify_the_london_bureau":
+        "The independent socialist parties of Europe, outside both the Second and the Third International, can unite "
+        "in the London Bureau. Spain will lead them.",
+    "SPR_exploit_spains_riches":
+        "Spain's mines of mercury, copper, iron and coal were exploited by foreign companies. Now they will serve the "
+        "Spanish people.",
+    "SPR_modernize_the_armed_forces":
+        "The Popular Army needs modern weapons and modern doctrine. Soviet help and our own factories will rebuild it "
+        "from top to bottom.",
+    "SPR_collectivize_industry":
+        "All industry will be organised in collectives under the guidance of the state plan. Private ownership of the "
+        "means of production is abolished.",
+    "SPR_connect_the_country":
+        "Roads and railways will link every province and every collective farm. A connected country is a planned "
+        "country.",
+    "SPR_war_of_independence":
+        "Spain will not be a Soviet satellite. If Moscow will not let us go, we will fight for our independence.",
+    "SPR_rebuild_the_nation":
+        "Towns, bridges and factories destroyed in the war must be rebuilt. The Republic will mobilise all its energy "
+        "for the task.",
+    "SPR_prepare_for_the_next_war":
+        "Fascism has not been defeated in Europe, only in Spain. The Republic must prepare for the war that is surely "
+        "coming.",
+    "SPA_claim_the_aragonese_possessions":
+        "The Crown of Aragon once ruled Sardinia, Sicily and Naples. A great Spain will remember its Mediterranean "
+        "inheritance.",
+    "SPA_retake_the_americas":
+        "The lands of the old Spanish empire in the Americas share our blood and our faith. A resurgent Spain will "
+        "seek to draw them back into its orbit.",
+    "SPA_expand_the_air_branch":
+        "Aircraft decided many battles of the civil war. A larger, modern air force will protect Spain and support "
+        "its army.",
+    "SPA_italian_shipbuilding_expertise":
+        "Italy's shipyards are among the best in the Mediterranean. Their engineers can help us design and build "
+        "modern warships.",
+    "SPA_expand_the_war_industry":
+        "New arms factories will make Spain a supplier to its allies and a power in its own right.",
+    "SPA_improve_living_standards":
+        "Years of hunger and rationing have exhausted the people. Western aid will bring food, housing and work, and "
+        "with them loyalty to the regime.",
+    "SPA_domestic_industrial_developments":
+        "With Western credit, Spain can build modern industries: cars, chemicals, steel. The country will finally "
+        "catch up with Europe.",
+    "SPA_restart_small_scale_shipbuilding":
+        "Even small warships - destroyers, minelayers and patrol craft - will give the navy back its strength and our "
+        "yards their skills.",
+    "SPA_retake_gibraltar":
+        "The Rock has been British since 1704, an insult to every Spaniard. With our allies at our side, Gibraltar "
+        "will be Spanish again.",
+    "SPA_press_the_gibraltar_claim":
+        "The Carlist kingdom will not accept a foreign fortress on Spanish soil. The claim to Gibraltar will be "
+        "pressed by every means.",
+    "SPA_restore_the_iberian_union":
+        "From 1580 to 1640 one king ruled Spain and Portugal. A traditionalist Spain can restore that union.",
+    "SPA_imperial_security":
+        "An empire spread across seas must be defended at sea. A strong fleet and secure bases will protect every "
+        "Spanish possession.",
+    "SPR_fortify_the_pyrenees":
+        "The passes through the Pyrenees are the gates of the peninsula. Fortifying them will keep foreign armies out "
+        "of free Iberia.",
+    "SPR_communal_autarky":
+        "The communes will produce all they need without trade with the capitalist world. Self-sufficiency will make "
+        "the revolution independent.",
+    "SPR_anarchism_knows_no_borders":
+        "The revolution belongs to all humanity, not to one nation. Anarchism knows no borders, and neither will our "
+        "solidarity.",
+    "SPR_arm_the_tide":
+        "The red tide needs rifles, guns and tanks. Our factories will arm it.",
+    "SPR_doctrinal_advancements":
+        "What the militias learned in the civil war will be written into a new doctrine for a revolutionary army.",
+    "SPR_a_red_iberia":
+        "Portugal's workers groan under Salazar's dictatorship. Freeing them would make the whole peninsula red.",
+    "SPR_support_french_communists":
+        "The French Communist Party is one of the strongest in Europe. Supporting it could bring a revolution to "
+        "France as well.",
+    "SPR_slipway_enlargement":
+        "Larger slipways in the yards of Cartagena and Barcelona will let the Republic build a modern fleet.",
+    "SPR_transplant_soviet_industry":
+        "Whole Soviet factories, with their machines and their engineers, can be transplanted to Spain. Our industry "
+        "will grow in years rather than decades.",
+    "SPR_those_who_would_not_help_us":
+        "Britain and France let the Republic die with their non-intervention. We will remember who helped us and who "
+        "did not.",
+    "SPR_enemies_of_our_enemy":
+        "If the democracies will not help us against Moscow, perhaps their enemies will. The enemies of our enemy may "
+        "be useful friends.",
+    "SPR_join_the_global_fight_against_fascism":
+        "The war against fascism is now a world war. The Republic will join the Allies and fight it to the end.",
+    "SPR_wartime_industry":
+        "With war raging in Europe, all industry must be turned to the war effort. Spain will produce for the front.",
+    "SPA_embrace_pan_hispanism":
+        "All Spanish-speaking peoples form one great community. Pan-Hispanic nationalism will make Madrid its "
+        "capital.",
+    "SPA_the_duty_to_work":
+        "In the new Spain, every citizen has a duty to work for the nation. Idleness is a betrayal of the fatherland.",
+    "SPA_ensure_agricultural_self_sufficiency":
+        "Spain must be able to feed itself without imports. Irrigation, fertilisers and new land under the plough "
+        "will make it so.",
+    "SPA_the_spanish_miracle":
+        "With peace, Western capital and Spanish labour, the economy can grow faster than anyone imagined. The "
+        "Spanish miracle is within reach.",
+    "SPA_the_plan_imperial":
+        "The Imperial Plan envisions a navy of battleships, cruisers and carriers fit for a great power. It will take "
+        "years, but Spain will have its fleet.",
+    "SPA_claim_west_africa":
+        "With Gibraltar taken, the African coast to the south lies open. Spain will claim West Africa as part of its "
+        "new empire.",
+    "SPA_the_war_of_vengeance":
+        "Britain has humiliated Spain for two hundred years. The war of vengeance will settle the account.",
+    "SPR_fortify_la_linea_de_la_concepcion":
+        "La Linea faces Gibraltar across the isthmus. Fortifying it will protect the south against British "
+        "interference.",
+    "SPR_fortify_the_coastlines":
+        "Our long coastline is open to invasion from the sea. Batteries and defensive works will protect it.",
+    "SPR_plant_the_seeds_of_revolution":
+        "Anarchist cells in every country of Europe can prepare the ground for revolution. The seeds planted today "
+        "will grow tomorrow.",
+    "SPR_global_defense_council":
+        "The defence councils of the revolution can be linked across the world. A global council will coordinate the "
+        "struggle against capitalism everywhere.",
+    "SPR_against_fascism":
+        "Fascism remains the enemy of every worker. The Republic will support those who fight it, wherever they are.",
+    "SPR_against_trotskyism_and_stalinism":
+        "Neither Trotsky's permanent revolution nor Stalin's terror is our road. Spanish socialism will find its own "
+        "way between them.",
+    "SPR_avenge_foreign_interference":
+        "Italy and Germany sent armies to crush the Republic. The time has come to make them pay.",
+    "SPR_a_red_fleet":
+        "A powerful navy will make a red Spain a power on the seas. Battleships, cruisers and destroyers will fly the "
+        "red flag.",
+    "SPR_the_five_year_plan":
+        "A five-year plan on the Soviet model will set targets for every industry and every collective. Spain will "
+        "become an industrial nation.",
+    "SPR_ideological_allies":
+        "Democratic and socialist governments around the world share our ideals. Building ties with them will end our "
+        "isolation.",
+    "SPR_foreign_industrial_aid":
+        "Friendly governments can send machines, engineers and credits. Their aid will speed up the rebuilding of "
+        "Spanish industry.",
+    "SPR_deal_with_the_devil":
+        "To escape Moscow's grip we may have to deal with anyone - even those we fought against. It is a dangerous "
+        "bargain, but independence is worth it.",
+    "SPR_the_anti_fascist_crusade":
+        "Spain was the first to fight fascism and will be among the last. Our soldiers will carry the fight to the "
+        "fascists' own lands.",
+    "SPR_fuel_for_the_war_machine":
+        "Tanks and aircraft run on fuel Spain must import. New wells, mines and synthetic plants will feed the war "
+        "machine.",
+    # Portugal (HOI4 1.19's tree)
+    "POR_colonial_assimilation_policy":
+        "Portugal's empire stretches from Angola and Mozambique to Goa, Macau and Timor. A policy of assimilation, "
+        "offering citizenship to Africans who adopt Portuguese language and ways, binds the colonies more closely to "
+        "Lisbon.",
+    "POR_continue_the_public_works":
+        "Duarte Pacheco's public works have given Lisbon new roads, ports and stadiums. Carrying the programme on "
+        "across the whole country will modernise Portugal without foreign loans.",
+    "POR_second_navy_reequipment":
+        "The naval programme of the early 1930s gave us new sloops, destroyers and submarines from British yards. A "
+        "second programme will build on it and give the fleet a real presence in the Atlantic.",
+    "POR_army_reorganization":
+        "The army is still organised much as it was in 1918, with too many officers and too little equipment. A "
+        "thorough reorganisation will make it smaller, better armed and better led.",
+    "POR_popular_front":
+        "Republicans, socialists and communists have been driven underground by the New State. If they unite in a "
+        "popular front, as in France and Spain, they could challenge Salazar's rule.",
+    "POR_estado_novo":
+        "Salazar's New State rests on order, the Church, the family and a balanced budget. Consolidating it will give "
+        "Portugal stability after the chaos of the First Republic.",
+    "POR_colonial_army":
+        "The colonies are garrisoned by small forces of European and African troops. A proper colonial army, with its "
+        "own recruitment and officers, will secure the empire against rebels and rivals.",
+    "POR_haven_of_neutrality_macau":
+        "Macau sits beside a China at war, a neutral port where refugees, traders and spies all meet. Protecting its "
+        "neutrality and its people will keep the colony safe and profitable.",
+    "POR_instituto_superior_tecnico":
+        "Lisbon's Instituto Superior Tecnico trains Portugal's engineers. New laboratories and more professors will "
+        "give the country the technical talent it needs to modernise.",
+    "POR_submarine_effort":
+        "Our Delfim-class submarines are few but modern. More boats would make any blockade of our coast or our sea "
+        "lanes costly for an enemy.",
+    "POR_a_powerful_merchant_marine":
+        "An Atlantic nation with an overseas empire lives by its ships. A larger merchant fleet carries our trade, "
+        "supplies the colonies and can be requisitioned in war.",
+    "POR_arsenal_do_alfeite":
+        "The new naval arsenal at Alfeite, across the Tagus from Lisbon, will give the navy modern dry docks and "
+        "workshops. With it, Portugal can repair and build its own warships.",
+    "POR_metropolitan_army":
+        "The army in Europe must be able to defend the homeland against any invader. Modern rifles, artillery and a "
+        "few armoured vehicles will turn it into a real fighting force.",
+    "POR_corpo_do_estado_maior":
+        "A professional general staff will plan the defence of the country and its empire. Officers trained in modern "
+        "staff work are worth more than any number of old generals.",
+    "POR_nation_in_arms":
+        "A people's army, drawn from every class and trained in every town, will defend the republic against reaction "
+        "at home and abroad. The whole nation will learn to bear arms.",
+    "POR_support_the_spanish_republic":
+        "The Spanish Republic is fighting the same reactionary generals and priests who rule us. Weapons and "
+        "volunteers sent across the border can help it survive.",
+    "POR_strict_neutrality_in_the_spanish_civil_war":
+        "Whatever happens in Spain, Portugal must not be dragged into it. Strict neutrality, closely watched by the "
+        "British, keeps the war on the far side of the border.",
+    "POR_support_the_spanish_nationalists":
+        "A red Spain on our border would be a mortal danger to the New State. Quiet help for Franco's Nationalists - "
+        "supplies, transit and volunteers - will make sure it never comes to that.",
+    "POR_a_royal_wedding":
+        "Dom Duarte Nuno, heir of the old royal house, is to marry a Brazilian princess of the Orleans-Braganza line. "
+        "The wedding revives monarchist hopes across the Portuguese world.",
+    "POR_luso_tropicalism":
+        "Some scholars argue that the Portuguese are uniquely able to live alongside other peoples in the tropics. "
+        "Embracing this idea gives the empire a gentler image and a new sense of mission.",
+    "POR_limited_self_rule":
+        "The larger colonies could be given their own assemblies and some control over their budgets. Limited self- "
+        "rule may calm demands for more and make the empire easier to govern.",
+    "POR_restart_investment_into_timor":
+        "Distant Timor has been neglected for decades. New investment in plantations, roads and the port of Dili will "
+        "bring the colony back to life.",
+    "POR_infrastructure_in_angola":
+        "Angola is vast and almost roadless. Railways from the coast to the interior and a modern port at Luanda will "
+        "open its riches to settlement and trade.",
+    "POR_roads_bridges_and_dams":
+        "Portugal still lacks good roads, bridges over its great rivers and the dams to tame them. Building them will "
+        "join the country together and give it cheap electric power.",
+    "POR_ogme":
+        "The army's engineering workshops, the OGME, can repair and build vehicles, guns and equipment. Expanding "
+        "them gives Portugal the start of a domestic arms industry.",
+    "POR_ogma":
+        "The aeronautical workshops at Alverca maintain and assemble the air force's machines. With investment, OGMA "
+        "can begin to build aircraft of its own.",
+    "POR_industrial_modernization":
+        "Portuguese industry is small, old-fashioned and protected by the state. Modern machines and methods, "
+        "introduced gradually, will raise output without upsetting the social order.",
+    "POR_food_industries":
+        "Canned fish, wine, cork and olive oil are what Portugal sells to the world. Modernising these industries "
+        "brings in foreign currency and employs thousands.",
+    "POR_merchant_marine_protection":
+        "Our merchant ships must be protected if they are to sail in wartime. Escort vessels and convoy procedures "
+        "will keep the sea lanes to the colonies open.",
+    "POR_national_cruiser_production":
+        "A cruiser built at Alfeite would be a symbol of national pride and a real asset in the Atlantic. Portuguese "
+        "yards are ready to try.",
+    "POR_standardization":
+        "The army uses rifles, machine guns and guns of a dozen foreign makes. Standardising on a few modern types "
+        "will simplify supply and training.",
+    "POR_staff_wargames":
+        "Exercises on the map, with the staff playing both sides, will test our plans for the defence of the country "
+        "and its islands.",
+    "POR_unify_leftist_youth_wings":
+        "The youth of the left is split between socialists, communists and anarchists. A single organisation will "
+        "give the movement a disciplined and enthusiastic base.",
+    "POR_nationalize_industry":
+        "The great companies that served the dictatorship will pass into public hands. Their profits will build "
+        "schools, hospitals and new factories for the people.",
+    "POR_workers_of_iberia_unite":
+        "The workers of Portugal and Spain share the same peninsula and the same enemies. Uniting their movements "
+        "across the border could bring revolution to all of Iberia.",
+    "POR_visit_the_front":
+        "Officers sent to observe the fighting in Spain will see modern tanks and aircraft at work. Their reports "
+        "will be invaluable to our own army.",
+    "POR_british_investment_in_mines":
+        "Britain buys much of our wolfram and copper. Encouraging British companies to invest in the mines raises "
+        "output and keeps our oldest ally close.",
+    "POR_british_guns":
+        "The British army can supply us with modern rifles, guns and machine guns. Buying from our ally keeps our "
+        "equipment compatible with theirs.",
+    "POR_portuguese_legion":
+        "The Portuguese Legion, a volunteer militia of the New State, can defend the regime against subversion. "
+        "Volunteers from its ranks are already fighting in Spain as the Viriatos.",
+    "POR_revert_the_local_autonomy_policies":
+        "Experiments in autonomy have only encouraged demands for more. Restoring direct rule from Lisbon will put "
+        "the colonies firmly back under the metropolis.",
+    "POR_invest_in_sandalwood_and_coffee_production":
+        "Timor's sandalwood and coffee fetch good prices abroad. Investment in plantations and processing will make "
+        "the colony pay for itself.",
+    "POR_develop_north_angola":
+        "The north of Angola is rich in coffee and diamonds. Roads and railways reaching the interior will bring "
+        "those riches to the ports.",
+    "POR_extraction_industries":
+        "Portugal's own soil holds tungsten, tin, copper and coal. Modern mining methods will extract far more than "
+        "the old workings ever did.",
+    "POR_portuguese_artillery":
+        "Our artillery parks are filled with Great War guns. New pieces, built under licence at home, will give the "
+        "army the firepower it needs.",
+    "POR_military_vehicles":
+        "Trucks and armoured cars built in Portuguese workshops will give the army a measure of mobility and free it "
+        "from foreign suppliers.",
+    "POR_light_aircraft_focus":
+        "Light fighters and trainers are within the reach of our young aircraft industry. Building them at Alverca "
+        "will give the air force a home-built backbone.",
+    "POR_a_new_industry":
+        "With modern machine tools and trained engineers, Portugal can build industries it never had - chemicals, "
+        "steel, electrical goods. A new industrial base is within reach.",
+    "POR_textile_industry":
+        "The mills of the north have spun and woven for centuries. New machinery will let them compete with foreign "
+        "cloth and clothe our own army.",
+    "POR_battleship_effort":
+        "A battleship of our own would make Portugal a naval power of the second rank. It is a great ambition for a "
+        "small country, but the sea has always been our destiny.",
+    "POR_carrier_effort":
+        "Aircraft carriers are the warships of the future. Even a small carrier would give our navy reach across the "
+        "Atlantic and Indian Oceans.",
+    "POR_defend_the_borders":
+        "Our only land border is with Spain, and it has been crossed by invaders before. Fortifications along the "
+        "main roads will make the next crossing a hard one.",
+    "POR_rebuild_the_lines_of_torres_vedras":
+        "The Lines of Torres Vedras stopped Napoleon's army before Lisbon in 1810. Rebuilt with concrete and modern "
+        "guns, they could stop an army again.",
+    "POR_field_maneuvers":
+        "Divisions must learn to move and fight together in the field, not just on parade. Annual manoeuvres will "
+        "turn our regiments into a modern army.",
+    "POR_reorganization_of_the_communist_party":
+        "The Communist Party has survived years of persecution by the political police. Reorganised and led from "
+        "within the country, it is ready to take the lead of the revolution.",
+    "POR_the_iberian_socialist_union":
+        "A union of socialist Portugal and socialist Spain would end centuries of rivalry on the peninsula. Together "
+        "the Iberian peoples will build a new society.",
+    "POR_british_industrial_investments":
+        "British capital built our railways and ports in the last century. Inviting it back to build factories will "
+        "speed up our industrial development.",
+    "POR_observation_mission":
+        "A military mission attached to the Nationalist army will study modern warfare at first hand. What it learns "
+        "will be applied to our own forces.",
+    "POR_strengthen_the_regime":
+        "The New State must be protected against its enemies on the left and the right. A stronger police, a loyal "
+        "press and a disciplined party will keep it secure.",
+    "POR_national_syndicalism":
+        "The blue-shirted National Syndicalists want a more radical, fascist revolution than Salazar's cautious "
+        "state. Giving them a role would bring energy - and danger.",
+    "POR_the_return_of_duarte":
+        "Dom Duarte Nuno, heir to the Portuguese throne, could return from exile with the government's blessing. Many "
+        "in the army and the Church would welcome him.",
+    "POR_develop_south_angola":
+        "The south of Angola has cattle country, minerals and the port of Mocamedes. Developing it completes the "
+        "opening of the colony.",
+    "POR_hydroelectricity":
+        "Our rivers can generate electricity enough for a modern industry. Dams on the Douro, the Tagus and their "
+        "tributaries will bring power to every town.",
+    "POR_military_research_facilities":
+        "Portugal needs its own laboratories and test ranges if it is ever to design its own weapons. Military "
+        "research facilities will gather our best engineers under the army's direction.",
+    "POR_fuzileiros":
+        "Naval infantry can defend our ports and islands and land wherever the empire needs them. Reviving the "
+        "Fuzileiros gives the navy an amphibious arm.",
+    "POR_atlantic_defense_strategy":
+        "The Azores, Madeira and Cape Verde guard the Atlantic routes. A strategy built around defending them makes "
+        "Portugal valuable to any ally.",
+    "POR_tropas_paraquedistas":
+        "Parachute troops can reach the remote corners of the empire in hours instead of weeks. A small paratroop "
+        "force would be a powerful reserve.",
+    "POR_join_the_comintern":
+        "A socialist Portugal must stand with the Soviet Union. Joining the Comintern brings the protection of the "
+        "world's first workers' state.",
+    "POR_the_popular_front_bloc":
+        "All the popular-front governments of Europe could act together against fascism. Portugal can help build that "
+        "bloc.",
+    "POR_they_need_our_help":
+        "The Spanish Republic is losing ground. Our duty to our comrades across the border is clear, whatever the "
+        "risk.",
+    "POR_allow_free_elections":
+        "After years of the New State, Portugal is ready for free elections. Opening the vote to all parties would "
+        "restore democracy and our reputation abroad.",
+    "POR_send_assistance":
+        "The Nationalists need more than our sympathy. Supplies, transport and volunteers will help them finish the "
+        "war quickly.",
+    "POR_the_capital_of_espionage":
+        "Lisbon is full of exiles, diplomats and agents of every power. A capable intelligence service can make use "
+        "of what they bring - and keep an eye on all of them.",
+    "POR_appease_monarchists":
+        "The monarchists are among the regime's firmest supporters. Gestures of respect for the old royal house will "
+        "keep them loyal without restoring the throne.",
+    "POR_ditadura_militar":
+        "The army made the New State possible in 1926 and could take it over again. A military dictatorship would "
+        "replace Salazar's cautious rule with a firmer hand.",
+    "POR_refuse_the_naval_blockade":
+        "The great powers want to blockade Spain with their navies, but our ports are our own. Portugal will decide "
+        "for itself who may use them.",
+    "POR_monarchist_uprising_in_brazil":
+        "Monarchists in Brazil still dream of restoring the Braganza throne in Rio. Encouraging them could create a "
+        "powerful partner across the Atlantic.",
+    "POR_promote_the_monarchist_cause_in_portugal":
+        "Pamphlets, rallies and the support of the Church can make the restoration of the monarchy a popular cause.",
+    "POR_support_a_spanish_monarchy_in_the_war":
+        "The Carlists in Spain fight for a king. Helping them would place a friendly crown on the throne next door.",
+    "POR_portuguese_oil":
+        "Geologists believe there is oil along the Angolan coast. Exploration and drilling could make the empire "
+        "self-sufficient in fuel.",
+    "POR_develop_mozambique":
+        "Mozambique has the ports of Lourenco Marques and Beira, gateways to all of southern Africa. Developing them, "
+        "and the colony behind them, will make it rich.",
+    "POR_advanced_artillery":
+        "Our gun designers and workshops are now able to produce modern artillery of their own. Advanced designs will "
+        "give the army firepower out of proportion to its size.",
+    "POR_armor_focus":
+        "A few tank companies would transform the army's striking power. Light tanks bought or built under licence "
+        "are within our means.",
+    "POR_advanced_light_aircraft":
+        "With experience gained at Alverca, our engineers can design better light aircraft. Modern fighters may "
+        "follow.",
+    "POR_naval_research_institute":
+        "A naval research institute will study ship design, gunnery and navigation for the fleet. Portugal's sailors "
+        "have always led in seamanship; now they will lead in science too.",
+    "POR_endless_sea":
+        "The sea is Portugal's past and its future. A navy that guards every route to the empire will keep that "
+        "endless sea ours.",
+    "POR_regimento_de_comandos":
+        "A commando regiment, trained for raids and the hardest terrain, will be the elite of the army and the "
+        "spearhead of any colonial campaign.",
+    "POR_research_collaboration":
+        "Soviet scientists and engineers can help build Portuguese industry and research. Collaboration will speed up "
+        "our development.",
+    "POR_cooperate_with_french_militants":
+        "French communists and socialists are our natural allies. Cooperation across the Pyrenees will strengthen the "
+        "struggle against fascism everywhere.",
+    "POR_latin_american_communism":
+        "Communist movements in Brazil and across Latin America look to the Portuguese-speaking world for leadership. "
+        "We can provide it.",
+    "POR_protect_chinese_civilians":
+        "Refugees from the war in China are pouring into Macau. Protecting them is a humanitarian duty and wins "
+        "Portugal friends across Asia.",
+    "POR_intervention_in_spain":
+        "The Spanish war will decide the fate of the whole peninsula. Portugal can no longer stand aside.",
+    "POR_securing_the_free_world":
+        "A democratic Portugal belongs with the democracies. Helping to secure the free world will earn us a place "
+        "among the nations that shape the peace.",
+    "POR_iberian_summit":
+        "A summit between the leaders of Portugal and Spain can settle old quarrels and agree on a common policy for "
+        "the peninsula.",
+    "POR_nationalist_intervention":
+        "Open intervention on the side of the Nationalists would end any pretence of neutrality. It would also hasten "
+        "Franco's victory.",
+    "POR_concordat_with_the_holy_see":
+        "A concordat with the Vatican will settle the relations between Church and State. It will give the Church "
+        "back its place in national life and the regime the Church's blessing.",
+    "POR_national_gold_reserves":
+        "Gold flowing into Lisbon from wartime trade can be stored as a national reserve. It will give Portugal "
+        "financial security in an uncertain world.",
+    "POR_camisas_azuis":
+        "The Blue Shirts of the National Syndicalist movement can become the mass party of a new regime. Their "
+        "marches and rallies will mobilise the country.",
+    "POR_mapa_cor_de_rosa":
+        "The old 'pink map' showed a Portuguese Africa from Angola to Mozambique. That dream, abandoned under British "
+        "pressure in 1890, could be revived.",
+    "POR_the_empire_of_brazil":
+        "If Brazil restored its monarchy under a Braganza king, the two crowns could once again be linked across the "
+        "ocean.",
+    "POR_restoration_of_the_monarchy":
+        "The republic has given Portugal twenty-five years of turmoil and dictatorship. Restoring the monarchy under "
+        "Dom Duarte Nuno would return the nation to its traditions.",
+    "POR_assist_the_requetes":
+        "The Carlist Requetes are fighting bravely for God and king in Spain. Weapons and instructors from Portugal "
+        "will help them win their war.",
+    "POR_mechanized_focus":
+        "Infantry carried in armoured vehicles can keep pace with tanks. A mechanised unit or two would make the army "
+        "truly modern.",
+    "POR_jet_research":
+        "Engines without propellers could change air warfare entirely. Portugal's engineers will follow and "
+        "contribute to this new science.",
+    "POR_air_naval_research":
+        "Aircraft that can find and strike ships at sea will be decisive in the Atlantic. Combining our naval and "
+        "aviation research will produce them.",
+    "POR_anti_fascism":
+        "Fascism threatens the workers of every country. Portugal will lead the struggle against it wherever it "
+        "appears.",
+    "POR_our_comrades_overseas":
+        "Communists in the colonies and in Brazil are our comrades. Supporting them spreads the revolution across the "
+        "Portuguese-speaking world.",
+    "POR_join_the_allies":
+        "A democratic Portugal will join the Allies in their struggle. Our ports and islands will become vital bases "
+        "for the democracies.",
+    "POR_honor_anglo_portuguese_alliance":
+        "The alliance with England, signed in 1373, is the oldest in the world. Honouring it in our ally's hour of "
+        "need would be worthy of our history.",
+    "POR_proudly_alone":
+        "Portugal needs no great power to protect it. Proud and alone, the nation will defend its neutrality and its "
+        "empire with its own strength.",
+    "POR_join_the_axis":
+        "Fascist Portugal belongs with the new order in Europe. Joining the Axis would make us a partner of Rome and "
+        "Berlin.",
+    "POR_the_fifth_empire":
+        "Poets and prophets have long spoken of a Fifth Empire, Portugal's destiny to lead the world in spirit. A new "
+        "regime will make the myth its creed.",
+    "POR_recover_the_east_indies":
+        "Portugal once ruled trading posts across the Indies, lost to the Dutch three centuries ago. In a world at "
+        "war, they could be recovered.",
+    "POR_join_the_carlist_fight":
+        "Portuguese volunteers will fight beside the Carlists in Spain. A Carlist victory would give the peninsula a "
+        "Catholic and royal future.",
+    "POR_research_sharing":
+        "Our allies can share their research with us, and we with them. Pooling knowledge will benefit every member "
+        "of the alliance.",
+    "POR_oppose_germany":
+        "Nazi Germany threatens the freedom of every nation in Europe. Portugal will stand openly against it.",
+    "POR_the_eastern_menace":
+        "Japan's expansion threatens Macau and Timor. Portugal must be ready to defend its Asian colonies.",
+    "POR_research_agreements":
+        "Agreements with the Axis powers will give us access to their research. Our scientists will learn from the "
+        "best in the world.",
+    "POR_expand_the_chinese_territories":
+        "China's weakness offers a chance to expand Macau into the surrounding territory. With Axis approval, the "
+        "colony could grow.",
+    "POR_deal_with_the_japanese_threat":
+        "Japan is the last obstacle to Portugal's ambitions in Asia. A war against it, alongside our allies, would "
+        "remove the danger to our colonies.",
+    "POR_recover_brazil":
+        "Brazil was the jewel of the Portuguese crown. A reunion, however unlikely, would make Portugal a great power "
+        "again.",
+    "POR_the_kingdom_reunited":
+        "Portugal and Brazil, crowned by the same royal house, can be united once more. The kingdom of the Braganzas "
+        "will rise again on both sides of the ocean.",
+    "POR_remember_olivenca":
+        "Spain has held Olivenca since 1801, though the treaties of 1815 promised its return. A restored monarchy "
+        "will not forget it.",
+    "POR_the_royal_iberian_alliance":
+        "A Carlist Spain and a royal Portugal could form an alliance of thrones. Together they would defend tradition "
+        "on the peninsula.",
+    "POR_latin_america":
+        "The Portuguese-speaking world extends to Brazil and beyond. Portugal can be the centre of a new Latin bloc.",
+    "POR_deal_with_fascism":
+        "Fascism on the peninsula is a danger to the crown as much as to the republic. A restored Portugal will "
+        "confront it.",
+    "POR_the_communist_threat":
+        "Communism is the greatest danger to our empire and our faith. Portugal must prepare to fight it wherever it "
+        "spreads.",
 }
 for _tree in FOCUS_TREES.values():
     for _f in _tree:
         _f["desc"] = FOCUS_DESC.get(_f["id"], "")
+# the two Spains of the civil war share Spain's tree (HOI4: the breakaway keeps the original tag's tree)
+FOCUS_TREES["Nationalist Spain"] = FOCUS_TREES["Republican Spain"] = FOCUS_TREES["Spain"]
+# Real research rewards for the focuses of the first seven trees (HOI4 add_research_slot / add_tech_bonus):
+# they replace the stand-ins the first conversion used. '_only': research is all the focus does in HOI4.
+FOCUS_RESEARCH = {
+    "ENG_motorized_focus": {"research": [[["motorized_equipment"], 1.0, 1, 0.0]], "_only": True},
+    "ENG_secure_the_imperial_shipping_routes": {"research": [[["ca_tech"], 1.0, 2, 0.0]]},
+    "ENG_tank_focus": {"research": [[["armor"], 1.0, 1, 0.0]], "_only": True},
+    "FRA_artillery_focus": {"research": [[["artillery"], 1.0, 1, 0.0]]},
+    "FRA_bomber_focus": {"research": [[["tactical_bomber"], 1.0, 1, 0.0]], "_only": True},
+    "FRA_capital_ship_focus": {"research": [[["bb_tech", "bc_tech"], 1.0, 2, 0.0]], "_only": True},
+    "FRA_carrier_focus": {"research": [[["cv_tech"], 1.0, 2, 0.0]], "_only": True},
+    "FRA_carrier_planes": {"research": [[["naval_air"], 1.0, 2, 0.0]], "_only": True},
+    "FRA_cas_focus": {"research": [[["cas_bomber"], 1.0, 2, 0.0]], "_only": True},
+    "FRA_extra_research_slot": {"research_slot": 1, "_only": True},
+    "FRA_extra_research_slot_2": {"research_slot": 1, "_only": True},
+    "FRA_fighter_focus": {"research": [[["light_fighter"], 1.0, 1, 0.0]], "_only": True},
+    "FRA_fusiliers_marine": {"research": [[["tp_tech", "marine_tech"], 0.5, 2, 0.0]]},
+    "FRA_heavy_armor_focus": {"research": [[["cat_heavy_armor"], 1.0, 1, 0.0]]},
+    "FRA_heavy_bomber_focus": {"research": [[["cat_strategic_bomber"], 1.0, 2, 0.0]], "_only": True},
+    "FRA_heavy_fighter_focus": {"research": [[["cat_heavy_fighter"], 1.0, 2, 0.0]], "_only": True},
+    "FRA_improved_screen_ships": {"research": [[["ca_tech"], 2.0, 1, 0.0]]},
+    "FRA_light_medium_armor": {"research": [[["cat_light_armor", "cat_medium_armor"], 1.0, 1, 0.0]]},
+    "FRA_mechanized_focus": {"research": [[["cat_mechanized_equipment"], 1.0, 1, 0.0]]},
+    "FRA_naval_bomber_focus": {"research": [[["naval_bomber"], 1.0, 2, 0.0]], "_only": True},
+    "FRA_surface_combat": {"research": [[["dd_tech"], 2.0, 1, 0.0]]},
+    "FRA_undersea_combat": {"research": [[["ss_tech"], 1.0, 2, 0.0]]},
+    "GER_advanced_panzer_research": {"research": [[["cat_medium_armor"], 1.0, 1, 0.0], [["armor"], 0.15, 2, 0.0]]},
+    "GER_aeronautical_research_institute": {"research": [[["air_equipment"], 0.25, 2, 0.0], [["air_equipment"], 0.15, 2, 0.0]]},
+    "GER_all_terrain_military_motorcycle": {"research": [[["military_police_tech"], 0.5, 1, 0.0]]},
+    "GER_artillery_bombardment": {"research": [[["artillery"], 0.5, 2, 0.0], [["infantry_weapons"], 0.5, 1, 0.0]]},
+    "GER_autarky_efforts": {"research": [[["industry"], 1.0, 1, 0.0]], "research_speed": 0.05},
+    "GER_autonomous_organization_todt": {"research": [[["construction_tech"], 0.15, 2, 0.0]]},
+    "GER_blitzkrieg_across_the_pacific": {"research": [[["marine_tech"], 1.0, 1, 0.0], [["tp_tech"], 1.0, 1, 0.0]]},
+    "GER_coal_liquefaction": {"research": [[["synth_resources"], 1.0, 1, 0.0], [["industry"], 0.05, 2, 0.0], [["synth_resources"], 0.15, 2, 0.0]]},
+    "GER_construct_aircraft_carriers": {"research": [[["naval_equipment"], 0.15, 2, 0.0]]},
+    "GER_crossing_the_atlantic": {"research": [[["marine_tech"], 0.75, 1, 0.0]]},
+    "GER_cruiser_warfare": {"research": [[["ca_tech"], 0.5, 1, 0.0], [["naval_equipment"], 0.15, 2, 0.0]]},
+    "GER_develop_heraeus_facilities": {"research_slot": 1, "research": [[["electronics"], 1.0, 1, 0.0]]},
+    "GER_develop_modern_maneuver_warfare": {"research": [[["armor"], 0.15, 2, 0.0]]},
+    "GER_develop_the_knickebein": {"research": [[["radar_tech"], 0.5, 1, 0.0], [["air_equipment"], 0.15, 2, 0.0]]},
+    "GER_dive_bombers": {"research": [[["light_air"], 0.5, 1, 0.0], [["air_equipment"], 0.15, 2, 0.0]]},
+    "GER_employ_philipp_holzmann": {"research": [[["construction_tech"], 0.15, 2, 0.0]]},
+    "GER_establish_buna_werke": {"research": [[["synth_resources"], 1.0, 1, 0.0]]},
+    "GER_establish_the_reichswerke": {"research": [[["excavation_tech"], 1.0, 1, 0.0]]},
+    "GER_establish_the_skijager": {"research": [[["mountaineers_tech"], 0.5, 1, 0.0]]},
+    "GER_expand_kriegsmarinewerft": {"research": [[["bc_tech"], 0.5, 1, 0.0], [["cv_tech"], 1.0, 1, 0.0], [["naval_equipment"], 0.15, 2, 0.0]]},
+    "GER_expand_kummersdorfs_capacity": {"research": [[["cat_heavy_armor"], 1.0, 1, 1.0], [["cat_medium_armor"], 1.0, 1, 0.0], [["armor"], 0.15, 2, 0.0]]},
+    "GER_expand_ss_security_duties": {"research": [[["military_police_tech"], 0.5, 1, 0.0]]},
+    "GER_expand_the_truppenschulen": {"research": [[["support_tech"], 0.75, 2, 0.0]]},
+    "GER_fallschirmjager": {"research": [[["para_tech"], 1.0, 1, 0.0]]},
+    "GER_form_organization_todt": {"research": [[["construction_tech"], 0.15, 2, 0.0]]},
+    "GER_form_the_jagdwaffe": {"research": [[["air_equipment"], 0.15, 2, 0.0]]},
+    "GER_fortify_the_vaterland": {"research": [[["cat_fortification"], 0.5, 2, 0.0]]},
+    "GER_grosskampfschiff_construction": {"research": [[["bb_tech"], 0.5, 1, 0.0], [["naval_equipment"], 0.15, 2, 0.0]]},
+    "GER_high_seas_fleet": {"research": [[["naval_equipment"], 0.15, 2, 0.0]]},
+    "GER_improve_motorized_troops": {"research": [[["armor"], 0.15, 2, 0.0]]},
+    "GER_industrial_expansion": {"research": [[["industry"], 1.0, 1, 0.0], [["industry"], 0.05, 2, 0.0], [["synth_resources"], 0.15, 2, 0.0]]},
+    "GER_innovative_warfare": {"research": [[["armor", "artillery", "naval_equipment", "air_equipment"], 1.0, 1, 2.0]]},
+    "GER_invest_in_vereinigte_stahlwerke": {"research": [[["excavation_tech"], 1.0, 1, 0.0]]},
+    "GER_marinestosstrupp": {"research": [[["marine_tech"], 1.0, 1, 0.0]]},
+    "GER_nationalize_ford_factories": {"research": [[["cat_mechanized_equipment"], 0.5, 1, 0.0], [["motorized_equipment"], 0.15, 2, 0.0], [["armor"], 0.1, 2, 0.0]]},
+    "GER_operation_weserubung": {"research": [[["tp_tech"], 1.0, 1, 2.0]]},
+    "GER_panzergrenadier": {"research": [[["cat_mechanized_equipment"], 1.0, 1, 1.0]]},
+    "GER_panzerschiff_raiders": {"research": [[["ca_tech"], 0.5, 1, 0.0]]},
+    "GER_plenipotentiary_of_armaments": {"research": [[["construction_tech"], 0.15, 2, 0.0]]},
+    "GER_plenipotentiary_of_the_four_year_plan": {"research": [[["excavation_tech"], 0.15, 2, 0.0], [["industry"], 0.15, 2, 0.0], [["excavation_tech"], 1.0, 1, 2.0]]},
+    "GER_prioritize_the_four_year_plan": {"research": [[["excavation_tech"], 0.05, 2, 0.0], [["industry"], 0.05, 2, 0.0]]},
+    "GER_rocketry_innovations": {"research": [[["rocketry"], 0.5, 1, 0.0]]},
+    "GER_seize_foreign_industries": {"research": [[["excavation_tech"], 0.5, 1, 0.0]]},
+    "GER_stormtroopers": {"research": [[["infantry_weapons"], 0.5, 1, 0.0]]},
+    "GER_subsidize_hoesch_benzin": {"research": [[["synth_resources"], 1.0, 1, 0.0]]},
+    "GER_tactical_bombers": {"research": [[["medium_air"], 0.5, 1, 0.0], [["air_equipment"], 0.15, 2, 0.0]]},
+    "GER_the_four_year_plan": {"research": [[["industry"], 1.0, 1, 0.0]]},
+    "GER_torpedobomber": {"research": [[["air_equipment"], 0.15, 2, 0.0]]},
+    "GER_total_control_over_domestic_affairs": {"research_speed": 0.1},
+    "GER_u_boat_efforts": {"research": [[["ss_tech"], 1.0, 1, 0.0], [["naval_equipment"], 0.15, 2, 0.0]]},
+    "GER_uralbomber_program": {"research": [[["heavy_air"], 0.5, 1, 0.0], [["air_equipment"], 0.15, 2, 0.0]]},
+    "GER_uranverein": {"research": [[["nuclear"], 1.0, 1, 0.0]]},
+    "GER_wirtschaftswunder": {"research": [[["industry"], 1.0, 1, 0.0]]},
+    "ITA_a_bandits_war": {"research": [[["motorized_equipment", "recon_tech"], 0.5, 2, 0.0]]},
+    "ITA_air_innovations_bba": {"research": [[["light_fighter"], 0.5, 1, 0.0]]},
+    "ITA_bersaglieri": {"research": [[["cat_special_forces_generic"], 0.75, 2, 0.0]]},
+    "ITA_brescia_small_arms_industry": {"research": [[["infantry_weapons"], 0.75, 1, 0.0]]},
+    "ITA_cacciatorpediniere_di_scorta": {"research": [[["dd_tech"], 1.0, 1, 0.0]]},
+    "ITA_caligulas_pride": {"research": [[["bb_tech", "bc_tech"], 1.0, 1, 2.0]]},
+    "ITA_citta_dell_aria": {"research": [[["air_equipment"], 0.25, 3, 0.0]]},
+    "ITA_cruiser_submarines": {"research": [[["ss_tech"], 1.0, 1, 0.0]]},
+    "ITA_divisioni_alpine": {"research": [[["mountaineers_tech"], 1.0, 1, 0.0]]},
+    "ITA_expand_national_universities": {"research_slot": 1, "_only": True},
+    "ITA_fanti_dell_aria": {"research": [[["para_tech"], 1.0, 1, 0.0]]},
+    "ITA_ferrea_mole_ferreo_cuore": {"research": [[["armor"], 1.0, 2, 0.0]]},
+    "ITA_forza_navale_especiale": {"research": [[["marine_tech", "tp_tech"], 1.0, 1, 0.0]]},
+    "ITA_increase_artillery_production": {"research": [[["artillery"], 0.5, 2, 0.0]]},
+    "ITA_incrociatori_leggeri": {"research": [[["ca_tech"], 1.0, 1, 0.0]]},
+    "ITA_incrociatori_pesanti": {"research": [[["ca_tech"], 1.0, 1, 0.0]]},
+    "ITA_industria_della_gomma_sintetica": {"research": [[["cat_synth_oil"], 0.5, 2, 0.0]]},
+    "ITA_italian_tankettes": {"research": [[["cat_light_armor"], 1.0, 1, 0.0]]},
+    "ITA_joint_military_programs": {"research": [[["light_air"], 0.5, 2, 0.0], [["cat_medium_armor"], 0.5, 2, 0.0]]},
+    "ITA_mare_nostrum_bba": {"research": [[["heavy_air"], 1.0, 1, 2.0]]},
+    "ITA_midget_submarines": {"research": [[["ss_tech"], 1.0, 1, 0.0]]},
+    "ITA_milan_comms_industry": {"research": [[["radar_tech"], 1.0, 1, 0.0]]},
+    "ITA_milizia_marittima_di_artiglieria": {"research": [[["artillery"], 1.0, 1, 0.0]]},
+    "ITA_naval_air_coordination": {"research": [[["naval_bomber"], 1.0, 2, 0.0]]},
+    "ITA_navi_da_battaglia": {"research": [[["bb_tech"], 1.0, 1, 0.0]]},
+    "ITA_proper_carriers": {"research": [[["cv_tech"], 1.0, 1, 0.0]]},
+    "ITA_redirect_alfa_romeo_production": {"research": [[["motorized_equipment", "light_air"], 0.5, 2, 0.0]]},
+    "ITA_reggianes_exports": {"research": [[["air_equipment"], 0.5, 1, 0.0]]},
+    "ITA_sea_wolves_bba": {"research": [[["ss_tech"], 1.0, 1, 0.0]]},
+    "ITA_self_propelled_guns": {"research": [[["artillery"], 0.5, 3, 0.0]]},
+    "ITA_specialization": {"research": [[["air_equipment"], 0.5, 2, 0.0]]},
+    "ITA_standardization": {"research": [[["tactical_bomber", "light_fighter", "cat_strategic_bomber"], 0.75, 1, 0.0]]},
+    "ITA_the_king_of_the_skies": {"research": [[["heavy_air"], 1.0, 1, 2.0]]},
+    "ITA_thermojet_research": {"research": [[["air_equipment"], 1.0, 1, 0.0], [["rocketry"], 1.0, 1, 1.0]]},
+    "POL_a_cruiser_navy": {"research": [[["ca_tech"], 1.0, 1, 0.0]], "_only": True},
+    "POL_additional_research_slot1": {"research_slot": 1},
+    "POL_additional_research_slot2": {"research_slot": 1},
+    "POL_anti_tank_guns": {"research": [[["cat_anti_tank"], 1.0, 1, 0.0]], "_only": True},
+    "POL_army_modernisation": {"research": [[["infantry_weapons"], 1.0, 1, 0.0]]},
+    "POL_artillery_modernisation": {"research": [[["artillery"], 1.0, 1, 0.0]], "_only": True},
+    "POL_atomic_physics_institute": {"research": [[["nuclear"], 0.5, 1, 0.0]]},
+    "POL_attract_foreign_motors": {"research": [[["motorized_equipment"], 1.0, 1, 0.0]]},
+    "POL_central_region_strategy": {"research": [[["industry"], 1.0, 1, 0.0]]},
+    "POL_coastal_defense": {"research": [[["ss_tech"], 1.0, 1, 0.0], [["dd_tech"], 1.0, 1, 0.0]], "_only": True},
+    "POL_cruiser_tank_experiments": {"research": [[["cat_medium_armor"], 1.0, 1, 0.0]], "_only": True},
+    "POL_expand_gdynia_seaport": {"research_speed": 0.05},
+    "POL_fighter_modernisation": {"research": [[["light_fighter"], 1.0, 1, 0.0]]},
+    "POL_heavy_fighter_concept": {"research": [[["cat_heavy_fighter"], 1.0, 1, 0.0]]},
+    "POL_import_submarine_technology": {"research": [[["ss_tech"], 1.0, 1, 0.0]], "_only": True},
+    "POL_integrate_gdansk_industries": {"research_speed": 0.05},
+    "POL_invest_anti_air": {"research": [[["cat_anti_air"], 0.5, 3, 0.0]], "_only": True},
+    "POL_light_bomber_focus": {"research": [[["cas_bomber"], 1.0, 1, 0.0]]},
+    "POL_medium_bomber_focus": {"research": [[["tactical_bomber"], 1.0, 1, 0.0]]},
+    "POL_modernising_the_cavalry": {"research": [[["motorized_equipment"], 2.0, 1, 0.0]], "_only": True},
+    "POL_naval_bomber_experiments": {"research": [[["naval_bomber"], 1.0, 1, 0.0]]},
+    "POL_promote_chemical_industry": {"research": [[["synth_resources"], 1.0, 1, 0.0]]},
+    "POL_rocket_development": {"research": [[["rocketry"], 0.75, 2, 0.0]]},
+    "POL_standardisation_of_equipment": {"research": [[["infantry_weapons"], 1.0, 1, 0.0]]},
+    "POL_strike_force": {"research": [[["ca_tech"], 0.75, 2, 0.0], [["ca_tech"], 1.0, 1, 0.0]]},
+    "POL_study_foreign_built_ships": {"research": [[["dd_tech"], 0.75, 2, 0.0]], "_only": True},
+    "POL_study_foreign_tanks": {"research": [[["armor"], 1.0, 1, 0.0]], "_only": True},
+    "POL_the_bombe": {"research": [[["computing_tech"], 1.0, 1, 0.0]], "_only": True},
+    "POL_the_cyclometer": {"research": [[["encryption_tech", "decryption_tech"], 1.0, 1, 0.0]]},
+    "POL_the_four_year_plan": {"research": [[["construction_tech"], 1.0, 1, 0.0]]},
+    "SOV_an_oceangoing_navy": {"research": [[["bb_tech"], 1.0, 2, 0.0]]},
+    "SOV_expand_the_morskaya_aviatsiya": {"research": [[["cv_tech", "naval_air"], 1.0, 2, 0.0]]},
+    "SOV_expand_the_red_fleet": {"research": [[["naval_equipment"], 1.0, 2, 0.0]]},
+    "SOV_ground_support": {"research": [[["light_fighter", "cas_bomber"], 0.75, 2, 0.0]]},
+    "SOV_increase_aircraft_production": {"research": [[["light_air"], 1.0, 2, 0.0]], "_only": True},
+    "SOV_industrial_modernization": {"research": [[["industry"], 1.0, 1, 2.0]]},
+    "SOV_leningrad_polytechnical_institute": {"research_slot": 1, "_only": True},
+    "SOV_long_range_aircraft": {"research": [[["cat_heavy_fighter", "tactical_bomber", "cat_strategic_bomber"], 0.75, 2, 0.0]]},
+    "SOV_long_range_raiders": {"research": [[["ss_tech"], 1.0, 1, 2.0]]},
+    "SOV_no_time_for_peace": {"research": [[["nuclear"], 0.5, 1, 0.0], [["rocketry"], 0.5, 1, 0.0]]},
+    "SOV_offensive_maritime_strategy": {"research": [[["ca_tech"], 1.0, 1, 0.0], [["bc_tech"], 2.0, 1, 0.0]]},
+    "SOV_optimize_production_lines": {"research": [[["cat_production"], 1.0, 2, 0.0]]},
+    "SOV_pc_of_mechanical_engineering": {"research": [[["motorized_equipment", "infantry_weapons"], 1.0, 2, 0.0]]},
+    "SOV_pc_of_mortar_armament": {"research": [[["artillery"], 0.75, 2, 0.0]]},
+    "SOV_reorganize_the_pc_of_heavy_industry": {"research": [[["industry", "electronics"], 1.0, 2, 0.0]]},
+    "SOV_shift_to_armaments_production": {"research": [[["infantry_weapons"], 1.0, 2, 0.0]]},
+    "SOV_socialist_emulation": {"research_speed": 0.02},
+    "SOV_socialist_realism": {"research_speed": 0.02},
+    "SOV_soviet_artillery": {"research": [[["artillery"], 0.75, 2, 2.0]]},
+    "SOV_soviet_atomic_bomb_project": {"research": [[["nuclear"], 1.0, 1, 1.0]]},
+    "SOV_submarine_warfare": {"research": [[["ss_tech"], 1.0, 1, 0.0]]},
+    "SOV_superior_war_machines": {"research": [[["armor"], 0.5, 2, 0.0]]},
+    "SOV_surface_warfare": {"research": [[["dd_tech"], 1.0, 1, 0.0]]},
+    "SOV_synthetic_rubber": {"research": [[["cat_synth_rubber"], 0.75, 2, 0.0]]},
+    "SOV_the_fight_for_the_pacific": {"research": [[["cv_tech", "bc_tech", "bb_tech"], 1.0, 2, 0.0]]},
+    "SOV_the_means_to_wage_war": {"research": [[["support_tech"], 0.5, 2, 0.0]]},
+    "SOV_the_ussr_academy_of_sciences": {"research_slot": 1},
+    "SOV_they_will_know_fear": {"research": [[["armor"], 1.0, 1, 0.0]]},
+    "SOV_third_five_year_plan": {"research": [[["construction_tech"], 0.75, 2, 0.0]]},
+    "UK_secret_focus": {"research": [[["rocketry"], 0.5, 1, 0.0], [["nuclear"], 0.5, 1, 0.0]]},
+    "bomber_command_focus": {"research": [[["cat_strategic_bomber", "tactical_bomber"], 1.0, 2, 0.0]]},
+    "capital_ships_effort": {"research": [[["bc_tech", "bb_tech", "cv_tech"], 1.0, 1, 2.0]]},
+    "coastal_command_focus": {"research": [[["naval_bomber", "cas_bomber"], 1.0, 2, 0.0]]},
+    "cruiser_effort": {"research": [[["ca_tech"], 1.0, 1, 2.0]], "_only": True},
+    "crypto_bomb_focus": {"research": [[["decryption_tech", "computing_tech"], 1.0, 3, 0.0]]},
+    "destroyer_effort": {"research": [[["dd_tech"], 1.0, 1, 2.0]], "_only": True},
+    "fighter_command_focus": {"research": [[["light_fighter", "cat_heavy_fighter"], 1.0, 2, 0.0]]},
+    "maud_focus": {"research": [[["nuclear"], 0.75, 1, 0.0]]},
+    "radar_focus": {"research": [[["radar_tech"], 1.0, 1, 0.0]]},
+    "submarine_effort": {"research": [[["ss_tech"], 1.0, 1, 2.0]], "_only": True},
+    "uk_amphibious_focus": {"research": [[["marine_tech"], 1.0, 1, 0.0], [["tp_tech"], 1.0, 2, 0.0]], "_only": True},
+    "uk_battleship_focus": {"research": [[["bb_tech"], 1.0, 2, 0.0]]},
+    "uk_carrier_focus": {"research": [[["cv_tech"], 1.0, 2, 0.0]]},
+    "uk_colonial_focus": {"research_speed": 0.07},
+    "uk_destroyer_focus": {"research": [[["dd_tech"], 1.0, 2, 0.0]], "_only": True},
+    "uk_extra_tech_slot": {"research_slot": 1, "_only": True},
+    "uk_industrial_focus": {"research": [[["industry"], 1.0, 2, 0.0]], "_only": True},
+}
+for _f in {id(f): f for t in FOCUS_TREES.values() for f in t}.values():
+    _r = FOCUS_RESEARCH.get(_f["id"])
+    if _r:
+        if _r.get("_only"):
+            _f["reward"] = {}     # the stand-in goes: research was all this focus did
+        _f["reward"].update({k: v for k, v in _r.items() if k != "_only"})
 
 AI_FOCUS_ORDER = {
     "German Reich": ["GER_the_triumphant_will", "GER_the_four_year_plan", "GER_remilitarize_the_rhineland", 
@@ -4159,8 +6821,72 @@ AI_FOCUS_ORDER = {
         "POL_expand_gdynia_seaport", "POL_second_man_of_the_state", "POL_invest_in_the_old_polish_region", 
         "POL_modernize_congressional_factories", "POL_warsaw_main_railway_station", "POL_join_allies", 
         "POL_plan_west", "POL_the_prusya_line", "POL_the_prusya_army", "POL_hel_fortified_area", 
-        "POL_expand_poznan_forts", "POL_silesia_fortified_area"]
+        "POL_expand_poznan_forts", "POL_silesia_fortified_area"],
+    "Yugoslavia": [
+        "YUG_western_focus", "YUG_industrialization_program", "YUG_friendship_treaty_with_italy", "YUG_attract_axis_capital",
+        "YUG_expand_the_mining_industry", "YUG_develop_civilian_industry", "YUG_evolution", "YUG_army_modernization",
+        "YUG_mountain_brigades", "YUG_modernize_the_air_force", "YUG_purchase_foreign", "YUG_license_production",
+        "YUG_fighter_license", "YUG_rare_minerals_exploitation", "YUG_establish_the_banovina_of_croatia", "YUG_ban_slovene_nationalist_parties",
+        "YUG_concessions_for_macedonians", "YUG_small_arms", "YUG_domestic_artillery_production", "YUG_expand_the_serbian_shipyards",
+        "YUG_coastal_defense", "YUG_anti_tank_defenses", "YUG_independent_engineer_regiments", "YUG_invite_german_military_mission",
+        "YUG_motorize_the_cavalry", "YUG_expand_the_university_of_zagreb", "YUG_join_axis", "YUG_integrated_rail_network",
+        "YUG_improve_light_industry", "YUG_end_the_regency", "YUG_royal_wedding", "YUG_join_allies",
+        "YUG_develop_slovenian_industry", "YUG_local_self_management", "YUG_expand_the_university_of_ljubljana", "YUG_expand_the_sarajevo_arsenals",
+        "YUG_motorized_logistics", "YUG_armored_cavalry", "YUG_tank_conversions", "YUG_army_maneuvers",
+        "YUG_supremacy_of_defense", "YUG_artillery_regiments",
+    ],
+    "Romania": [
+        "ROM_preserve_greater_romania", "ROM_army_maneuvers", "ROM_expand_the_air_force", "ROM_civil_works",
+        "ROM_agrarian_reform", "ROM_local_development", "ROM_army_war_college", "ROM_danubian_transport_network",
+        "ROM_malaxa", "ROM_institute_royal_dictatorship", "ROM_revise_the_constitution", "ROM_crack_down_on_extremism",
+        "ROM_flexible_foreign_policy", "ROM_air_superiority", "ROM_expand_the_galati_shipyards", "ROM_trade_treaty_with_germany",
+        "ROM_iar_80", "ROM_appoint_allied_friendly_government", "ROM_cas", "ROM_royal_guards_divisions",
+        "ROM_the_zb_53", "ROM_vanatori_de_munte", "ROM_hunedoara_steel_works", "ROM_appoint_german_friendly_government",
+        "ROM_invite_german_advisors", "ROM_iron_guard", "ROM_force_abdication", "ROM_join_axis",
+        "ROM_the_armored_division", "ROM_expand_ploiesti_oil_production", "ROM_german_romanian_oil_exploitation_company", "ROM_expand_the_university_of_bucharest",
+        "ROM_acquire_modern_tanks", "ROM_invest_in_the_iar", "ROM_artillery_modernization", "ROM_mobile_tank_destroyers",
+        "ROM_mountain_artillery", "ROM_coastal_defense_navy", "ROM_modern_destroyers", "ROM_the_maresal",
+    ],
+    "Spain": [
+        "SPA_a_great_spain", "SPA_hand_over_the_ceda_campaign_chest", "SPA_negotiate_carlist_support", "SPA_the_army_of_africa",
+        "SPA_secure_the_northern_garrisons", "SPA_foment_a_carlist_split", "SPA_con_paquito", "SPA_unify_the_nationalist_front",
+        "SPA_consolidate_the_north", "SPA_save_the_alcazar", "SPA_martyrdom_for_primo_de_rivera", "SPA_caudillo_of_spain",
+        "SPA_extol_the_martyrs_of_the_war", "SPA_banish_the_party_leaders", "SPA_safeguard_the_freedom_of_worship", "SPA_fuse_the_parties",
+        "SPA_a_methodical_approach", "SPA_portuguese_aid", "SPA_tackle_the_vulnerable_fronts", "SPA_expand_conscription",
+        "SPA_integrate_the_requetes", "SPA_national_recovery", "SPA_adopt_the_26_points", "SPA_prepare_the_pyrenees_defenses",
+        "SPA_autarky", "SPA_direct_the_universities", "SPA_dictator_for_life", "SPA_stamp_out_the_maquis",
+        "SPA_la_division_azul", "SPA_the_tangiers_enclave", "SPA_the_national_and_popular_army_of_spain", "SPA_the_army_of_africa_model",
+        "SPA_equipment_modernization", "SPA_motorization", "SPA_reduce_reliance_on_foreign_resources", "SPA_invest_in_naval_infrastructure",
+        "SPA_expand_the_slipways", "SPA_restart_small_scale_shipbuilding", "SPA_the_plan_imperial", "SPA_artillery_modernization",
+        "SPA_defenses_against_strategic_bombing", "SPA_defenses_against_invasion", "SPA_join_the_axis", "SPA_fascist_economic_aid",
+        "SPA_facilitate_pyrenees_freight_transports", "SPA_improve_cross_country_railways", "SPA_support_the_war_industry", "SPA_expand_the_war_industry",
+        "SPA_the_duty_to_work", "SPA_the_iberian_pact", "SPA_an_armored_corps", "SPA_join_the_allies",
+        "SPA_the_stabilization_plan", "SPA_expand_spanish_bases", "SPA_capitalist_economic_aid", "SPA_improve_living_standards",
+        "SPA_domestic_industrial_developments", "SPA_the_spanish_miracle", "SPA_spanish_austerity",
+    ],
+    "Republican Spain": [
+        "SPR_the_popular_front", "SPR_secure_the_guardia_de_asalto", "SPR_train_the_union_youth", "SPR_enlarge_the_weapon_caches",
+        "SPR_distribute_arms_to_the_people", "SPR_disband_the_army", "SPR_maintain_the_second_republic", "SPR_new_leadership",
+        "SPR_the_future_of_the_republic", "SPR_petition_for_french_aid", "SPR_reaffirm_the_popular_front_strategy", "SPR_crush_the_revolution",
+        "SPR_relocate_the_gold_reserves", "SPR_strengthen_the_euzko_gudarostea", "SPR_fortify_the_iron_ring", "SPR_ensure_loyalty",
+        "SPR_enlist_the_carabineros", "SPR_the_popular_army", "SPR_take_the_initiative", "SPR_no_pasaran",
+        "SPR_strengthen_the_anti_fascist_coalition", "SPR_a_frontline_suited_for_intellectuals", "SPR_oppose_the_communists", "SPR_fortify_the_central_government",
+    ],
+    "Portugal": [
+        "POR_estado_novo", "POR_continue_the_public_works", "POR_instituto_superior_tecnico", "POR_second_navy_reequipment",
+        "POR_support_the_spanish_nationalists", "POR_colonial_assimilation_policy", "POR_roads_bridges_and_dams", "POR_portuguese_legion",
+        "POR_arsenal_do_alfeite", "POR_a_powerful_merchant_marine", "POR_army_reorganization", "POR_observation_mission",
+        "POR_strengthen_the_regime", "POR_corpo_do_estado_maior", "POR_ogme", "POR_appease_monarchists",
+        "POR_food_industries", "POR_merchant_marine_protection", "POR_metropolitan_army", "POR_ogma",
+        "POR_the_capital_of_espionage", "POR_concordat_with_the_holy_see", "POR_textile_industry", "POR_portuguese_artillery",
+        "POR_military_research_facilities", "POR_national_gold_reserves", "POR_standardization", "POR_submarine_effort",
+        "POR_extraction_industries", "POR_colonial_army", "POR_national_cruiser_production", "POR_atlantic_defense_strategy",
+        "POR_staff_wargames", "POR_hydroelectricity", "POR_infrastructure_in_angola", "POR_proudly_alone",
+        "POR_develop_north_angola", "POR_develop_south_angola", "POR_portuguese_oil", "POR_fuzileiros",
+        "POR_naval_research_institute",
+    ],
 }
+AI_FOCUS_ORDER["Nationalist Spain"] = AI_FOCUS_ORDER["Spain"]
 
 FOCUS_NAMES = {0: "Balanced", 1: "Infantry", 2: "Armor", 3: "Motorized"}
 
@@ -4175,12 +6901,12 @@ NATION_COLORS_256 = {
     "Denmark": 167, "Estonia": 68, "Latvia": 94, "Lithuania": 148, "Netherlands": 208, "Belgium": 186,
     "Luxembourg": 80, "Switzerland": 203, "Austria": 230,
     "Czechoslovakia": 37, "Hungary": 173, "Romania": 220, "Yugoslavia": 61, "Bulgaria": 65,
-    "Greece": 117, "Turkey": 137
+    "Greece": 117, "Turkey": 137, "Republican Spain": 97
 }
 
 
 def nation_pair(data):
-    return NATION_PAIR_BASE + ALL_NATIONS_DATA.index(data)
+    return data.get("pair") or NATION_PAIR_BASE + ALL_NATIONS_DATA.index(data)
 
 
 CITY_PAIR_BASE = 60  # 256-colour mode: pair 60+i draws city icons on nation i's colour
@@ -4197,6 +6923,9 @@ def xterm_brightness(c):
     return 0.3 * levels[c // 36] + 0.59 * levels[(c // 6) % 6] + 0.11 * levels[c % 6]
 
 
+SCW_COLOUR = (27, 28, 202, 3)   # Nationalist Spain: colour pair, city icon pair, orange, yellow on 8-colour terminals
+
+
 def init_nation_colors():
     """One colour pair per nation (plus one for its city icons): a distinct shade on
     256-colour terminals, else the basic 7 colours."""
@@ -4207,13 +6936,20 @@ def init_nation_colors():
     for i, d in enumerate(ALL_NATIONS_DATA):
         if curses.COLORS >= 256:
             shade = NATION_COLORS_256[d["name"]]
-            curses.init_pair(NATION_PAIR_BASE + i, shade, curses.COLOR_BLACK)
+            curses.init_pair(nation_pair(d), shade, curses.COLOR_BLACK)
             # City icons in black or white, whichever stands out on the nation's colour
             curses.init_pair(CITY_PAIR_BASE + i, 16 if xterm_brightness(shade) > 140 else 231, shade)
             city_pairs[i] = CITY_PAIR_BASE + i
         else:
-            curses.init_pair(NATION_PAIR_BASE + i, *basic[d["color_idx"]])
+            curses.init_pair(nation_pair(d), *basic[d["color_idx"]])
             city_pairs[i] = 9 + d["color_idx"]
+    pair, cpair, shade, basic_k = SCW_COLOUR   # Nationalist Spain's orange
+    if curses.COLORS >= 256:
+        curses.init_pair(pair, shade, curses.COLOR_BLACK)
+        curses.init_pair(cpair, 16 if xterm_brightness(shade) > 140 else 231, shade)
+    else:
+        curses.init_pair(pair, *basic[basic_k])
+        curses.init_pair(cpair, curses.COLOR_BLACK, basic[basic_k][0])
     for k, (fg, _) in basic.items():  # 8-colour fallback: icon on the basic territory colour
         light = fg in (curses.COLOR_GREEN, curses.COLOR_YELLOW, curses.COLOR_CYAN)
         curses.init_pair(9 + k, curses.COLOR_BLACK if light else curses.COLOR_WHITE, fg)
@@ -4277,8 +7013,11 @@ def init_hd_colors():
         hd_solid[shade] = ("█", HD_TER_BASE + k)
     for i, d in enumerate(ALL_NATIONS_DATA):
         shade = NATION_COLORS_256[d["name"]]
-        hd_shades[NATION_PAIR_BASE + i] = (shade, xterm_darker(shade))
-        hd_solid.setdefault(shade, ("█", NATION_PAIR_BASE + i))  # the nation's own pair is shade on black
+        hd_shades[nation_pair(d)] = (shade, xterm_darker(shade))
+        hd_solid.setdefault(shade, ("█", nation_pair(d)))  # the nation's own pair is shade on black
+    pair, _, shade, _ = SCW_COLOUR
+    hd_shades[pair] = (shade, xterm_darker(shade))
+    hd_solid.setdefault(shade, ("█", pair))
     hd_pairs.clear()
     hd_pair_use.clear()
     HD["on"] = True
@@ -4467,7 +7206,8 @@ def init_nation(n_id, data, is_player=False):
         "training": [],
         "industry": data['ind'], "mil_factory": max(2, data['ind'] // 2),
         "pp": data['pp'], "war_support": 50,
-        "relations": {}, "at_war_with": set(), "cities": [], "is_alive": True,
+        "relations": {}, "at_war_with": set(), "cities": [], "is_alive": not data.get("dormant"),
+        "dormant": True if data.get("dormant") else None,
         "tech_atk": data.get('atk', 0), "tech_def": data.get('def', 0), "justifying": {}, "wargoals": set(),
         "offensive_line": [],
         "guaranteeing": set(), "guaranteed_by": set(), "has_access_to": set(), "gives_access_to": set(),
@@ -4483,42 +7223,277 @@ ALL_DECISIONS = [
     {"id": "national_zeal", "name": "Ideological Fanaticism", "desc": "+5 Attack for every division", "cost_pp": 80, "req_nation": 0}
 ]
 
-TECH_OPTIONS = [
-    {"name": "Infantry Weapons I (+10% Attack)",
-     "cost_pp": 30, "buff": "atk", "val": 5},
-    {"name": "Sloped Armor (+10% Defense)", "cost_pp": 30,
-     "buff": "def", "val": 5},
-    {"name": "Industrial Engineering (+5% Factory Output)",
-     "cost_pp": 40, "buff": "ind", "val": 0.05, "max": 3},
-    {"name": "Assembly Lines (+10% Production Efficiency Cap)", "cost_pp": 50, "buff": "eff", "val": 0.1, "max": 2},
-    {"name": "Medium Tank Designs (unlocks Medium Tanks)", "cost_pp": 45, "buff": "unlock", "key": "medium_tanks", "max": 1},
-    # naval research: the next hull generation (1922 > 1936 > 1940 > 1944) for new ships of that type
-    {"name": "Destroyer Designs", "cost_pp": 30, "buff": "naval", "types": ["DD"]},
-    {"name": "Cruiser Designs", "cost_pp": 40, "buff": "naval", "types": ["CL", "CA"]},
-    {"name": "Capital Ship Designs", "cost_pp": 50, "buff": "naval", "types": ["BB", "BC"]},
-    {"name": "Carrier Designs", "cost_pp": 45, "buff": "naval", "types": ["CV"]},
-    {"name": "Submarine Designs", "cost_pp": 30, "buff": "naval", "types": ["SS"]},
-    # air research: the next plane of a family (HOI4: interwar / 1936 / 1940 / 1944)
-    {"name": "Fighter Designs", "cost_pp": 35, "buff": "air", "family": "fighter"},
-    {"name": "Heavy Fighter Designs", "cost_pp": 40, "buff": "air", "family": "heavy_fighter"},
-    {"name": "Close Air Support Designs", "cost_pp": 35, "buff": "air", "family": "cas"},
-    {"name": "Naval Bomber Designs", "cost_pp": 35, "buff": "air", "family": "nav_bomber"},
-    {"name": "Tactical Bomber Designs", "cost_pp": 40, "buff": "air", "family": "tac_bomber"},
-    {"name": "Strategic Bomber Designs", "cost_pp": 50, "buff": "air", "family": "strat_bomber"},
-    {"name": "Radar (unlocks radar stations)", "cost_pp": 45, "buff": "unlock", "key": "radar", "max": 1},
-]
-
-
-def naval_research_block(n, opt, year):
-    """(next generation, why it can't be researched or None) for a naval design option."""
-    nxt = min(n.get("naval_tech", {}).get(t, 1) for t in opt["types"]) + 1
-    if nxt > 3:
-        return nxt, "Fully researched"
-    if year < TECH_YEAR.get(nxt, 0):
-        return nxt, f"Available from {TECH_YEAR[nxt]}"
-    if n["pp"] < opt["cost_pp"]:
-        return nxt, f"Needs {opt['cost_pp']} PP"
-    return nxt, None
+# ======================= RESEARCH DATA (from HOI4 1.19's research folders) =======================
+# Generated from Hearts of Iron IV's technology, equipment and 1936 history files: the classic equipment trees
+# (no tank, ship or plane designer). Special projects, trains, armoured cars, paratroopers, rangers, scout
+# and transport planes and jets are left out: toi4 has no units or systems for them.
+# A tech: name, folder, grid column, grid row (its folder's year rows), year (None = no ahead-of-time
+# penalty), research cost (x BASE_TECH_COST days), any-one-of prerequisites, all-of prerequisites,
+# mutually exclusive techs, effects, HOI4 research categories (for research bonuses), HOI4 AI weight.
+TECH_FOLDERS = (("infantry", "Infantry"), ("support", "Support"), ("artillery", "Artillery"), ("armour", "Armor"), ("air", "Air"), ("naval", "Naval"), ("electronics", "Engineering"), ("industry", "Industry"))
+TECH_ROWS = {"infantry": [1918, 1936, 1938, 1939, 1940, 1942, 1943, 1944, 1946], "support": [1918, 1936, 1939, 1942, 1945], "artillery": [1936, 1939, 1940, 1941, 1942, 1943], "armour": [1918, 1934, 1936, 1939, 1941, 1943, 1945], "air": [1933, 1936, 1940, 1944], "naval": [1922, 1936, 1940, 1944], "electronics": [1936, 1938, 1940, 1941, 1942], "industry": [1936, 1937, 1939, 1941, 1943]}
+TECHS = {
+    "infantry_weapons": ("Infantry Weapons", "infantry", 0, 0, 1918, 1.5, [], [], [], {"eq":[["inf_eq",0]]}, ['infantry_weapons'], 1),
+    "support_weapons": ("Support Weapons I", "infantry", 6, 0, 1918, 1.5, [], [], [], {}, ['infantry_weapons'], 1),
+    "infantry_weapons1": ("Infantry Equipment I", "infantry", 0, 1, 1936, 1.5, ['infantry_weapons'], [], [], {"eq":[["inf_eq",1]]}, ['infantry_weapons'], 2),
+    "tech_trucks": ("Early Truck", "infantry", 3, 1, 1936, 1.5, [], [], [], {"eq":[["trucks",0]]}, ['motorized_equipment', 'infantry_tech'], 1),
+    "motorised_infantry": ("Motorized Infantry", "infantry", 4, 1, 1936, 2, ['tech_trucks'], [], [], {"eq":[["trucks",1]],"unlock":["motorized"],"unit":{"motorized":{"brk":0.0333},"mechanized":{"brk":0.0333}}}, ['motorized_equipment', 'infantry_tech'], 1),
+    "marines": ("Marines I", "infantry", 8, 1, 1936, 2, [], [], [], {"unlock":["marines"]}, ['marine_tech', 'cat_special_forces_generic'], 0.7),
+    "tech_mountaineers": ("Mountain Infantry I", "infantry", 10, 1, 1936, 2, [], [], [], {"unlock":["mountaineers"]}, ['infantry_tech', 'mountaineers_tech', 'cat_special_forces_generic'], 0.7),
+    "infantry_weapons2": ("Improved Infantry Equipment I", "infantry", 0, 2, 1938, 1.5, ['infantry_weapons1'], [], [], {"unit":{"infantry":{"soft":0.05},"mountaineers":{"soft":0.05},"marines":{"soft":0.05},"cavalry":{"soft":0.05},"motorized":{"soft":0.05},"mechanized":{"soft":0.05}}}, ['infantry_weapons'], 2),
+    "support_weapons2": ("Support Weapons II", "infantry", 6, 2, 1938, 1.5, ['support_weapons'], [], [], {"unit":{"infantry":{"def":0.05,"brk":0.05,"soft":0.0333},"mountaineers":{"def":0.05,"brk":0.05,"soft":0.0333},"marines":{"def":0.05,"brk":0.05,"soft":0.0333},"cavalry":{"def":0.05,"brk":0.05,"soft":0.0333},"motorized":{"def":0.05,"brk":0.0167,"soft":0.0333},"mechanized":{"def":0.05,"brk":0.0167,"soft":0.0333}}}, ['infantry_weapons'], 1),
+    "tech_special_forces": ("Special Forces", "infantry", 13, 2, 1938, 2, [], [], [], {}, ['mountaineers_tech', 'marine_tech', 'para_tech', 'cat_special_forces_generic'], 0.7),
+    "improved_infantry_weapons": ("Infantry Equipment II", "infantry", 0, 3, 1939, 2, ['infantry_weapons2'], [], [], {"eq":[["inf_eq",2]]}, ['infantry_weapons'], 3),
+    "marines2": ("Marines II", "infantry", 8, 3, 1939, 1.5, ['marines'], [], [], {"unit":{"marines":{"org":5.0,"soft":0.05}}}, ['marine_tech', 'cat_special_forces_generic'], 0.7),
+    "tech_mountaineers2": ("Mountain Infantry II", "infantry", 10, 3, 1939, 1.5, ['tech_mountaineers'], [], [], {"unit":{"mountaineers":{"org":5.0,"soft":0.05}}}, ['infantry_tech', 'mountaineers_tech', 'cat_special_forces_generic'], 0.7),
+    "improved_infantry_weapons_2": ("Improved Infantry Equipment II", "infantry", 0, 4, 1940, 2, ['improved_infantry_weapons'], [], [], {"unit":{"infantry":{"soft":0.05},"mountaineers":{"soft":0.05},"marines":{"soft":0.05},"cavalry":{"soft":0.05},"motorized":{"soft":0.05},"mechanized":{"soft":0.05}}}, ['infantry_weapons'], 2),
+    "mechanised_infantry": ("Mechanized Equipment I", "infantry", 3, 4, 1940, 2, ['motorised_infantry'], [], [], {"eq":[["mechanized",1]],"unlock":["mechanized"],"unit":{"motorized":{"brk":0.0333,"soft":0.0167},"mechanized":{"brk":0.0333,"soft":0.0167}}}, ['motorized_equipment', 'infantry_tech', 'cat_mechanized_equipment'], 2),
+    "support_weapons3": ("Support Weapons III", "infantry", 6, 4, 1940, 1.5, ['support_weapons2'], [], [], {"unit":{"infantry":{"def":0.05,"brk":0.05,"soft":0.0333},"mountaineers":{"def":0.05,"brk":0.05,"soft":0.0333},"marines":{"def":0.05,"brk":0.05,"soft":0.0333},"cavalry":{"def":0.05,"brk":0.05,"soft":0.0333},"motorized":{"def":0.05,"brk":0.0167,"soft":0.0333},"mechanized":{"def":0.05,"brk":0.0167,"soft":0.0333}}}, ['infantry_weapons'], 1),
+    "advanced_special_forces": ("Advanced Special Forces Training", "infantry", 12, 4, 1940, 2, ['tech_special_forces'], [], [], {"unit":{"mountaineers":{"org":5.0,"def":0.05},"marines":{"org":5.0,"def":0.05}}}, ['mountaineers_tech', 'marine_tech', 'para_tech', 'cat_special_forces_generic'], 0.7),
+    "improved_special_forces": ("Expanded Special Forces Program", "infantry", 14, 4, 1940, 2, ['tech_special_forces'], [], [], {}, ['mountaineers_tech', 'marine_tech', 'para_tech', 'cat_special_forces_generic'], 0.7),
+    "advanced_infantry_weapons": ("Infantry Equipment III", "infantry", 0, 5, 1942, 2, ['improved_infantry_weapons_2'], [], [], {"eq":[["inf_eq",3]]}, ['infantry_weapons'], 1),
+    "infantry_at": ("Infantry Anti-Tank I", "infantry", 1, 5, 1942, 1.5, ['improved_infantry_weapons'], [], [], {"unit":{"infantry":{"hard":0.3,"ap":1.1667},"mountaineers":{"hard":0.3,"ap":1.1667},"marines":{"hard":0.3,"ap":1.1667},"motorized":{"hard":0.3,"ap":1.1667},"mechanized":{"hard":0.3,"ap":1.1667},"cavalry":{"hard":0.15,"ap":0.5667}}}, ['infantry_weapons'], 1),
+    "mechanised_infantry2": ("Mechanized Equipment II", "infantry", 3, 5, 1942, 2, ['mechanised_infantry'], [], [], {"eq":[["mechanized",2]],"unit":{"motorized":{"brk":0.0333,"soft":0.0167},"mechanized":{"brk":0.0333,"soft":0.0167}}}, ['motorized_equipment', 'infantry_tech', 'cat_mechanized_equipment'], 1),
+    "support_weapons4": ("Support Weapons IV", "infantry", 6, 5, 1942, 1.5, ['support_weapons3'], [], [], {"unit":{"infantry":{"def":0.05,"brk":0.05,"soft":0.0333},"mountaineers":{"def":0.05,"brk":0.05,"soft":0.0333},"marines":{"def":0.05,"brk":0.05,"soft":0.0333},"cavalry":{"def":0.05,"brk":0.05,"soft":0.0333},"motorized":{"def":0.05,"brk":0.0167,"soft":0.0333},"mechanized":{"def":0.05,"brk":0.0167,"soft":0.0333}}}, ['infantry_weapons'], 1),
+    "extreme_environment_training": ("Extreme Environment Training", "infantry", 12, 5, 1942, 2, ['advanced_special_forces'], [], [], {}, ['mountaineers_tech', 'marine_tech', 'para_tech', 'cat_special_forces_generic'], 0.7),
+    "survival_training": ("Survival Training", "infantry", 14, 5, 1942, 2, ['improved_special_forces'], [], [], {}, ['mountaineers_tech', 'marine_tech', 'para_tech', 'cat_special_forces_generic'], 0.7),
+    "infantry_at2": ("Infantry Anti-Tank II", "infantry", 1, 6, 1943, 1.5, ['infantry_at'], [], [], {"unit":{"infantry":{"hard":0.3,"ap":1.1667},"mountaineers":{"hard":0.3,"ap":1.1667},"marines":{"hard":0.3,"ap":1.1667},"motorized":{"hard":0.3,"ap":1.1667},"mechanized":{"hard":0.3,"ap":1.1667},"cavalry":{"hard":0.15,"ap":0.5667}}}, ['infantry_weapons'], 1),
+    "marines3": ("Marines III", "infantry", 8, 6, 1943, 2, ['marines2'], [], [], {"unit":{"marines":{"org":5.0}}}, ['marine_tech', 'cat_special_forces_generic'], 0.7),
+    "tech_mountaineers3": ("Mountain Infantry III", "infantry", 10, 6, 1943, 2, ['tech_mountaineers2'], [], [], {"unit":{"mountaineers":{"org":5.0}}}, ['infantry_tech', 'mountaineers_tech', 'cat_special_forces_generic'], 0.7),
+    "night_vision": ("Night Vision I", "infantry", 16, 6, 1943, 2.5, [], [], [], {"nat":{"night":0.05}}, ['night_vision'], 4),
+    "advanced_infantry_weapons2": ("Improved Infantry Equipment III", "infantry", 0, 7, 1944, 1.5, ['advanced_infantry_weapons'], [], [], {"unit":{"infantry":{"soft":0.05},"mountaineers":{"soft":0.05},"marines":{"soft":0.05},"cavalry":{"soft":0.05},"motorized":{"soft":0.1},"mechanized":{"soft":0.1}}}, ['infantry_weapons'], 1),
+    "mechanised_infantry3": ("Mechanized Equipment III", "infantry", 3, 7, 1944, 3, ['mechanised_infantry2'], [], [], {"eq":[["mechanized",3]],"unit":{"mechanized":{"soft":0.1667,"hard":0.15,"brk":0.0333},"motorized":{"brk":0.0333,"soft":0.0167}}}, ['motorized_equipment', 'infantry_tech', 'cat_mechanized_equipment'], 1),
+    "elite_forces": ("Elite Forces", "infantry", 13, 7, 1944, 2, ['extreme_environment_training', 'survival_training'], [], [], {"unit":{"mountaineers":{"org":5.0,"soft":0.05},"marines":{"org":5.0,"soft":0.05}}}, ['mountaineers_tech', 'marine_tech', 'para_tech', 'cat_special_forces_generic'], 0.7),
+    "night_vision2": ("Night Vision II", "infantry", 16, 8, 1946, 2, ['night_vision'], [], [], {"nat":{"night":0.075}}, ['night_vision'], 4),
+    "tech_support": ("Support Equipment", "support", 0, 0, 1918, 1, [], [], [], {"eq":[["support_eq",1]]}, ['support_tech'], 2),
+    "tech_engineers": ("Engineer Company I", "support", 0, 1, 1936, 1.25, ['tech_support'], [], [], {"unlock":["engineers"]}, ['support_tech', 'engineers_tech'], 4),
+    "tech_recon": ("Recon Company I", "support", 1, 1, 1936, 1.25, ['tech_support'], [], [], {"unlock":["recon"]}, ['support_tech', 'recon_tech'], 1),
+    "tech_military_police": ("Military Police I", "support", 2, 1, 1936, 1.25, ['tech_support'], [], [], {"unlock":["military_police"]}, ['support_tech', 'military_police_tech'], 0.5),
+    "tech_maintenance_company": ("Maintenance Company I", "support", 3, 1, 1936, 1.25, ['tech_support'], [], [], {"unlock":["maintenance"]}, ['support_tech', 'maintenance_company_tech'], 1),
+    "tech_field_hospital": ("Field Hospital I", "support", 4, 1, 1936, 1.25, ['tech_support'], ['motorised_infantry'], [], {"unlock":["field_hospital"]}, ['support_tech', 'hospital_tech', 'motorized_equipment'], 1),
+    "tech_logistics_company": ("Logistics Company I", "support", 5, 1, 1936, 1.25, ['tech_support'], ['motorised_infantry'], [], {"unlock":["logistics"]}, ['support_tech', 'logistics_tech', 'motorized_equipment'], 1),
+    "tech_signal_company": ("Signal Company I", "support", 6, 1, 1936, 1.25, ['tech_support'], ['radio', 'motorised_infantry'], [], {"unlock":["signal"]}, ['support_tech', 'signal_company_tech', 'electronics'], 1),
+    "tech_engineers2": ("Engineer Company II", "support", 0, 2, 1939, 1.5, ['tech_engineers'], [], [], {"unit":{"engineers":{"dig":0.5}}}, ['support_tech', 'engineers_tech'], 4),
+    "tech_recon2": ("Recon Company II", "support", 1, 2, 1939, 1.5, ['tech_recon'], [], [], {"unit":{"recon":{"recon":2.0}}}, ['support_tech', 'recon_tech'], 1),
+    "tech_military_police2": ("Military Police II", "support", 2, 2, 1939, 1.5, ['tech_military_police'], [], [], {"unit":{"military_police":{"suppress":0.1}}}, ['support_tech', 'military_police_tech'], 0.5),
+    "tech_maintenance_company2": ("Maintenance Company II", "support", 3, 2, 1939, 1.5, ['tech_maintenance_company'], [], [], {"unit":{"maintenance":{"reliab":0.05}}}, ['support_tech', 'maintenance_company_tech'], 1),
+    "tech_field_hospital2": ("Field Hospital II", "support", 4, 2, 1939, 1.5, ['tech_field_hospital'], [], [], {"unit":{"field_hospital":{"casualty":0.1}}}, ['support_tech', 'hospital_tech', 'motorized_equipment'], 1),
+    "tech_logistics_company2": ("Logistics Company II", "support", 5, 2, 1939, 1.5, ['tech_logistics_company'], [], [], {"unit":{"logistics":{"logi":-0.1}}}, ['support_tech', 'logistics_tech', 'motorized_equipment'], 1),
+    "tech_signal_company2": ("Signal Company II", "support", 6, 2, 1939, 1.5, ['tech_signal_company'], [], [], {"unit":{"signal":{"initiative":0.12}}}, ['support_tech', 'signal_company_tech', 'electronics'], 1),
+    "tech_engineers3": ("Engineer Company III", "support", 0, 3, 1942, 2, ['tech_engineers2'], [], [], {"unit":{"engineers":{"dig":0.5}}}, ['support_tech', 'engineers_tech'], 4),
+    "tech_recon3": ("Recon Company III", "support", 1, 3, 1942, 2, ['tech_recon2'], [], [], {"unit":{"recon":{"recon":2.0}}}, ['support_tech', 'recon_tech'], 1),
+    "tech_military_police3": ("Military Police III", "support", 2, 3, 1942, 2, ['tech_military_police2'], [], [], {"unit":{"military_police":{"suppress":0.1}}}, ['support_tech', 'military_police_tech'], 0.5),
+    "tech_maintenance_company3": ("Maintenance Company III", "support", 3, 3, 1942, 2, ['tech_maintenance_company2'], [], [], {"unit":{"maintenance":{"reliab":0.05}}}, ['support_tech', 'maintenance_company_tech'], 1),
+    "tech_field_hospital3": ("Field Hospital III", "support", 4, 3, 1942, 2, ['tech_field_hospital2'], [], [], {"unit":{"field_hospital":{"casualty":0.1}}}, ['support_tech', 'hospital_tech', 'motorized_equipment'], 1),
+    "tech_logistics_company3": ("Logistics Company III", "support", 5, 3, 1942, 2, ['tech_logistics_company2'], [], [], {"unit":{"logistics":{"logi":-0.1}}}, ['support_tech', 'logistics_tech', 'motorized_equipment'], 1),
+    "tech_signal_company3": ("Signal Company III", "support", 6, 3, 1942, 2, ['tech_signal_company2'], [], [], {"unit":{"signal":{"initiative":0.12}}}, ['support_tech', 'signal_company_tech', 'electronics'], 1),
+    "tech_engineers4": ("Engineer Company IV", "support", 0, 4, 1945, 2, ['tech_engineers3'], [], [], {"unit":{"engineers":{"dig":0.5}}}, ['support_tech', 'engineers_tech'], 4),
+    "tech_recon4": ("Recon Company IV", "support", 1, 4, 1945, 2, ['tech_recon3'], [], [], {"unit":{"recon":{"recon":2.0}}}, ['support_tech', 'recon_tech'], 1),
+    "tech_military_police4": ("Military Police IV", "support", 2, 4, 1945, 2, ['tech_military_police3'], [], [], {"unit":{"military_police":{"suppress":0.1}}}, ['support_tech', 'military_police_tech'], 0.5),
+    "tech_maintenance_company4": ("Maintenance Company IV", "support", 3, 4, 1945, 2, ['tech_maintenance_company3'], [], [], {"unit":{"maintenance":{"reliab":0.05}}}, ['support_tech', 'maintenance_company_tech'], 1),
+    "tech_field_hospital4": ("Field Hospital IV", "support", 4, 4, 1945, 2, ['tech_field_hospital3'], [], [], {"unit":{"field_hospital":{"casualty":0.1}}}, ['support_tech', 'hospital_tech', 'motorized_equipment'], 1),
+    "tech_logistics_company4": ("Logistics Company IV", "support", 5, 4, 1945, 2, ['tech_logistics_company3'], [], [], {"unit":{"logistics":{"logi":-0.1}}}, ['support_tech', 'logistics_tech', 'motorized_equipment'], 1),
+    "tech_signal_company4": ("Signal Company IV", "support", 6, 4, 1945, 2, ['tech_signal_company3'], [], [], {"unit":{"signal":{"initiative":0.12}}}, ['support_tech', 'signal_company_tech', 'electronics'], 1),
+    "interwar_antiair": ("Anti-Air", "artillery", 0, 0, 1936, 1.5, ['gw_artillery'], [], [], {"eq":[["anti_air",1]],"unlock":["anti_air"]}, ['artillery', 'cat_anti_air'], 1),
+    "gw_artillery": ("Towed Artillery", "artillery", 1, 0, None, 1.5, [], [], [], {"eq":[["artillery",1]],"unlock":["artillery","support_artillery"]}, ['artillery'], 2),
+    "interwar_artillery": ("Inter-War Artillery", "artillery", 2, 0, 1936, 1.5, ['gw_artillery'], [], [], {"unit":{"support_artillery":{"soft":0.05},"artillery":{"soft":0.1}}}, ['artillery'], 2),
+    "interwar_antitank": ("Anti-tank", "artillery", 3, 0, 1936, 1.5, ['gw_artillery'], [], [], {"eq":[["anti_tank",1]],"unlock":["anti_tank","support_at"]}, ['artillery', 'cat_anti_tank'], 1),
+    "antiair1": ("Anti-Air Upgrade", "artillery", 0, 1, 1939, 1, ['interwar_antiair'], [], [], {"unit":{"anti_air":{"aa":0.1}},"nat":{"air_def":0.02}}, ['artillery', 'cat_anti_air'], 1),
+    "artillery1": ("Artillery I", "artillery", 1, 1, 1939, 1, ['interwar_artillery'], [], [], {"eq":[["artillery",2]]}, ['artillery'], 2),
+    "antitank1": ("Anti-Tank Upgrade", "artillery", 3, 1, 1939, 1, ['interwar_antitank'], [], [], {"unit":{"anti_tank":{"hard":0.1,"ap":0.2},"support_at":{"hard":0.1,"ap":0.2}}}, ['artillery', 'cat_anti_tank'], 1),
+    "antiair2": ("Anti-Air II", "artillery", 0, 2, 1940, 1, ['antiair1'], [], [], {"eq":[["anti_air",2]],"nat":{"static_aa":0.1}}, ['artillery', 'cat_anti_air'], 2),
+    "artillery2": ("Improved Artillery Upgrade I", "artillery", 1, 2, 1940, 1, ['artillery1'], [], [], {"unit":{"support_artillery":{"soft":0.05},"artillery":{"soft":0.1}}}, ['artillery'], 2),
+    "rocket_artillery": ("Support Rocket Artillery", "artillery", 2, 2, 1940, 2, ['artillery2'], [], [], {"eq":[["rocket_artillery",1]],"unlock":["rocket_artillery"]}, ['rocketry'], 1),
+    "antitank2": ("Anti-Tank II", "artillery", 3, 2, 1940, 1, ['antitank1'], [], [], {"eq":[["anti_tank",2]]}, ['artillery', 'cat_anti_tank'], 1),
+    "antiair3": ("Improved Anti-Air Upgrade I", "artillery", 0, 3, 1941, 1, ['antiair2'], [], [], {"unit":{"anti_air":{"aa":0.1}},"nat":{"air_def":0.02}}, ['artillery', 'cat_anti_air'], 1),
+    "artillery3": ("Improved Artillery Upgrade II", "artillery", 1, 3, 1941, 1, ['artillery2'], [], [], {"unit":{"support_artillery":{"soft":0.05},"artillery":{"soft":0.1}}}, ['artillery'], 2),
+    "rocket_artillery2": ("Rocket Artillery Upgrade I", "artillery", 2, 3, 1941, 1, ['rocket_artillery'], [], [], {"unit":{"rocket_artillery":{"soft":0.15}}}, ['rocketry'], 1),
+    "antitank3": ("Improved Anti-Tank Upgrade I", "artillery", 3, 3, 1941, 1, ['antitank2'], [], [], {"unit":{"anti_tank":{"hard":0.1,"ap":0.1},"support_at":{"hard":0.1,"ap":0.1}}}, ['artillery', 'cat_anti_tank'], 1),
+    "antiair4": ("Improved Anti-Air Upgrade II", "artillery", 0, 4, 1942, 1, ['antiair3'], [], [], {"unit":{"anti_air":{"aa":0.1}},"nat":{"air_def":0.02}}, ['artillery', 'cat_anti_air'], 1),
+    "artillery4": ("Artillery IV", "artillery", 1, 4, 1942, 2, ['artillery3'], [], [], {"eq":[["artillery",3]]}, ['artillery'], 2),
+    "rocket_artillery3": ("Rocket Artillery Upgrade II", "artillery", 2, 4, 1942, 1, ['rocket_artillery2'], [], [], {"unit":{"rocket_artillery":{"soft":0.15}}}, ['rocketry'], 1),
+    "antitank4": ("Improved Anti-Tank Upgrade II", "artillery", 3, 4, 1942, 1, ['antitank3'], [], [], {"unit":{"anti_tank":{"hard":0.1,"ap":0.1},"support_at":{"hard":0.1,"ap":0.1}}}, ['artillery', 'cat_anti_tank'], 1),
+    "antiair5": ("Anti-Air V", "artillery", 0, 5, 1943, 1, ['antiair4'], [], [], {"eq":[["anti_air",3]],"nat":{"static_aa":0.1}}, ['artillery', 'cat_anti_air'], 1),
+    "artillery5": ("Advanced Artillery Upgrade", "artillery", 1, 5, 1943, 1, ['artillery4'], [], [], {"unit":{"support_artillery":{"soft":0.05},"artillery":{"soft":0.1}}}, ['artillery'], 2),
+    "rocket_artillery4": ("Rocket Artillery III", "artillery", 2, 5, 1943, 1, ['rocket_artillery3'], [], [], {"eq":[["rocket_artillery",2]]}, ['rocketry'], 1),
+    "antitank5": ("Anti-Tank V", "artillery", 3, 5, 1943, 1, ['antitank4'], [], [], {"eq":[["anti_tank",3]]}, ['artillery', 'cat_anti_tank'], 1),
+    "gwtank": ("Great War Tank", "armour", 1, 0, 1918, 2, [], [], [], {"eq":[["light_tank",0]],"unlock":["light_armor"]}, ['armor', 'cat_light_armor'], 1),
+    "basic_light_tank": ("L. Tank I", "armour", 0, 1, 1934, 2, ['gwtank'], [], [], {"eq":[["light_tank",1]],"unlock":["light_armor"]}, ['armor', 'cat_light_armor'], 1),
+    "basic_heavy_tank": ("Heavy Tank I", "armour", 3, 1, 1934, 2, ['gwtank'], [], [], {"eq":[["heavy_tank",1]],"unlock":["heavy_armor"]}, ['armor', 'cat_heavy_armor'], 0.8),
+    "improved_light_tank": ("Light Tank II", "armour", 0, 2, 1936, 2, ['basic_light_tank'], [], [], {"eq":[["light_tank",2]]}, ['armor', 'cat_light_armor'], 1),
+    "basic_medium_tank": ("Medium Tank I", "armour", 1, 3, 1939, 2, ['improved_light_tank'], [], [], {"eq":[["medium_tank",1]],"unlock":["medium_armor"]}, ['armor', 'cat_medium_armor'], 2),
+    "advanced_light_tank": ("Light Tank III", "armour", 0, 4, 1941, 2, ['improved_light_tank'], [], [], {"eq":[["light_tank",3]]}, ['armor', 'cat_light_armor'], 0.5),
+    "improved_medium_tank": ("Medium Tank II", "armour", 1, 4, 1941, 2, ['basic_medium_tank', 'improved_heavy_tank'], [], [], {"eq":[["medium_tank",2]]}, ['armor', 'cat_medium_armor'], 3),
+    "improved_heavy_tank": ("Heavy Tank II", "armour", 3, 4, 1941, 2.5, ['improved_medium_tank', 'basic_heavy_tank'], [], [], {"eq":[["heavy_tank",2]]}, ['armor', 'cat_heavy_armor'], 0.8),
+    "advanced_medium_tank": ("Medium Tank III", "armour", 1, 5, 1943, 2, ['improved_medium_tank', 'advanced_heavy_tank'], [], [], {"eq":[["medium_tank",3]]}, ['armor', 'cat_medium_armor'], 1),
+    "advanced_heavy_tank": ("Heavy Tank III", "armour", 3, 5, 1943, 2.5, ['advanced_medium_tank', 'improved_heavy_tank'], [], [], {"eq":[["heavy_tank",3]]}, ['armor', 'cat_heavy_armor'], 0.8),
+    "main_battle_tank": ("Modern Tank", "armour", 2, 6, 1945, 2.5, ['advanced_medium_tank', 'advanced_heavy_tank'], [], [], {"eq":[["modern_tank",1]],"unlock":["modern_armor"]}, ['armor', 'cat_medium_armor'], 1),
+    "early_fighter": ("Inter-War Fighter", "air", 1, 0, 1933, 2, [], [], [], {"plane":[["fighter",0]]}, ['light_air', 'light_fighter', 'air_equipment'], 1),
+    "early_bomber": ("Inter-War Bomber", "air", 5, 0, 1933, 2, [], [], [], {"plane":[["tac_bomber",0]]}, ['medium_air', 'tactical_bomber', 'air_equipment'], 1),
+    "CAS1": ("Close Air Support I", "air", 0, 1, 1936, 2, ['early_fighter'], [], [], {"plane":[["cas",1]]}, ['light_air', 'cas_bomber', 'air_equipment'], 1),
+    "fighter1": ("Fighter I", "air", 1, 1, 1936, 2, ['early_fighter'], [], [], {"plane":[["fighter",1]]}, ['light_air', 'light_fighter', 'air_equipment'], 4),
+    "naval_bomber1": ("Naval Bomber I", "air", 2, 1, 1936, 2, ['early_fighter'], [], [], {"plane":[["nav_bomber",1]]}, ['naval_air', 'naval_bomber', 'air_equipment'], 1),
+    "heavy_fighter1": ("Heavy Fighter I", "air", 4, 1, 1936, 2, ['early_bomber'], [], [], {"plane":[["heavy_fighter",1]]}, ['medium_air', 'air_equipment', 'cat_heavy_fighter'], 1),
+    "tactical_bomber1": ("Tactical Bomber I", "air", 5, 1, 1936, 2, ['early_bomber'], [], [], {"plane":[["tac_bomber",1]]}, ['medium_air', 'tactical_bomber', 'air_equipment'], 1),
+    "strategic_bomber1": ("Strategic Bomber I", "air", 7, 1, 1936, 2, [], [], [], {"plane":[["strat_bomber",1]]}, ['heavy_air', 'air_equipment', 'cat_strategic_bomber'], 1),
+    "CAS2": ("Close Air Support II", "air", 0, 2, 1940, 2, ['CAS1'], [], [], {"plane":[["cas",2]]}, ['light_air', 'cas_bomber', 'air_equipment'], 1),
+    "fighter2": ("Fighter II", "air", 1, 2, 1940, 2, ['fighter1'], [], [], {"plane":[["fighter",2]]}, ['light_air', 'light_fighter', 'air_equipment'], 4),
+    "naval_bomber2": ("Naval Bomber II", "air", 2, 2, 1940, 2, ['naval_bomber1'], [], [], {"plane":[["nav_bomber",2]]}, ['naval_air', 'air_equipment', 'naval_bomber'], 1.5),
+    "heavy_fighter2": ("Heavy Fighter II", "air", 4, 2, 1940, 2, ['heavy_fighter1'], [], [], {"plane":[["heavy_fighter",2]]}, ['medium_air', 'air_equipment', 'cat_heavy_fighter'], 1),
+    "tactical_bomber2": ("Tactical Bomber II", "air", 5, 2, 1940, 2, ['tactical_bomber1'], [], [], {"plane":[["tac_bomber",2]]}, ['medium_air', 'tactical_bomber', 'air_equipment'], 1),
+    "strategic_bomber2": ("Strategic Bomber II", "air", 7, 2, 1940, 2, ['strategic_bomber1'], [], [], {"plane":[["strat_bomber",2]]}, ['heavy_air', 'air_equipment', 'cat_strategic_bomber'], 1),
+    "CAS3": ("Close Air Support III", "air", 0, 3, 1944, 2, ['CAS2'], [], [], {"plane":[["cas",3]]}, ['light_air', 'cas_bomber', 'air_equipment'], 1),
+    "fighter3": ("Fighter III", "air", 1, 3, 1944, 2, ['fighter2'], [], [], {"plane":[["fighter",3]]}, ['light_air', 'light_fighter', 'air_equipment'], 4),
+    "naval_bomber3": ("Naval Bomber III", "air", 2, 3, 1944, 2, ['naval_bomber2'], [], [], {"plane":[["nav_bomber",3]]}, ['naval_air', 'naval_bomber', 'air_equipment'], 1.5),
+    "heavy_fighter3": ("Heavy Fighter III", "air", 4, 3, 1944, 2, ['heavy_fighter2'], [], [], {"plane":[["heavy_fighter",3]]}, ['medium_air', 'air_equipment', 'cat_heavy_fighter'], 1),
+    "tactical_bomber3": ("Tactical Bomber III", "air", 5, 3, 1944, 2, ['tactical_bomber2'], [], [], {"plane":[["tac_bomber",3]]}, ['medium_air', 'tactical_bomber', 'air_equipment'], 1),
+    "strategic_bomber3": ("Strategic Bomber III", "air", 7, 3, 1944, 2, ['strategic_bomber2'], [], [], {"plane":[["strat_bomber",3]]}, ['heavy_air', 'air_equipment', 'cat_strategic_bomber'], 1),
+    "early_light_cruiser": ("Light Cruiser I", "naval", 0, 0, 1922, 1.5, [], [], [], {"ship":[["CL",0]]}, ['naval_artillery', 'naval_equipment', 'ca_tech'], 1),
+    "early_heavy_cruiser": ("Heavy Cruiser I", "naval", 1, 0, 1922, 1.5, [], [], [], {"ship":[["CA",0]]}, ['naval_artillery', 'naval_equipment', 'ca_tech'], 1),
+    "early_battlecruiser": ("Battlecruiser I", "naval", 3, 0, 1922, 1.5, [], [], [], {"ship":[["BC",0]]}, ['naval_artillery', 'naval_equipment', 'bc_tech'], 1),
+    "early_battleship": ("Battleship I", "naval", 4, 0, 1922, 1.5, [], [], [], {"ship":[["BB",0]]}, ['naval_artillery', 'naval_equipment', 'bb_tech'], 1),
+    "early_destroyer": ("Destroyer I", "naval", 6, 0, 1922, 1.5, [], [], [], {"ship":[["DD",0]]}, ['naval_equipment', 'dd_tech'], 1),
+    "early_carrier": ("Early Carrier (Carrier I)", "naval", 8, 0, 1922, 1.5, [], [], [], {"ship":[["CV",0]]}, ['naval_equipment', 'cv_tech'], 1),
+    "early_submarine": ("Submarine I", "naval", 10, 0, 1922, 1.5, [], [], [], {"ship":[["SS",0]]}, ['naval_equipment', 'ss_tech'], 1),
+    "transport": ("Transport Ship", "naval", 12, 0, 1922, 1.5, [], [], [], {"nat":{"inv_prep":30.0,"inv_cap":2.0}}, ['naval_equipment', 'tp_tech'], 1),
+    "basic_light_cruiser": ("Light Cruiser II", "naval", 0, 1, 1936, 2, ['early_light_cruiser', 'basic_heavy_cruiser'], [], [], {"ship":[["CL",1]]}, ['naval_artillery', 'naval_equipment', 'ca_tech'], 1),
+    "basic_heavy_cruiser": ("Basic Heavy Cruiser (Heavy Cruiser II)", "naval", 1, 1, 1936, 2, ['basic_light_cruiser', 'early_heavy_cruiser'], [], [], {"ship":[["CA",1]]}, ['naval_artillery', 'naval_equipment', 'ca_tech'], 1),
+    "basic_battleship": ("Battleship II", "naval", 4, 1, 1936, 2, ['early_battleship'], [], [], {"ship":[["BB",1]]}, ['naval_artillery', 'naval_equipment', 'bb_tech'], 1),
+    "basic_destroyer": ("Destroyer II", "naval", 6, 1, 1936, 2, ['early_destroyer'], [], [], {"ship":[["DD",1]]}, ['naval_equipment', 'dd_tech'], 1),
+    "basic_carrier": ("Basic Carrier (Carrier II)", "naval", 8, 1, 1936, 2, ['early_carrier'], [], [], {"ship":[["CV",1]]}, ['naval_equipment', 'cv_tech'], 1),
+    "basic_submarine": ("Submarine II", "naval", 10, 1, 1936, 2, ['early_submarine'], [], [], {"ship":[["SS",1]]}, ['naval_equipment', 'ss_tech'], 1),
+    "improved_light_cruiser": ("Light Cruiser III", "naval", 0, 2, 1940, 2, ['basic_light_cruiser', 'improved_heavy_cruiser'], [], [], {"ship":[["CL",2]]}, ['naval_artillery', 'naval_equipment', 'ca_tech'], 1),
+    "improved_heavy_cruiser": ("Heavy Cruiser III", "naval", 1, 2, 1940, 2, ['improved_light_cruiser', 'basic_heavy_cruiser'], [], [], {"ship":[["CA",2]]}, ['naval_artillery', 'naval_equipment', 'ca_tech'], 1),
+    "basic_battlecruiser": ("Battlecruiser II", "naval", 3, 2, 1940, 2, ['early_battlecruiser', 'improved_battleship'], [], [], {"ship":[["BC",2]]}, ['naval_artillery', 'naval_equipment', 'bc_tech'], 1),
+    "improved_battleship": ("Battleship III", "naval", 4, 2, 1940, 2, ['basic_battlecruiser', 'basic_battleship'], [], [], {"ship":[["BB",2]]}, ['naval_artillery', 'naval_equipment', 'bb_tech'], 1),
+    "improved_destroyer": ("Improved Destroyer (Destroyer III)", "naval", 6, 2, 1940, 2, ['basic_destroyer'], [], [], {"ship":[["DD",2]]}, ['naval_equipment', 'dd_tech'], 1),
+    "improved_carrier": ("Carrier III", "naval", 8, 2, 1940, 2, ['basic_carrier'], [], [], {"ship":[["CV",2]]}, ['naval_equipment', 'cv_tech'], 1),
+    "improved_submarine": ("Submarine III", "naval", 10, 2, 1940, 2, ['basic_submarine'], [], [], {"ship":[["SS",2]]}, ['naval_equipment', 'ss_tech'], 1),
+    "landing_craft": ("Landing Craft", "naval", 12, 2, 1940, 2, ['transport'], [], [], {"nat":{"amph_def":0.15,"inv_prep":30.0,"inv_cap":2.0}}, ['naval_equipment', 'tp_tech'], 2),
+    "advanced_light_cruiser": ("Light Cruiser IV", "naval", 0, 3, 1944, 2, ['improved_light_cruiser', 'advanced_heavy_cruiser'], [], [], {"ship":[["CL",3]]}, ['naval_artillery', 'naval_equipment', 'ca_tech'], 1),
+    "advanced_heavy_cruiser": ("Heavy Cruiser IV", "naval", 1, 3, 1944, 2, ['advanced_light_cruiser', 'improved_heavy_cruiser'], [], [], {"ship":[["CA",3]]}, ['naval_artillery', 'naval_equipment', 'ca_tech'], 1),
+    "advanced_battleship": ("Battleship IV", "naval", 4, 3, 1944, 2, ['improved_battleship'], [], [], {"ship":[["BB",3]]}, ['naval_artillery', 'naval_equipment', 'bb_tech'], 1),
+    "advanced_destroyer": ("Destroyer IV", "naval", 6, 3, 1944, 2, ['improved_destroyer'], [], [], {"ship":[["DD",3]]}, ['naval_equipment', 'dd_tech'], 1),
+    "advanced_carrier": ("Carrier IV", "naval", 8, 3, 1944, 2, ['improved_carrier'], [], [], {"ship":[["CV",3]]}, ['naval_equipment', 'cv_tech'], 1),
+    "advanced_submarine": ("Submarine IV", "naval", 10, 3, 1944, 2, ['improved_submarine'], [], [], {"ship":[["SS",3]]}, ['naval_equipment', 'ss_tech'], 1),
+    "tank_landing_craft": ("Advanced Landing Craft", "naval", 12, 3, 1944, 2, ['landing_craft'], [], [], {"nat":{"amph_atk":0.25,"amph_def":0.5,"inv_prep":15.0,"inv_cap":8.0}}, ['naval_equipment', 'tp_tech'], 2),
+    "radio": ("Radio", "electronics", 0, 0, None, 2, ['electronic_mechanical_engineering'], [], [], {"nat":{"reinforce":0.02,"coord":0.02}}, ['electronics'], 3),
+    "electronic_mechanical_engineering": ("Electronic Mechanical Engineering", "electronics", 1, 0, 1936, 1, [], [], [], {"nat":{"research":0.03}}, ['electronics'], 30),
+    "mechanical_computing": ("Mechanical Computing", "electronics", 3, 0, None, 2.5, ['electronic_mechanical_engineering'], [], [], {"nat":{"research":0.04}}, ['electronics', 'computing_tech'], 10),
+    "basic_fortification_tech": ("Basic Fortification", "electronics", 7, 0, 1936, 1.5, [], [], [], {"nat":{"fort":1.0,"coast_fort":1.0}}, ['cat_fortification'], 1),
+    "coastal_fort_tech_1": ("Improved Coastal Fortifications", "electronics", 8, 0, 1936, 1.5, ['basic_fortification_tech'], [], [], {"nat":{"coast_fort":1.0}}, ['cat_fortification'], 1),
+    "improved_radio": ("Improved Radio", "electronics", 0, 1, 1938, 2, ['radio'], [], [], {"nat":{"reinforce":0.02,"coord":0.02}}, ['electronics'], 3),
+    "cavity_magnatron": ("Cavity Magnetron", "electronics", 1, 1, 1938, 1.25, ['electronic_mechanical_engineering'], [], [], {"unlock":["radar"],"nat":{"coord":0.01,"radar":1.0}}, ['electronics', 'radar_tech'], 1),
+    "basic_encryption": ("Encryption - Polyalphabetical Ciphers", "electronics", 2, 1, 1938, 1, ['computing_machine'], [], [], {"nat":{"encrypt":1.0}}, ['electronics', 'encryption_tech'], 1.75),
+    "computing_machine": ("Computing Machine", "electronics", 3, 1, 1938, 2.5, ['mechanical_computing'], [], [], {"nat":{"research":0.05}}, ['electronics', 'encryption_tech', 'decryption_tech', 'computing_tech'], 6),
+    "basic_decryption": ("Decryption - Frequency Analysis", "electronics", 4, 1, 1938, 1.5, ['computing_machine'], [], [], {"nat":{"decrypt":1.0}}, ['electronics', 'decryption_tech'], 1.5),
+    "land_fort_tech_1": ("Improved Land Forts", "electronics", 6, 1, 1938, 1.5, ['basic_fortification_tech'], [], [], {"nat":{"fort":1.0}}, ['cat_fortification'], 1),
+    "centimetric_radar": ("Centimetric Radar", "electronics", 1, 2, 1940, 1.25, ['cavity_magnatron'], [], [], {"nat":{"coord":0.02,"static_aa":0.1,"radar":1.0}}, ['electronics', 'radar_tech'], 1),
+    "improved_encryption": ("Encryption - Cyclic Permutations", "electronics", 2, 2, 1940, 1, ['improved_computing_machine'], [], [], {"nat":{"encrypt":1.0}}, ['electronics', 'encryption_tech'], 1.75),
+    "improved_computing_machine": ("Improved Computing Machine", "electronics", 3, 2, 1940, 2.5, ['computing_machine'], [], [], {"nat":{"research":0.08}}, ['electronics', 'encryption_tech', 'decryption_tech', 'computing_tech'], 3),
+    "improved_decryption": ("Decryption - Side-channel Attack", "electronics", 4, 2, 1940, 1.5, ['improved_computing_machine'], [], [], {"nat":{"decrypt":1.0}}, ['electronics', 'decryption_tech'], 1.5),
+    "land_fort_tech_2": ("Advanced Land Forts", "electronics", 6, 2, 1940, 1.5, ['land_fort_tech_1'], [], [], {"nat":{"fort":1.0}}, ['cat_fortification'], 1),
+    "coastal_fort_tech_2": ("Advanced Coastal Fortifications", "electronics", 8, 2, 1940, 1.5, ['coastal_fort_tech_1'], [], [], {"nat":{"coast_fort":2.0}}, ['cat_fortification'], 1),
+    "atomic_research": ("Atomic Research", "electronics", 10, 2, 1940, 5, [], [], [], {"nat":{"research":0.04}}, ['nuclear'], 1),
+    "advanced_radio": ("Advanced Radio", "electronics", 0, 3, 1941, 2, ['improved_radio'], [], [], {"nat":{"reinforce":0.01,"coord":0.02}}, ['electronics'], 3),
+    "phased_array": ("Phased Array", "electronics", 1, 3, 1941, 1.25, ['centimetric_radar'], [], [], {"nat":{"coord":0.01,"static_aa":0.1,"radar":1.0}}, ['electronics', 'radar_tech'], 1),
+    "monopulse_radar": ("Monopulse Radar", "electronics", 1, 4, 1942, 1.25, ['phased_array'], [], [], {"nat":{"coord":0.01,"static_aa":0.1,"radar":1.0}}, ['electronics', 'radar_tech'], 1),
+    "advanced_encryption": ("Encryption - Pulse-code Modulation", "electronics", 2, 4, 1942, 1, ['advanced_computing_machine'], [], [], {"nat":{"encrypt":1.0}}, ['electronics', 'encryption_tech'], 1.75),
+    "advanced_computing_machine": ("Advanced Computing Machine", "electronics", 3, 4, 1942, 2.5, ['improved_computing_machine'], [], [], {"nat":{"research":0.08}}, ['electronics', 'encryption_tech', 'decryption_tech', 'computing_tech'], 3),
+    "advanced_decryption": ("Decryption - Automated Deduction", "electronics", 4, 4, 1942, 1.5, ['advanced_computing_machine'], [], [], {"nat":{"decrypt":1.0}}, ['electronics', 'decryption_tech'], 1.5),
+    "basic_machine_tools": ("Basic Machine Tools", "industry", 1, 0, 1936, 1.5, [], [], [], {"nat":{"eff_cap":0.1}}, ['industry', 'cat_production'], 50),
+    "concentrated_industry": ("Concentrated Industry I", "industry", 4, 0, None, 2, ['basic_machine_tools'], [], ['dispersed_industry'], {"nat":{"mil_output":0.15,"dock_output":0.1,"slots":0.2}}, ['industry', 'concentrated_industry_category'], 25),
+    "dispersed_industry": ("Dispersed Industry I", "industry", 5, 0, None, 2, ['basic_machine_tools'], [], ['concentrated_industry'], {"nat":{"mil_output":0.1,"dock_output":0.1,"line_keep":0.1,"eff_start":0.05,"bomb_res":0.15,"slots":0.2}}, ['industry', 'dispersed_industry_category'], 25),
+    "synth_oil_experiments": ("Synthetic Oil Experiments", "industry", 8, 0, 1936, 3, ['fuel_silos'], [], [], {"unlock":["refinery"]}, ['industry', 'synth_resources', 'cat_synth_oil'], 5),
+    "fuel_silos": ("Fuel Storage", "industry", 9, 0, 1936, 1, [], [], [], {"nat":{"oil":0.05}}, ['industry', 'synth_resources'], 1),
+    "fuel_refining": ("Fuel Refining I", "industry", 10, 0, 1936, 3, ['fuel_silos'], [], [], {"nat":{"oil":0.05}}, ['industry', 'synth_resources'], 5),
+    "construction1": ("Construction I", "industry", 12, 0, 1936, 2, [], [], [], {"nat":{"build":0.1}}, ['industry', 'construction_tech'], 50),
+    "excavation1": ("Excavation I", "industry", 13, 0, None, 2, ['construction1'], [], [], {"nat":{"res":0.1}}, ['industry', 'construction_tech', 'excavation_tech'], 1),
+    "improved_machine_tools": ("Improved Machine Tools", "industry", 1, 1, 1937, 1.5, ['basic_machine_tools'], [], [], {"nat":{"eff_cap":0.1}}, ['industry', 'cat_production'], 40),
+    "improved_equipment_conversion": ("Pulverized Coal-Firing Boilers", "industry", 3, 1, 1937, 2, ['improved_machine_tools'], [], [], {"nat":{"mil_output":0.05}}, ['industry', 'cat_production', 'construction_tech', 'excavation_tech'], 1),
+    "concentrated_industry2": ("Concentrated Industry II", "industry", 4, 1, 1937, 2, ['concentrated_industry'], [], [], {"nat":{"mil_output":0.15,"dock_output":0.1,"slots":0.2}}, ['industry', 'concentrated_industry_category'], 20),
+    "dispersed_industry2": ("Dispersed Industry II", "industry", 5, 1, 1937, 2, ['dispersed_industry'], [], [], {"nat":{"mil_output":0.1,"dock_output":0.1,"line_keep":0.1,"eff_start":0.05,"bomb_res":0.1,"slots":0.2}}, ['industry', 'dispersed_industry_category'], 20),
+    "oil_processing": ("Oil Processing", "industry", 7, 1, 1937, 1.5, ['synth_oil_experiments'], [], [], {"nat":{"oil":0.25,"ref_oil":1.0}}, ['industry', 'synth_resources', 'cat_synth_oil'], 1),
+    "rubber_processing": ("Rubber Processing", "industry", 9, 1, 1937, 1.5, ['synth_oil_experiments'], [], [], {"nat":{"ref_rubber":1.0}}, ['industry', 'synth_resources', 'cat_synth_rubber'], 1),
+    "fuel_refining2": ("Fuel Refining II", "industry", 10, 1, 1937, 3, ['fuel_refining'], [], [], {"nat":{"oil":0.05}}, ['industry', 'synth_resources'], 5),
+    "construction2": ("Construction II", "industry", 12, 1, 1937, 2, ['construction1'], [], [], {"nat":{"build":0.1}}, ['industry', 'construction_tech'], 4),
+    "excavation2": ("Excavation II", "industry", 13, 1, 1937, 2, ['construction2'], [], [], {"nat":{"res":0.1}}, ['industry', 'construction_tech', 'excavation_tech'], 1),
+    "advanced_machine_tools": ("Advanced Machine Tools", "industry", 1, 2, 1939, 2, ['improved_machine_tools'], [], [], {"nat":{"eff_cap":0.1}}, ['industry', 'cat_production'], 15),
+    "advanced_equipment_conversion": ("High-Efficiency Turbines", "industry", 3, 2, 1939, 2, ['improved_equipment_conversion'], [], [], {"nat":{"mil_output":0.05}}, ['industry', 'cat_production', 'construction_tech', 'excavation_tech'], 1),
+    "concentrated_industry3": ("Concentrated Industry III", "industry", 4, 2, 1939, 2, ['concentrated_industry2'], [], [], {"nat":{"mil_output":0.15,"dock_output":0.1,"slots":0.2}}, ['industry', 'concentrated_industry_category'], 15),
+    "dispersed_industry3": ("Dispersed Industry III", "industry", 5, 2, 1939, 2, ['dispersed_industry2'], [], [], {"nat":{"mil_output":0.1,"dock_output":0.1,"line_keep":0.1,"eff_start":0.05,"bomb_res":0.1,"slots":0.2}}, ['industry', 'dispersed_industry_category'], 15),
+    "improved_oil_processing": ("Improved Oil Processing", "industry", 7, 2, 1939, 1.5, ['oil_processing'], [], [], {"nat":{"oil":0.25,"ref_oil":1.0}}, ['industry', 'synth_resources', 'cat_synth_oil'], 1),
+    "improved_rubber_processing": ("Improved Rubber Processing", "industry", 9, 2, 1939, 1.5, ['rubber_processing'], [], [], {"nat":{"ref_rubber":1.0}}, ['industry', 'synth_resources', 'cat_synth_rubber'], 1),
+    "fuel_refining3": ("Fuel Refining III", "industry", 10, 2, 1939, 3, ['fuel_refining2'], [], [], {"nat":{"oil":0.05}}, ['industry', 'synth_resources'], 5),
+    "construction3": ("Construction III", "industry", 12, 2, 1939, 2, ['construction2'], [], [], {"nat":{"build":0.1}}, ['industry', 'construction_tech'], 10),
+    "excavation3": ("Excavation III", "industry", 13, 2, 1939, 2, ['construction3'], [], [], {"nat":{"res":0.1}}, ['industry', 'construction_tech', 'excavation_tech'], 1),
+    "assembly_line_production": ("Assembly Line Production", "industry", 1, 3, 1941, 2, ['advanced_machine_tools'], [], [], {"nat":{"eff_cap":0.1}}, ['industry', 'cat_production'], 15),
+    "concentrated_industry4": ("Concentrated Industry IV", "industry", 4, 3, 1941, 2, ['concentrated_industry3'], [], [], {"nat":{"mil_output":0.15,"dock_output":0.1,"slots":0.2}}, ['industry', 'concentrated_industry_category'], 15),
+    "dispersed_industry4": ("Dispersed Industry IV", "industry", 5, 3, 1941, 2, ['dispersed_industry3'], [], [], {"nat":{"mil_output":0.1,"dock_output":0.1,"line_keep":0.1,"eff_start":0.05,"bomb_res":0.1,"slots":0.2}}, ['industry', 'dispersed_industry_category'], 15),
+    "advanced_oil_processing": ("Advanced Oil Processing", "industry", 7, 3, 1941, 1.5, ['improved_oil_processing'], [], [], {"nat":{"oil":0.25,"ref_oil":1.0}}, ['industry', 'synth_resources', 'cat_synth_oil'], 1),
+    "advanced_rubber_processing": ("Advanced Rubber Processing", "industry", 9, 3, 1941, 1.5, ['improved_rubber_processing'], [], [], {"nat":{"ref_rubber":1.0}}, ['industry', 'synth_resources', 'cat_synth_rubber'], 1),
+    "fuel_refining4": ("Fuel Refining IV", "industry", 10, 3, 1941, 3, ['fuel_refining3'], [], [], {"nat":{"oil":0.05}}, ['industry', 'synth_resources'], 5),
+    "construction4": ("Construction IV", "industry", 12, 3, 1941, 2, ['construction3'], [], [], {"nat":{"build":0.1}}, ['industry', 'construction_tech'], 4),
+    "excavation4": ("Excavation IV", "industry", 13, 3, 1941, 2, ['construction4'], [], [], {"nat":{"res":0.1}}, ['industry', 'construction_tech', 'excavation_tech'], 1),
+    "flexible_line": ("Flexible Line", "industry", 0, 4, 1943, 2.5, ['assembly_line_production'], [], ['streamlined_line'], {"nat":{"eff_cap":0.1,"line_keep":0.2}}, ['industry', 'cat_production'], 15),
+    "streamlined_line": ("Streamlined Line", "industry", 2, 4, 1943, 2.5, ['assembly_line_production'], [], ['flexible_line'], {"nat":{"eff_cap":0.1,"eff_gain":0.1}}, ['industry', 'cat_production'], 15),
+    "concentrated_industry5": ("Concentrated Industry V", "industry", 4, 4, 1943, 2, ['concentrated_industry4'], [], [], {"nat":{"mil_output":0.15,"dock_output":0.1,"slots":0.2}}, ['industry', 'concentrated_industry_category'], 4),
+    "dispersed_industry5": ("Dispersed Industry V", "industry", 5, 4, 1943, 2, ['dispersed_industry4'], [], [], {"nat":{"mil_output":0.1,"dock_output":0.1,"line_keep":0.1,"eff_start":0.05,"bomb_res":0.1,"slots":0.2}}, ['industry', 'dispersed_industry_category'], 15),
+    "modern_oil_processing": ("Modern Oil Processing", "industry", 7, 4, 1943, 1.5, ['advanced_oil_processing'], [], [], {"nat":{"oil":0.25,"ref_oil":1.0}}, ['industry', 'synth_resources', 'cat_synth_oil'], 0.5),
+    "modern_rubber_processing": ("Modern Rubber Processing", "industry", 9, 4, 1943, 1.5, ['advanced_rubber_processing'], [], [], {"nat":{"ref_rubber":1.0}}, ['industry', 'synth_resources', 'cat_synth_rubber'], 0.5),
+    "fuel_refining5": ("Fuel Refining V", "industry", 10, 4, 1943, 3, ['fuel_refining4'], [], [], {"nat":{"oil":0.05}}, ['industry', 'synth_resources'], 5),
+    "construction5": ("Construction V", "industry", 12, 4, 1943, 2, ['construction4'], [], [], {"nat":{"build":0.1}}, ['industry', 'construction_tech'], 4),
+    "excavation5": ("Excavation V", "industry", 13, 4, 1943, 2, ['construction5'], [], [], {"nat":{"res":0.1}}, ['industry', 'construction_tech', 'excavation_tech'], 2),
+}
+# soft, hard, defence, breakthrough, piercing, armour, hardness, air attack, km/h, IC, year, name
+EQUIP_GENS = {
+    "inf_eq": {0: (3.0, 0.5, 20.0, 2.0, 1.0, 0.0, 0.0, 0.0, 4.0, 0.43, 1918, 'Basic Infantry Equipment'), 1: (6.0, 1.0, 22.0, 3.0, 4.0, 0.0, 0.0, 0.0, 4.0, 0.5, 1936, 'Infantry Equipment I'), 2: (9.0, 1.5, 28.0, 4.0, 5.0, 0.0, 0.0, 0.0, 4.0, 0.58, 1939, 'Infantry Equipment II'), 3: (12.0, 2.0, 34.0, 5.0, 10.0, 0.0, 0.0, 0.0, 4.0, 0.69, 1942, 'Infantry Equipment III')},
+    "support_eq": {1: (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 1918, 'Support Equipment')},
+    "trucks": {0: (0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.1, 0.0, 10.0, 2.5, 1936, 'Early Truck'), 1: (0.0, 0.0, 0.0, 2.0, 0.0, 0.0, 0.1, 0.0, 10.0, 2.5, 1936, 'Truck')},
+    "light_tank": {0: (8.0, 4.0, 4.0, 18.0, 15.0, 5.0, 0.8, 0.0, 6.0, 7.0, 1914, 'Great War Tank'), 1: (13.0, 4.0, 4.0, 26.0, 10.0, 10.0, 0.8, 0.0, 10.0, 8.0, 1934, 'Light Tank I'), 2: (16.0, 6.0, 5.0, 36.0, 30.0, 15.0, 0.8, 0.0, 12.0, 9.0, 1936, 'Light Tank II'), 3: (22.0, 9.0, 6.0, 46.0, 50.0, 30.0, 0.8, 0.0, 14.0, 10.0, 1941, 'Light Tank III')},
+    "modern_tank": {1: (40.0, 32.0, 10.0, 84.0, 131.0, 130.0, 0.98, 0.0, 10.0, 28.0, 1945, 'Modern Tank')},
+    "artillery": {1: (26.0, 2.0, 11.0, 10.0, 5.0, 0.0, 0.0, 0.0, 4.0, 3.5, 1934, 'Towed Artillery'), 2: (30.0, 3.0, 15.0, 13.0, 7.0, 0.0, 0.0, 0.0, 4.0, 4.0, 1939, 'Improved Artillery'), 3: (34.0, 4.0, 19.0, 16.0, 9.0, 0.0, 0.0, 0.0, 4.0, 4.5, 1942, 'Advanced Artillery')},
+    "anti_tank": {1: (4.0, 20.0, 4.0, 0.0, 60.0, 0.0, 0.1, 0.0, 4.0, 4.0, 1936, 'Towed Anti-Tank'), 2: (4.0, 22.0, 4.0, 0.0, 90.0, 0.0, 0.1, 0.0, 4.0, 5.0, 1940, 'Improved Anti-Tank'), 3: (4.0, 30.0, 4.0, 0.0, 125.0, 0.0, 0.1, 0.0, 4.0, 6.0, 1943, 'Advanced Anti-Tank')},
+    "anti_air": {1: (3.0, 7.0, 4.0, 1.0, 25.0, 0.0, 0.0, 19.0, 4.0, 4.0, 1936, 'Towed Anti-Aircraft'), 2: (3.5, 11.0, 4.0, 1.0, 60.0, 0.0, 0.0, 25.0, 4.0, 5.0, 1940, 'Improved Anti-Air'), 3: (4.0, 15.0, 4.0, 1.0, 88.0, 0.0, 0.0, 32.0, 4.0, 6.0, 1943, 'Advanced Anti-Air')},
+    "mechanized": {1: (0.0, 0.0, 26.0, 6.0, 11.0, 10.0, 0.6, 0.0, 8.0, 8.0, 1940, 'Mechanized Equipment I'), 2: (0.0, 0.0, 30.0, 8.0, 16.0, 15.0, 0.7, 0.0, 10.0, 10.0, 1942, 'Mechanized Equipment II'), 3: (0.0, 0.0, 34.0, 10.0, 21.0, 20.0, 0.75, 0.0, 12.0, 12.0, 1944, 'Mechanized Equipment III')},
+    "medium_tank": {1: (19.0, 14.0, 5.0, 36.0, 61.0, 60.0, 0.9, 0.0, 8.0, 12.0, 1939, 'Medium Tank I'), 2: (25.0, 19.0, 7.0, 51.0, 81.0, 80.0, 0.9, 0.0, 9.0, 13.0, 1941, 'Medium Tank II'), 3: (32.0, 24.0, 9.0, 66.0, 91.0, 90.0, 0.9, 0.0, 10.0, 14.0, 1943, 'Medium Tank III')},
+    "heavy_tank": {1: (15.0, 12.0, 6.0, 36.0, 35.0, 70.0, 0.95, 0.0, 5.0, 25.0, 1934, 'Heavy Tank I'), 2: (27.0, 30.0, 8.0, 52.0, 111.0, 110.0, 0.95, 0.0, 6.0, 27.0, 1941, 'Heavy Tank II'), 3: (35.0, 40.0, 9.0, 67.0, 131.0, 130.0, 0.95, 0.0, 6.0, 30.0, 1943, 'Heavy Tank III')},
+    "rocket_artillery": {1: (32.0, 1.0, 13.0, 17.0, 2.0, 0.0, 0.0, 0.0, 4.0, 4.0, 1940, 'Towed Rocket Artillery'), 2: (40.0, 1.0, 16.0, 20.0, 2.0, 0.0, 0.0, 0.0, 4.0, 5.0, 1943, 'Advanced Rocket Artillery')},
+}
+# HOI4's 1936 research slots and technologies per country
+RESEARCH_SLOTS_1936 = {"Austria": 3, "Belgium": 3, "Bulgaria": 3, "Czechoslovakia": 3, "Denmark": 3, "British Empire": 4, "Estonia": 3, "Finland": 3, "French Republic": 3, "German Reich": 4, "Greece": 3, "Netherlands": 3, "Hungary": 3, "Ireland": 3, "Kingdom of Italy": 4, "Empire of Japan": 3, "Latvia": 3, "Lithuania": 3, "Luxembourg": 2, "Norway": 3, "Second Polish Republic": 3, "Portugal": 2, "Romania": 3, "Soviet Union": 3, "Spain": 3, "Sweden": 3, "Switzerland": 3, "Turkey": 3, "United States": 4, "Yugoslavia": 3}
+START_TECHS = {
+    "Austria": ['early_fighter', 'gw_artillery', 'infantry_weapons', 'infantry_weapons1', 'tech_engineers', 'tech_mountaineers', 'tech_recon', 'tech_support', 'tech_trucks'],
+    "Belgium": ['CAS1', 'basic_light_tank', 'early_bomber', 'early_destroyer', 'early_fighter', 'fuel_refining', 'fuel_silos', 'gw_artillery', 'gwtank', 'infantry_weapons', 'infantry_weapons1', 'interwar_antitank', 'motorised_infantry', 'naval_bomber1', 'tech_engineers', 'tech_mountaineers', 'tech_recon', 'tech_support', 'tech_trucks'],
+    "Bulgaria": ['early_fighter', 'fuel_silos', 'infantry_weapons', 'infantry_weapons1', 'motorised_infantry', 'tech_engineers', 'tech_mountaineers', 'tech_support', 'tech_trucks'],
+    "Czechoslovakia": ['CAS1', 'basic_fortification_tech', 'basic_light_tank', 'early_bomber', 'early_fighter', 'fuel_silos', 'gw_artillery', 'gwtank', 'improved_light_tank', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'interwar_antitank', 'motorised_infantry', 'tech_engineers', 'tech_mountaineers', 'tech_recon', 'tech_support', 'tech_trucks'],
+    "Denmark": ['early_destroyer', 'early_fighter', 'early_heavy_cruiser', 'early_submarine', 'gw_artillery', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'tech_engineers', 'tech_recon', 'tech_support', 'tech_trucks', 'transport'],
+    "British Empire": ['CAS1', 'basic_destroyer', 'basic_light_tank', 'early_battlecruiser', 'early_battleship', 'early_bomber', 'early_carrier', 'early_destroyer', 'early_fighter', 'early_heavy_cruiser', 'early_light_cruiser', 'early_submarine', 'electronic_mechanical_engineering', 'fuel_refining', 'fuel_silos', 'gw_artillery', 'gwtank', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'motorised_infantry', 'naval_bomber1', 'radio', 'tech_engineers', 'tech_recon', 'tech_support', 'tech_trucks', 'transport'],
+    "Estonia": ['early_fighter', 'early_submarine', 'gw_artillery', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'tech_support'],
+    "Finland": ['early_heavy_cruiser', 'early_submarine', 'gw_artillery', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'tech_engineers', 'tech_recon', 'tech_support', 'tech_trucks'],
+    "French Republic": ['CAS1', 'basic_battlecruiser', 'basic_destroyer', 'basic_fortification_tech', 'basic_heavy_cruiser', 'basic_heavy_tank', 'basic_light_cruiser', 'basic_light_tank', 'basic_submarine', 'early_battlecruiser', 'early_battleship', 'early_bomber', 'early_carrier', 'early_destroyer', 'early_fighter', 'early_heavy_cruiser', 'early_light_cruiser', 'early_submarine', 'fuel_refining', 'fuel_silos', 'gw_artillery', 'gwtank', 'improved_light_tank', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'motorised_infantry', 'naval_bomber1', 'tactical_bomber1', 'tech_engineers', 'tech_mountaineers', 'tech_recon', 'tech_support', 'tech_trucks', 'transport'],
+    "German Reich": ['CAS1', 'basic_battleship', 'basic_destroyer', 'basic_heavy_cruiser', 'basic_heavy_tank', 'basic_light_cruiser', 'basic_light_tank', 'basic_submarine', 'early_battlecruiser', 'early_battleship', 'early_bomber', 'early_destroyer', 'early_fighter', 'early_heavy_cruiser', 'early_light_cruiser', 'early_submarine', 'fighter1', 'fuel_refining', 'fuel_silos', 'gw_artillery', 'gwtank', 'improved_light_tank', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'motorised_infantry', 'naval_bomber1', 'strategic_bomber1', 'synth_oil_experiments', 'tactical_bomber1', 'tech_engineers', 'tech_mountaineers', 'tech_recon', 'tech_support', 'tech_trucks', 'transport'],
+    "Greece": ['early_battleship', 'early_bomber', 'early_destroyer', 'early_fighter', 'early_heavy_cruiser', 'early_light_cruiser', 'early_submarine', 'fuel_silos', 'gw_artillery', 'infantry_weapons', 'synth_oil_experiments', 'tech_engineers', 'tech_mountaineers', 'tech_recon', 'tech_support', 'tech_trucks', 'transport'],
+    "Netherlands": ['basic_destroyer', 'basic_light_cruiser', 'early_bomber', 'early_destroyer', 'early_fighter', 'early_heavy_cruiser', 'early_light_cruiser', 'early_submarine', 'fuel_refining', 'fuel_silos', 'gw_artillery', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'marines', 'tech_recon', 'tech_support', 'tech_trucks', 'transport'],
+    "Hungary": ['fuel_silos', 'gw_artillery', 'gwtank', 'infantry_weapons', 'infantry_weapons1', 'tech_recon', 'tech_support', 'tech_trucks'],
+    "Ireland": ['fuel_silos', 'infantry_weapons', 'infantry_weapons1', 'tech_trucks'],
+    "Kingdom of Italy": ['CAS1', 'basic_battleship', 'basic_light_tank', 'early_battlecruiser', 'early_battleship', 'early_bomber', 'early_destroyer', 'early_fighter', 'early_heavy_cruiser', 'early_light_cruiser', 'early_submarine', 'fuel_refining', 'fuel_silos', 'gw_artillery', 'gwtank', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'motorised_infantry', 'naval_bomber1', 'tech_engineers', 'tech_mountaineers', 'tech_support', 'tech_trucks', 'transport'],
+    "Empire of Japan": ['basic_battleship', 'basic_carrier', 'basic_destroyer', 'basic_heavy_cruiser', 'basic_light_cruiser', 'basic_light_tank', 'basic_submarine', 'early_battlecruiser', 'early_battleship', 'early_carrier', 'early_destroyer', 'early_heavy_cruiser', 'early_light_cruiser', 'early_submarine', 'fuel_refining', 'fuel_silos', 'gw_artillery', 'gwtank', 'improved_light_tank', 'infantry_weapons', 'infantry_weapons1', 'marines', 'motorised_infantry', 'synth_oil_experiments', 'tech_engineers', 'tech_military_police', 'tech_recon', 'tech_support', 'tech_trucks', 'transport'],
+    "Latvia": ['early_fighter', 'early_submarine', 'gw_artillery', 'infantry_weapons', 'infantry_weapons1', 'tech_support', 'tech_trucks'],
+    "Lithuania": ['early_fighter', 'gw_artillery', 'infantry_weapons', 'infantry_weapons1', 'tech_support', 'tech_trucks'],
+    "Luxembourg": ['early_fighter', 'gw_artillery', 'infantry_weapons', 'infantry_weapons1', 'tech_engineers', 'tech_support', 'tech_trucks'],
+    "Norway": ['early_bomber', 'early_destroyer', 'early_fighter', 'early_heavy_cruiser', 'early_submarine', 'gw_artillery', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'tech_engineers', 'tech_recon', 'tech_support', 'tech_trucks'],
+    "Second Polish Republic": ['CAS1', 'early_bomber', 'early_destroyer', 'early_fighter', 'early_submarine', 'fuel_silos', 'gw_artillery', 'gwtank', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'synth_oil_experiments', 'tech_engineers', 'tech_mountaineers', 'tech_recon', 'tech_support', 'tech_trucks'],
+    "Portugal": ['CAS1', 'basic_submarine', 'early_bomber', 'early_destroyer', 'early_fighter', 'early_submarine', 'gw_artillery', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'tech_engineers', 'tech_support', 'tech_trucks', 'transport'],
+    "Romania": ['basic_light_tank', 'early_destroyer', 'early_fighter', 'early_submarine', 'gw_artillery', 'gwtank', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'motorised_infantry', 'tech_engineers', 'tech_mountaineers', 'tech_support', 'tech_trucks'],
+    "Soviet Union": ['basic_light_tank', 'basic_submarine', 'early_battlecruiser', 'early_battleship', 'early_bomber', 'early_destroyer', 'early_fighter', 'early_heavy_cruiser', 'early_light_cruiser', 'early_submarine', 'fighter1', 'fuel_refining', 'fuel_silos', 'gw_artillery', 'gwtank', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'motorised_infantry', 'naval_bomber1', 'strategic_bomber1', 'synth_oil_experiments', 'tech_engineers', 'tech_military_police', 'tech_mountaineers', 'tech_recon', 'tech_support', 'tech_trucks', 'transport'],
+    "Spain": ['basic_destroyer', 'basic_heavy_cruiser', 'early_battleship', 'early_bomber', 'early_destroyer', 'early_fighter', 'early_heavy_cruiser', 'early_light_cruiser', 'early_submarine', 'gw_artillery', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'naval_bomber1', 'tech_engineers', 'tech_mountaineers', 'tech_recon', 'tech_support', 'tech_trucks', 'transport'],
+    "Sweden": ['CAS1', 'basic_destroyer', 'basic_light_tank', 'early_bomber', 'early_destroyer', 'early_fighter', 'early_heavy_cruiser', 'early_light_cruiser', 'early_submarine', 'gw_artillery', 'gwtank', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'interwar_antitank', 'naval_bomber1', 'tech_engineers', 'tech_recon', 'tech_support', 'tech_trucks', 'transport'],
+    "Switzerland": ['CAS1', 'early_fighter', 'fuel_silos', 'infantry_weapons', 'infantry_weapons1', 'tech_engineers', 'tech_mountaineers', 'tech_recon', 'tech_support', 'tech_trucks'],
+    "Turkey": ['CAS1', 'basic_light_tank', 'early_battlecruiser', 'early_battleship', 'early_bomber', 'early_destroyer', 'early_fighter', 'early_light_cruiser', 'early_submarine', 'gw_artillery', 'gwtank', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'tech_mountaineers', 'tech_recon', 'tech_support', 'tech_trucks', 'transport'],
+    "United States": ['CAS1', 'basic_carrier', 'basic_light_cruiser', 'basic_submarine', 'early_battlecruiser', 'early_battleship', 'early_bomber', 'early_carrier', 'early_destroyer', 'early_fighter', 'early_heavy_cruiser', 'early_light_cruiser', 'early_submarine', 'fuel_refining', 'fuel_silos', 'gw_artillery', 'gwtank', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'marines', 'motorised_infantry', 'naval_bomber1', 'tech_engineers', 'tech_recon', 'tech_support', 'tech_trucks', 'transport'],
+    "Yugoslavia": ['early_destroyer', 'early_fighter', 'early_light_cruiser', 'early_submarine', 'gw_artillery', 'gwtank', 'infantry_weapons', 'infantry_weapons1', 'interwar_antiair', 'interwar_antitank', 'tech_engineers', 'tech_mountaineers', 'tech_support', 'tech_trucks'],
+}
 
 
 ASTAR_STEPS = ((0, 1, 1.0), (1, 0, 1.0), (0, -1, 1.0), (-1, 0, 1.0),
@@ -4943,6 +7918,9 @@ def init_player_armies(nation_name, initial_player_units):
 
 
 class Division:
+    # stats that come from the support companies and the country's techs (set by apply_template)
+    dig, atk_bonus, casualty, reinforce, reliab, suppress, initiative, terrain = 1.0, 0.0, 1.0, 1.0, 0.0, 0.0, 0.0, {}
+
     def __init__(self, d_id, nation_id, x, y, template, name=None):
         self.id, self.nation_id = d_id, nation_id
         self.key = template.get("key", "inf")
@@ -4977,13 +7955,19 @@ class Division:
         hpf = max(0.0, self.hp) / self.max_hp if self.max_hp else 1.0
         orgf = self.org / self.max_org if self.max_org else 1.0
         self.key, self.type, self.symbol = t["key"], t["name"], t["symbol"]
-        self.speed = t.get("speed", 1)
-        self.max_hp, self.max_org = t["hp"], max(1.0, t.get("org", 60))
+        st = nation_template_stats(NATIONS[self.nation_id], t) if self.nation_id < len(NATIONS) else t
+        self.speed = st.get("speed", 1)
+        self.max_hp, self.max_org = st["hp"], max(1.0, st.get("org", 60))
         self.hp, self.org = self.max_hp * hpf, self.max_org * orgf
-        self.soft, self.hard = t.get('soft', 15), t.get('hard', 1)
-        self.base_def, self.brk = t.get('def', 10), t.get('brk', 10)
-        self.armor, self.pierce, self.hardness = t.get('armor', 0), t.get('pierce', 4), t.get('hardness', 0.0)
-        self.aa = t.get('aa', 0.0)
+        self.soft, self.hard = st.get('soft', 15), st.get('hard', 1)
+        self.base_def, self.brk = st.get('def', 10), st.get('brk', 10)
+        self.armor, self.pierce, self.hardness = st.get('armor', 0), st.get('pierce', 4), st.get('hardness', 0.0)
+        self.aa = st.get('aa', 0.0)
+        self.dig, self.atk_bonus, self.casualty = st.get("dig", 1.0), st.get("atk_bonus", 0.0), st.get("casualty", 1.0)
+        self.reinforce, self.reliab = st.get("reinforce", 1.0), st.get("reliab", 0.0)
+        self.suppress, self.initiative = st.get("suppress", 0.0), st.get("initiative", 0.0)
+        # its own copy (new pairs too): divisions share nothing, so a loaded game is the very same object graph
+        self.terrain = {k: (v[0], v[1]) for k, v in st.get("terrain", {}).items()}
 
     @property
     def kind(self):
@@ -6007,8 +8991,8 @@ BUILDINGS = {  # HOI4 construction costs (IC)
              "desc": "Builds ships in the SHIPYARDS tab. Coastal states only."},
     "infra": {"name": "Infrastructure", "cost": 6000, "max": 5,
               "desc": "Roads and railways: +10% construction speed in the state per level (max 5)."},
-    "refinery": {"name": "Synthetic Refinery", "cost": 14500, "slot": True,
-                 "desc": "Makes 4 oil and 2 rubber a day out of coal."},
+    "refinery": {"name": "Synthetic Refinery", "cost": 14500, "slot": True, "tech": "refinery",
+                 "desc": "Makes 4 oil and 2 rubber a day out of coal (more with research). Needs Synthetic Oil Experiments."},
     "fort": {"name": "Land Fort", "cost": 3000, "max": 5,
              "desc": "Bunkers: +15% defence per level for our troops defending in the state (max 5)."},
     "air_base": {"name": "Air Base", "cost": 1250, "max": 10,
@@ -6244,6 +9228,14 @@ def used_slots(s):
     return s["civ"] + s["mil"] + s["dock"] + s["refinery"]
 
 
+def slot_cap(s):
+    """Building slots of a state: its own, plus what its controller's research adds (HOI4 Concentrated Industry)."""
+    c = s.get("controller", -1)
+    if c is None or c < 0 or c >= len(NATIONS):
+        return s["slots"]
+    return s["slots"] + int(s["slots"] * rmod(NATIONS[c], "slots"))
+
+
 def manpower_rate(n):
     """Share of the population the conscription law lets us call up (HOI4: 1.5% - 20%)."""
     return CONSCRIPTION_LAWS[n["laws"]["conscription"]]["pct"] * ECONOMY_LAWS[n["laws"]["economy"]].get("manpower", 1.0)
@@ -6271,15 +9263,17 @@ def update_industry(political_map):
         f, fp = state_shares(s, c)
         f *= 1 - s.get("bomb", 0.0)   # bombed factories are out until repaired
         t = sums[c]
+        cn = NATIONS[c]
         t["civ"] += s["civ"] * f
         t["mil"] += s["mil"] * f
         t["dock"] += s["dock"] * f
         t["pop"] += s["pop"] * fp
+        ex = 1.0 + rmod(cn, "res")      # excavation techs
         for r, v in s["res"].items():
-            t["res"][r] += v * f
+            t["res"][r] += v * f * (ex + (rmod(cn, "oil") if r == "oil" else 0.0))
         if s["refinery"]:
-            t["res"]["oil"] += 4 * s["refinery"] * f
-            t["res"]["rubber"] += 2 * s["refinery"] * f
+            t["res"]["oil"] += (4 + rmod(cn, "ref_oil")) * s["refinery"] * f
+            t["res"]["rubber"] += (2 + rmod(cn, "ref_rubber")) * s["refinery"] * f
     for n in NATIONS:
         t = sums[n["id"]]
         off = STATE_OFFMAP.get(nation_key(n)) if n["is_alive"] else None
@@ -6344,7 +9338,7 @@ def civ_budget(n):
 
 
 def build_speed(n):
-    return CIV_OUTPUT * (1.0 + n.get("output_bonus", 0.0)) * (1.25 if "captain" in n.get("advisors", []) else 1.0) \
+    return CIV_OUTPUT * (1.0 + n.get("output_bonus", 0.0) + rmod(n, "build")) * (1.25 if "captain" in n.get("advisors", []) else 1.0) \
         * ECONOMY_LAWS[n["laws"]["economy"]].get("build", 1.0)
 
 
@@ -6360,12 +9354,12 @@ def build_block(n, kind, s):
         return "We don't control this state"
     if b.get("coastal") and not s["coastal"]:
         return "Dockyards need a coast"
-    if b.get("slot") and s["slots"] - used_slots(s) - pending_in(n, s) <= 0:
+    if b.get("slot") and slot_cap(s) - used_slots(s) - pending_in(n, s) <= 0:
         return f"No free building slots ({s['slots']} used)"
     if b.get("max") and s.get(kind, 0) + pending_in(n, s, kind) >= b["max"]:
         return f"Already level {b['max']}"
     if b.get("tech") and b["tech"] not in n.get("tech_unlocks", set()):
-        return "Needs Radar research"
+        return {"radar": "Needs Cavity Magnetron research", "refinery": "Needs Synthetic Oil Experiments research"}.get(b["tech"], "Needs research")
     return None
 
 
@@ -6424,8 +9418,8 @@ def add_factories(n, kind, k):
         return 0
     added = 0
     for _ in range(k):
-        s = max(own, key=lambda s: (s["slots"] - used_slots(s) > 0, s["infra"], s["pop"]))
-        if s["slots"] - used_slots(s) <= 0:
+        s = max(own, key=lambda s: (slot_cap(s) - used_slots(s) > 0, s["infra"], s["pop"]))
+        if slot_cap(s) - used_slots(s) <= 0:
             s["slots"] += 1
         s[kind] += 1
         added += 1
@@ -6514,7 +9508,7 @@ def line_output(n, line, ratio=None):
     if ratio is None:
         ratio = resource_ratio(n)
     rf = min((ratio[r] for r in equip_res(n, line["eq"])), default=1.0)
-    mult = production_multiplier(n) * (1.0 + n.get("output_bonus", 0.0))
+    mult = production_multiplier(n) * (1.0 + n.get("output_bonus", 0.0) + rmod(n, "mil_output"))
     return line["f"] * MIL_OUTPUT * line["eff"] * mult * max(0.25, rf) / equip_cost(n, line["eq"])
 
 
@@ -6530,7 +9524,8 @@ def resource_ratio(n):
 def production_day(n):
     trim_lines(n)
     ratio = resource_ratio(n)
-    cap = EFFICIENCY_CAP + n.get("eff_bonus", 0.0)
+    cap = EFFICIENCY_CAP + n.get("eff_bonus", 0.0) + rmod(n, "eff_cap")
+    gain = 1.0 + rmod(n, "eff_gain")
     for line in n.get("lines", []):
         out = line_output(n, line, ratio) if line["f"] else 0.0
         line["daily"] = out
@@ -6541,9 +9536,11 @@ def production_day(n):
             fam, old = line["eq"], n["stockpile"].get(line["eq"], 0)
             g = n.get("air_tech", {}).get(fam, 0)
             n.setdefault("stock_gen", {})[fam] = (n["stock_gen"].get(fam, g) * old + g * k) / (old + k)
+        if k:
+            new_equipment(n, line["eq"], k)   # the newest model joins the army
         n["stockpile"][line["eq"]] = n["stockpile"].get(line["eq"], 0) + k
         if line["f"]:
-            line["eff"] = min(cap, line["eff"] + 0.004 * cap * cap / max(0.05, line["eff"]))
+            line["eff"] = min(cap, line["eff"] + 0.004 * gain * cap * cap / max(0.05, line["eff"]))
 
 
 def set_line_shares(n, shares, eff=START_EFFICIENCY):
@@ -6561,7 +9558,7 @@ def set_line_shares(n, shares, eff=START_EFFICIENCY):
         f = got[k]
         while f > 0:
             part = min(MAX_FACTORIES_PER_LINE, f)
-            line = lines.pop(k, None) or {"eq": k, "f": 0, "eff": eff, "acc": 0.0}
+            line = lines.pop(k, None) or {"eq": k, "f": 0, "eff": eff + rmod(n, "eff_start"), "acc": 0.0}
             line["f"] = part
             new.append(line)
             f -= part
@@ -6569,10 +9566,12 @@ def set_line_shares(n, shares, eff=START_EFFICIENCY):
 
 
 def equipment_unlocked(n, key):
+    """Can country n build this? (HOI4: it needs the tech for a first model.)"""
     if EQUIPMENT[key].get("air"):
         return n.get("air_tech", {}).get(key, -1) >= 0
-    need = EQUIPMENT[key].get("tech")
-    return not need or need in n.get("tech_unlocks", set())
+    if key in EQUIP_GENS and "eq_gen" in n:
+        return n["eq_gen"].get(key, -1) >= 0
+    return True
 
 
 def nation_summary_1936(name):
@@ -6619,6 +9618,9 @@ def ai_production(n):
     shares = dict(LINE_SHARES["major" if n["major"] else "minor"])
     if n["major"] and equipment_unlocked(n, "medium_tank"):
         shares["medium_tank"] = shares.pop("light_tank", 0.16)
+    if n["major"] and "mech" in n.get("templates", ()) and equipment_unlocked(n, "mechanized"):
+        shares["mechanized"] = 0.05
+        shares["trucks"] = max(0.03, shares.get("trucks", 0.09) - 0.04)
     if n["major"] and best_gen(n, "strat_bomber") >= 1 and nation_key(n) in ("British Empire", "German Reich", "Soviet Union", "United States"):
         shares["strat_bomber"] = 0.03
         shares["inf_eq"] -= 0.03
@@ -7082,7 +10084,7 @@ def generate_historical_nations(world_map):
     """Lay out the 1936 borders and cities from HISTORICAL_BORDERS_RAW / HISTORICAL_CITIES."""
     political_map = [[-1 for _ in range(WORLD_WIDTH)] for _ in range(WORLD_HEIGHT)]
     char_to_name = {d["char"]: d["name"] for d in ALL_NATIONS_DATA}
-    name_to_id = {n["name"].replace(" (YOU)", ""): n["id"] for n in NATIONS}
+    name_to_id = {nation_key(n): n["id"] for n in NATIONS}
     for y, row in enumerate(HISTORICAL_BORDERS_RAW[:WORLD_HEIGHT]):
         for x, ch in enumerate(row[:WORLD_WIDTH]):
             n_id = name_to_id.get(char_to_name.get(ch))
@@ -7094,7 +10096,7 @@ def generate_historical_nations(world_map):
     CITY_SIZES.clear()
     for n in NATIONS:
         owned = []
-        for city_name, (cx, cy), size in HISTORICAL_CITIES.get(n["name"].replace(" (YOU)", ""), []):
+        for city_name, (cx, cy), size in HISTORICAL_CITIES.get(nation_key(n), []):
             if political_map[cy][cx] != n["id"]:
                 # Coastal smoothing can sink a tile; move the city to the nearest tile still owned
                 owned = owned or [(x, y) for y in range(WORLD_HEIGHT) for x in range(WORLD_WIDTH) if political_map[y][x] == n["id"]]
@@ -7426,8 +10428,14 @@ FLAG_DECALS = {
     }
 }
 
+FLAG_DECALS["Republican Spain"] = FLAG_DECALS["Spain"]
+FLAG_DECALS["Nationalist Spain"] = {"big": ["fa0a0" * 10, "fdcdc" * 10, "fa0a0" * 10], "small": ["3a0dc3a0dcca0dcca0dc"]}
+
+
 def flag_cells(name, size):
     """Rows of (mask or symbol, fg, bg) cells for a nation's flag, or None."""
+    if name == "Spain" and (nation_by_key("Spain") or {}).get("civil_side") == "nationalist":
+        name = "Nationalist Spain"   # Franco's Spain flies red and gold
     rows = FLAG_DECALS.get(name, {}).get(size)
     if not rows:
         return None
@@ -7513,7 +10521,8 @@ PACT_NOTICE = 30  # days between breaking a non-aggression pact and being able t
 
 
 def nation_key(n):
-    return n["name"].replace(" (YOU)", "")
+    """The name the game knows a country by (its data, its trees). Nationalist Spain is still 'Spain' here."""
+    return n.get("key") or n["name"].replace(" (YOU)", "")
 
 
 def ideology_opinion(a, b):
@@ -8424,7 +11433,10 @@ def draw_political_panel(stdscr, player, world_tension, y0, x0, width, y_max):
     elif player.get("subjects"):
         lines.append([("Puppets ", curses.color_pair(6)), (list_names(player["subjects"], 3), curses.color_pair(3) | curses.A_BOLD)])
     lines.append([("[V] Politics  [P] Diplomacy  [N] Focus", curses.color_pair(6) | curses.A_BOLD)])
-    lines.append([("[E] Research  [B] Build  [Y] Military  [R] Navy", curses.color_pair(6) | curses.A_BOLD)])
+    free = sum(1 for x in player.get("research", ()) if x is None)
+    lines.append([("[E] Research", curses.color_pair(6) | curses.A_BOLD),
+                  (f" ({free} free)" if free else "", curses.color_pair(1) | curses.A_BOLD),
+                  ("  [B] Build  [Y] Military  [R] Navy", curses.color_pair(6) | curses.A_BOLD)])
     aw = [w for w in AIR["wings"] if w.nation_id == player["id"]]
     lines.append([("Air force ", curses.color_pair(6)), (f"{len(aw)} wings, {sum(w.planes for w in aw)} planes", curses.A_BOLD),
                   ("  Air XP ", curses.color_pair(6)), (f"{player.get('air_xp', 0):.0f}", curses.A_BOLD)])
@@ -8456,9 +11468,12 @@ EQUIPMENT = {  # HOI4 1936 equipment: production cost in IC per unit and resourc
     "anti_tank": {"name": "Anti-Tank Guns", "short": "AT", "cost": 4.0, "res": {"steel": 1, "tungsten": 1}},
     "trucks": {"name": "Motorized", "short": "Truck", "cost": 2.5, "res": {"steel": 1, "rubber": 1}},
     "light_tank": {"name": "Light Tanks", "short": "LTank", "cost": 8.0, "res": {"steel": 1, "chromium": 1}},
-    "medium_tank": {"name": "Medium Tanks", "short": "MTank", "cost": 12.0, "res": {"steel": 2, "chromium": 1},
-                    "tech": "medium_tanks"},
+    "medium_tank": {"name": "Medium Tanks", "short": "MTank", "cost": 12.0, "res": {"steel": 2, "chromium": 1}},
     "anti_air": {"name": "Anti-Air Guns", "short": "AA", "cost": 4.0, "res": {"steel": 2}},
+    "heavy_tank": {"name": "Heavy Tanks", "short": "HTank", "cost": 25.0, "res": {"steel": 2, "chromium": 2}},
+    "modern_tank": {"name": "Modern Tanks", "short": "ModT", "cost": 28.0, "res": {"steel": 2, "chromium": 2}},
+    "mechanized": {"name": "Mechanized", "short": "Mech", "cost": 8.0, "res": {"steel": 2, "rubber": 1}},
+    "rocket_artillery": {"name": "Rocket Artillery", "short": "Rkt", "cost": 4.0, "res": {"steel": 1, "tungsten": 1}},
     "fighter": {"name": "Fighters", "short": "Ftr", "cost": 24.0, "res": {"aluminium": 3, "rubber": 1}, "air": True},
     "heavy_fighter": {"name": "Heavy Fighters", "short": "HFtr", "cost": 28.0, "res": {"aluminium": 2, "rubber": 1}, "air": True},
     "cas": {"name": "Close Air Support", "short": "CAS", "cost": 22.0, "res": {"aluminium": 2, "rubber": 1}, "air": True},
@@ -8472,7 +11487,7 @@ def equip_cost(n, key):
     """IC per unit: planes cost what the generation we build costs (HOI4 build_cost_ic)."""
     if EQUIPMENT[key].get("air"):
         return PLANE_STATS[key][max(min(PLANE_STATS[key]), n.get("air_tech", {}).get(key, min(PLANE_STATS[key])))][12]
-    return EQUIPMENT[key]["cost"]
+    return equip_gen_cost(n, key)
 
 
 def equip_res(n, key):
@@ -8505,9 +11520,24 @@ BATTALIONS = {  # HOI4 battalions with 1936 equipment: line battalions take comb
                     "train": 45, "terrain": {"f": (-0.2, 0.0), "u": (-0.4, -0.1), "m": (-0.1, 0.0), "s": (-0.1, 0.0)}},
     "medium_armor": {"name": "Medium Tanks", "short": "MARM", "mp": 500, "eq": {"medium_tank": 50}, "org": 10, "hp": 2,
                      "soft": 18, "hard": 12, "def": 6, "brk": 36, "armor": 30, "ap": 40, "hardness": 0.9, "width": 2,
-                     "kmh": 8, "train": 50, "terrain": {"f": (-0.2, 0.0), "u": (-0.4, -0.1), "m": (-0.1, 0.0), "s": (-0.1, 0.0)},
-                     "tech": "medium_tanks"},
+                     "kmh": 8, "train": 50, "terrain": {"f": (-0.2, 0.0), "u": (-0.4, -0.1), "m": (-0.1, 0.0), "s": (-0.1, 0.0)}},
+    # unlocked by research (HOI4 1.19 Heavy Tank I, Modern Tank, Mechanized Infantry, Rocket Artillery; stats on the
+    # same scale as the battalions above)
+    "heavy_armor": {"name": "Heavy Tanks", "short": "HARM", "mp": 500, "eq": {"heavy_tank": 50}, "org": 10, "hp": 2,
+                    "soft": 14, "hard": 10, "def": 7, "brk": 36, "armor": 47, "ap": 23, "hardness": 0.95, "width": 2,
+                    "kmh": 5, "train": 55, "terrain": {"f": (-0.2, 0.0), "u": (-0.4, -0.1), "m": (-0.15, 0.0), "s": (-0.15, 0.0)}},
+    "modern_armor": {"name": "Modern Tanks", "short": "MODT", "mp": 500, "eq": {"modern_tank": 50}, "org": 10, "hp": 2,
+                     "soft": 38, "hard": 27, "def": 12, "brk": 84, "armor": 87, "ap": 87, "hardness": 0.98, "width": 2,
+                     "kmh": 10, "train": 60, "terrain": {"f": (-0.2, 0.0), "u": (-0.4, -0.1), "m": (-0.1, 0.0), "s": (-0.1, 0.0)}},
+    "mechanized": {"name": "Mechanized", "short": "MECH", "mp": 1000, "eq": {"inf_eq": 100, "mechanized": 40}, "org": 60,
+                   "hp": 30, "soft": 6, "hard": 1, "def": 26, "brk": 6, "armor": 7, "ap": 7, "hardness": 0.6, "width": 2,
+                   "kmh": 8, "train": 40, "terrain": {"f": (-0.1, 0.0), "u": (-0.1, 0.0), "s": (-0.1, 0.0)}},
+    "rocket_artillery": {"name": "Rocket Artillery", "short": "RKT", "mp": 500, "eq": {"rocket_artillery": 12}, "org": 0,
+                         "hp": 0.6, "soft": 31, "hard": 1, "def": 12, "brk": 10, "ap": 2, "width": 3, "kmh": 4, "train": 25},
 }
+for _k in ("artillery", "anti_tank", "mountaineers", "marines", "motorized", "light_armor", "medium_armor", "heavy_armor",
+           "modern_armor", "mechanized", "rocket_artillery"):
+    BATTALIONS[_k]["tech"] = _k        # HOI4: a battalion needs its tech (TECHS' "unlock"); infantry and cavalry don't
 BATTALION_ORDER = tuple(BATTALIONS)
 SUPPORT = {  # support companies: no combat width, special effects
     "engineers": {"name": "Engineers", "short": "ENG", "mp": 300, "eq": {"support_eq": 10, "inf_eq": 30}, "hp": 2, "soft": 1,
@@ -8524,7 +11554,16 @@ SUPPORT = {  # support companies: no combat width, special effects
                   "effect": "Reinforces 50% faster"},
     "anti_air": {"name": "Anti-Air", "short": "AA", "mp": 300, "eq": {"anti_air": 24}, "hp": 0.2, "soft": 1.8, "hard": 4.2, "def": 2.4,
                  "brk": 0.6, "ap": 25, "aa": 15.2, "effect": "Shoots at enemy planes over the division: less CAS damage, less air superiority penalty"},
+    "maintenance": {"name": "Maintenance Company", "short": "MNT", "mp": 300, "eq": {"support_eq": 20, "inf_eq": 30}, "hp": 0.4,
+                    "def": 2, "effect": "Repairs what can be repaired: 15% less equipment needed to refill the division"},
+    "military_police": {"name": "Military Police", "short": "MP", "mp": 200, "eq": {"inf_eq": 40, "support_eq": 10}, "hp": 0.4,
+                        "soft": 1, "def": 3, "brk": 1, "effect": "Keeps order behind the lines: less resistance in an occupied state it stands in"},
+    "signal": {"name": "Signal Company", "short": "SIG", "mp": 200, "eq": {"support_eq": 15}, "hp": 0.2,
+               "effect": "Radios and field telephones: organisation comes back 25% faster"},
 }
+for _k in SUPPORT:
+    SUPPORT[_k]["tech"] = _k           # every support company needs its tech
+del _k
 SUPPORT_ORDER = tuple(SUPPORT)
 GRID_COLS, GRID_ROWS, SUPPORT_SLOTS = 5, 5, 5   # HOI4's division designer
 KIND_INFO = {  # map symbol, division-name list, short label, description
@@ -8563,15 +11602,17 @@ def grid_from_list(bats):
     return grid
 
 
-def template_stats(grid, support):
+def template_stats(grid, support, n=None):
     """A division's stats from its battalions, the HOI4 way: strength and attacks add up, organisation and
-    hardness average out, armour and piercing lean on the best battalion, the slowest sets the speed."""
+    hardness average out, armour and piercing lean on the best battalion, the slowest sets the speed.
+    With a country: its equipment models and its techs (see nation_bat)."""
     line = [b for col in grid for b in col if b]
     sup = [s for s in support if s]
     if not line:
         return None
-    B = [BATTALIONS[b] for b in line]
-    S = [SUPPORT[s] for s in sup]
+    B = [nation_bat(n, b, BATTALIONS) if n else BATTALIONS[b] for b in line]
+    S = [nation_bat(n, s, SUPPORT) if n else SUPPORT[s] for s in sup]
+    um = n.get("umods", {}) if n else {}
     every = B + S
     st = {"hp": round(sum(x.get("hp", 0) for x in every), 1),
           "org": round(sum(x["org"] for x in B) / len(B), 1)}
@@ -8598,27 +11639,34 @@ def template_stats(grid, support):
         a = sum(x.get("terrain", {}).get(t, (0.0, 0.0))[0] for x in B) / len(B)
         d = sum(x.get("terrain", {}).get(t, (0.0, 0.0))[1] for x in B) / len(B)
         if "engineers" in sup and t in "fhus":
-            a += 0.1
+            a += 0.1 + (um.get("engineers", {}).get("urban", 0.0) if t == "u" else 0.0)
         if abs(a) > 1e-9 or abs(d) > 1e-9:
             terrain[t] = (round(a, 3), round(d, 3))
     st["terrain"] = terrain
     marines = sum(1 for b in line if BATTALIONS[b].get("amphibious"))
     st["amphibious"] = 0.5 if marines * 2 >= len(line) else 0
-    st["dig"] = 2.0 if "engineers" in sup else 1.0
-    st["atk_bonus"] = 0.05 if "recon" in sup else 0.0
-    st["casualty"] = 0.75 if "field_hospital" in sup else 1.0
-    st["reinforce"] = 1.5 if "logistics" in sup else 1.0
+    st["dig"] = 2.0 + 0.5 * um.get("engineers", {}).get("dig", 0.0) if "engineers" in sup else 1.0
+    st["atk_bonus"] = 0.05 + 0.01 * um.get("recon", {}).get("recon", 0.0) if "recon" in sup else 0.0
+    st["casualty"] = 0.75 * (1 - 0.5 * um.get("field_hospital", {}).get("casualty", 0.0)) if "field_hospital" in sup else 1.0
+    st["reinforce"] = 1.5 - um.get("logistics", {}).get("logi", 0.0) if "logistics" in sup else 1.0
+    st["reliab"] = 0.15 + um.get("maintenance", {}).get("reliab", 0.0) if "maintenance" in sup else 0.0
+    st["suppress"] = 1.0 + um.get("military_police", {}).get("suppress", 0.0) if "military_police" in sup else 0.0
+    st["initiative"] = 0.25 + um.get("signal", {}).get("initiative", 0.0) if "signal" in sup else 0.0
     st["aa"] = round(sum(x.get("aa", 0) for x in every), 1)
     count = {}
     for b in line:
         count[b] = count.get(b, 0) + 1
     half = len(line) / 2
-    if count.get("light_armor") or count.get("medium_armor"):
+    if any(count.get(b) for b in ("light_armor", "medium_armor", "heavy_armor", "modern_armor")):
         kind = "arm"
     else:
+        count["motorized"] = count.get("motorized", 0) + count.get("mechanized", 0)
         kind = next((k for b, k in (("motorized", "mot"), ("marines", "mar"), ("mountaineers", "mtn"), ("cavalry", "cav"))
                      if count.get(b, 0) >= half), None)
-        kind = kind or ("inf2" if count.get("artillery") or "support_artillery" in sup else "inf")
+        kind = kind or ("inf2" if count.get("artillery") or count.get("rocket_artillery") or "support_artillery" in sup else "inf")
+        count["motorized"] -= count.get("mechanized", 0)
+        if not count["motorized"]:
+            del count["motorized"]
     st["kind"] = kind
     st["symbol"] = KIND_INFO[kind][0]
     st["bats"] = ", ".join(f"{c} {BATTALIONS[b]['name']}" for b, c in sorted(count.items(), key=lambda kv: -kv[1])) + \
@@ -8650,7 +11698,21 @@ ORG_DAMAGE, STR_DAMAGE = 0.13, 0.05   # land combat: organisation breaks long be
 AMPHIBIOUS_PENALTY = 0.6              # attack lost while storming a beach (marines cancel most of it)
 LANDING_HOURS = 48
 MAX_INVASION_DIVISIONS = 10
-INVASION_PREP_HOURS = 480             # 20 days of preparation with the troops gathered at the port
+INVASION_PREP_HOURS = 480             # 20 days of preparation with the troops gathered at the port (with HOI4's Transport Ship tech)
+
+
+def invasion_prep_hours(n):
+    """HOI4: 50 days to prepare a naval invasion, 30 less with Transport Ships, 30 more off with Landing Craft."""
+    if "techs" not in n:
+        return INVASION_PREP_HOURS
+    return max(5.0, 50.0 - rmod(n, "inv_prep")) * 24
+
+
+def invasion_cap(n):
+    """Divisions one naval invasion can carry: 8, +2 for Transport Ships, +2 / +8 for landing craft."""
+    if "techs" not in n:
+        return MAX_INVASION_DIVISIONS
+    return int(8 + rmod(n, "inv_cap"))
 INVASION_SUPERIORITY = 0.7            # share of naval dominance needed in the landing zone to launch
 CONVOYS_PER_DIVISION = 10
 CONVOY_SPEED = 0.5                    # sea tiles per hour: twice infantry's march, a bit quicker than motorized
@@ -8760,8 +11822,8 @@ def division_bonus(u):
     """(attack, defence) multipliers from technology, the general, battle plans, experience and army size."""
     n = NATIONS[u.nation_id]
     xp = xp_level(u.xp)[2]
-    atk = 1.0 + 0.02 * n["tech_atk"] + xp + TEMPLATE_BY_KEY[u.key].get("atk_bonus", 0.0)
-    dfn = 1.0 + 0.02 * n["tech_def"] + xp
+    atk = 1.0 + 0.02 * n["tech_atk"] + xp + u.atk_bonus + n.get("r_atk", 0.0)
+    dfn = 1.0 + 0.02 * n["tech_def"] + xp + n.get("r_def", 0.0)
     if u.nation_id == 0 and u.army_id is not None:
         army = next((a for a in PLAYER_ARMIES if a.id == u.army_id), None)
         if army:
@@ -8790,7 +11852,7 @@ LAND_BATTLES = {}   # (x, y) of the defended tile -> the battle there (see land_
 def fort_bonus(t, owner):
     s = state_at(t.x, t.y)
     if s and s["fort"] and owner != -1 and owner in friends_of(NATIONS[t.nation_id]):
-        return 0.15 * s["fort"]
+        return (0.15 + 0.02 * rmod(NATIONS[t.nation_id], "fort")) * s["fort"]   # fort techs make each level count more
     return 0.0
 
 
@@ -8803,25 +11865,27 @@ def land_hit(u, t, owner, ter, attacker=True):
         z = AIR_ZONE_GRID[t.y][t.x]
         p = AIR["pen"].get(z)
         if p and p.get(t.nation_id):
-            d_mul *= 1 - p[t.nation_id] * (1 - aa_shield(t))
+            d_mul *= 1 - p[t.nation_id] * (1 - aa_shield(t)) * scw_slow(u.nation_id, t.nation_id)
         if AIR["support"]:
-            a_mul += AIR["support"].get((z, u.nation_id), 0.0)
+            a_mul += AIR["support"].get((z, u.nation_id), 0.0) * scw_slow(u.nation_id, t.nation_id)
     tu, tt = TEMPLATE_BY_KEY[u.key], TEMPLATE_BY_KEY[t.key]
     if attacker:
-        a_mul += TERRAIN_COMBAT.get(ter, ("", 0.0))[1] + tu.get("terrain", {}).get(ter, (0.0, 0.0))[0]
-        if u.landing > 0:  # storming a beach: marines are trained for it
-            a_mul -= 0.1 if tu.get("amphibious") else AMPHIBIOUS_PENALTY
+        a_mul += TERRAIN_COMBAT.get(ter, ("", 0.0))[1] + u.terrain.get(ter, (0.0, 0.0))[0]
+        if u.landing > 0:  # storming a beach: marines are trained for it; landing craft help, coastal forts don't
+            dn = NATIONS[t.nation_id]
+            a_mul -= ((0.1 if tu.get("amphibious") else AMPHIBIOUS_PENALTY) * (1 - rmod(NATIONS[u.nation_id], "amph_atk"))
+                      + 0.5 * rmod(dn, "amph_def") + 0.05 * rmod(dn, "coast_fort"))
     strength = 0.25 + 0.75 * max(0.0, u.hp) / u.max_hp
     att = (u.soft * (1.0 - t.hardness) + u.hard * t.hardness) * max(0.1, a_mul) * strength
     if attacker:   # t holds the tile: defence, digging in, terrain and forts
-        dv = t.base_def * max(0.1, d_mul) * (1.0 + 0.04 * t.entrench + tt.get("terrain", {}).get(ter, (0.0, 0.0))[1]
+        dv = t.base_def * max(0.1, d_mul) * (1.0 + 0.04 * t.entrench + t.terrain.get(ter, (0.0, 0.0))[1]
                                               + fort_bonus(t, owner))
     else:          # t is the attacker: its breakthrough shields it
         dv = t.brk * max(0.1, d_mul)
-    hits = 0.1 * min(att, dv) + 0.4 * max(0.0, att - dv)
+    hits = (0.1 * min(att, dv) + 0.4 * max(0.0, att - dv)) * scw_slow(u.nation_id, t.nation_id)   # (a slow civil war)
     arm = 0.5 if t.armor > u.pierce else 1.0
     t.org = max(0.0, t.org - hits * ORG_DAMAGE * arm * random.uniform(0.7, 1.3))
-    dmg = hits * STR_DAMAGE * arm * tt.get("casualty", 1.0) * random.uniform(0.7, 1.3)
+    dmg = hits * STR_DAMAGE * arm * t.casualty * random.uniform(0.7, 1.3)
     t.hp -= dmg
     if dmg > 0:
         war_casualties(u.nation_id, t.nation_id, dmg / t.max_hp * tt["man_cost"])
@@ -9206,11 +12270,11 @@ def land_upkeep_hour(units):
         if u.in_battle:
             u.in_battle -= 1
         else:
-            u.org = min(u.max_org, u.org + u.max_org * (0.01 if u.moved else 0.025))
+            u.org = min(u.max_org, u.org + u.max_org * (0.01 if u.moved else 0.025) * (1 + u.initiative))
         if u.moved:
             u.entrench = 0.0
         elif not u.in_battle:
-            u.entrench = min(5.0, u.entrench + TEMPLATE_BY_KEY[u.key].get("dig", 1.0) / 24)
+            u.entrench = min(5.0, u.entrench + u.dig / 24)
         if u.retreat_hours:
             u.retreat_hours -= 1
         if u.landing:
@@ -9228,17 +12292,18 @@ def reinforce_divisions(units, political_map):
         if political_map[u.y][u.x] not in friends_of(n):
             continue
         t = TEMPLATE_BY_KEY[u.key]
-        frac = min(u.max_hp - u.hp, u.max_hp * 0.1 * t.get("reinforce", 1.0)) / u.max_hp
+        frac = min(u.max_hp - u.hp, u.max_hp * 0.1 * u.reinforce * (1 + rmod(n, "reinforce"))) / u.max_hp
         if t["man_cost"] * frac > n["manpower"]:
             frac = n["manpower"] / t["man_cost"]
+        use = 1.0 - u.reliab   # a maintenance company saves some of the equipment
         for k, v in t["eq"].items():
-            if v * frac > n["stockpile"].get(k, 0):
-                frac = n["stockpile"].get(k, 0) / v
+            if v * use * frac > n["stockpile"].get(k, 0):
+                frac = n["stockpile"].get(k, 0) / (v * use)
         if frac <= 0:
             continue
         n["manpower"] -= int(round(t["man_cost"] * frac))
         for k, v in t["eq"].items():
-            n["stockpile"][k] = n["stockpile"].get(k, 0) - int(round(v * frac))
+            n["stockpile"][k] = n["stockpile"].get(k, 0) - int(round(v * use * frac))
         u.hp = min(u.max_hp, u.hp + u.max_hp * frac)
 
 
@@ -9271,7 +12336,7 @@ def ai_pick_template(n):
     order += ["inf2", "inf", "cav"]
     for key in order:
         t = best_template(n, key)
-        if t and ai_can_afford(n, t):
+        if t and template_unlocked(n, t) and ai_can_afford(n, t):
             return t
     return None
 
@@ -10283,7 +13348,7 @@ def convoy_war(political_map):
 
 def naval_output(n):
     """IC our dockyards turn out per day."""
-    return n.get("dockyards", 0) * NAVAL_IC_PER_DOCKYARD * production_multiplier(n)
+    return n.get("dockyards", 0) * NAVAL_IC_PER_DOCKYARD * production_multiplier(n) * (1 + rmod(n, "dock_output"))
 
 
 def ship_cost(n, stype, gen):
@@ -10294,7 +13359,9 @@ def queue_ship(n, stype, count=1, head_start=0.0):
     if stype == "CONVOY":
         n["naval_queue"].append({"type": "CONVOY", "gen": 0, "count": count, "progress": 0.0, "cost": CONVOY_BATCH_COST})
         return
-    gen = n["naval_tech"].get(stype, 1)
+    gen = n["naval_tech"].get(stype, -1)
+    if gen < 0:   # no design for this type yet (HOI4: research it first)
+        return False
     cost = ship_cost(n, stype, gen)
     n["naval_queue"].append({"type": stype, "gen": gen, "count": count, "progress": cost * head_start, "cost": cost})
 
@@ -10304,7 +13371,7 @@ def naval_production(n, political_map):
     news = []
     if not n["naval_queue"] or not n.get("dockyards"):
         return news
-    per_dock = NAVAL_IC_PER_DOCKYARD * production_multiplier(n)
+    per_dock = NAVAL_IC_PER_DOCKYARD * production_multiplier(n) * (1 + rmod(n, "dock_output"))
     free = n["dockyards"]
     for item in n["naval_queue"]:
         if free <= 0:
@@ -10391,8 +13458,9 @@ def apply_naval_reward(n, rw, political_map):
                 left -= 1
     if rw.get("navy_xp"):
         n["navy_xp"] = n.get("navy_xp", 0) + rw["navy_xp"]
-    for t in rw.get("naval_tech", []):
-        n["naval_tech"][t] = min(3, n["naval_tech"].get(t, 0) + 1)
+    for t in rw.get("naval_tech", []):   # HOI4: a research bonus for that ship type (+100%, a year early)
+        add_tech_bonus(n, "a focus", [tid for tid, tt in TECHS.items() if any(x == t for x, _ in tt[T_FX].get("ship", ()))],
+                       bonus=1.0, uses=1, ahead=1.0)
     if rw.get("doctrine_discount"):
         n["doctrine_discount"] = min(0.75, n.get("doctrine_discount", 0.0) + rw["doctrine_discount"])
     for k in ("raiding", "escort", "repair_bonus", "invasion_bonus"):
@@ -10406,6 +13474,8 @@ def apply_naval_reward(n, rw, political_map):
         n["convoys_start"] = max(n.get("convoys_start", 0), n["convoys"])
     if rw.get("ships") and has_coast:
         for t, c in rw["ships"].items():
+            if n["naval_tech"].get(t, -1) < 0:
+                give_tech(n, SHIP_FIRST_TECH[t])   # the focus brings the design with it
             queue_ship(n, t, c, head_start=0.5)
         news.append("New warships laid down.")
     if rw.get("new_ship") and has_coast:
@@ -10431,9 +13501,10 @@ def ai_navy(n, political_map, world_map):
             # merchant shipping first when the sea lanes are bleeding
             n["naval_queue"].insert(0, {"type": "CONVOY", "gen": 0, "count": 5, "progress": 0.0, "cost": CONVOY_BATCH_COST})
         elif len(n["naval_queue"]) < 2:
-            plan = AI_SHIP_PLANS.get(key, "DD SS DD").split()
+            plan = [t for t in AI_SHIP_PLANS.get(key, "DD SS DD").split() if n["naval_tech"].get(t, -1) >= 0]
             n["ai_build"] = n.get("ai_build", 0) + 1
-            queue_ship(n, plan[n["ai_build"] % len(plan)])
+            if plan:
+                queue_ship(n, plan[n["ai_build"] % len(plan)])
     # doctrine
     want = AI_DOCTRINE.get(key, "trade_interdiction" if n["ideology"] in ("Fascist", "Communist") else "fleet_in_being")
     cost = doctrine_cost(n)
@@ -10653,7 +13724,7 @@ def plan_invasion(n, divisions, beach, world_map, political_map, auto=False):
     if not any(0 <= bx + dx < WORLD_WIDTH and 0 <= by + dy < WORLD_HEIGHT and world_map[by + dy][bx + dx] == 0
                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
         return None, "That tile isn't on the coast"
-    divisions = [u for u in divisions if u.sea is None][:MAX_INVASION_DIVISIONS]
+    divisions = [u for u in divisions if u.sea is None][:invasion_cap(NATIONS[divisions[0].nation_id]) if divisions else 0]
     if not divisions:
         return None, "Select the divisions for the landing first"
     lms = {}
@@ -10673,7 +13744,7 @@ def plan_invasion(n, divisions, beach, world_map, political_map, auto=False):
     word = OPERATION_WORDS[(pid * 7 + n["id"] * 3 + bx + by) % len(OPERATION_WORDS)]
     plan = {"id": pid, "nation": n["id"], "name": f"{OPERATION_PREFIX.get(nation_key(n), 'Operation')} {word}",
             "units": [], "port": port, "beach": (bx, by), "anchor": anchor, "zone": SEA_REGION[anchor[1]][anchor[0]],
-            "route": route, "prep": 0.0, "need": float(INVASION_PREP_HOURS * (1.0 - min(0.6, n.get("invasion_bonus", 0.0)))),
+            "route": route, "prep": 0.0, "need": float(invasion_prep_hours(n) * (1.0 - min(0.6, n.get("invasion_bonus", 0.0)))),
             "state": "PREPARING", "auto": auto, "waited": 0}
     if not assign_to_plan(plan, divisions, world_map, political_map):
         return None, f"None of those divisions can march to {PORTS[port]['name']}"
@@ -11761,7 +14832,7 @@ def industry_rows(player, tab, state):
             kind = state["pick"]
             ours = [s for s in STATES if s["controller"] == player["id"]]
             ok = sorted((s for s in ours if build_block(player, kind, s) is None),
-                        key=lambda s: (s["core"] != player["id"], -(s["slots"] - used_slots(s)), -s["infra"], -s["pop"]))
+                        key=lambda s: (s["core"] != player["id"], -(slot_cap(s) - used_slots(s)), -s["infra"], -s["pop"]))
             return [("state", s) for s in ok]
         return [("build", k) for k in BUILD_ORDER] + [("project", i) for i in range(len(player.get("construction", [])))]
     if tab == 1:
@@ -11852,7 +14923,7 @@ def sel_line(stdscr, y, width, is_sel, parts, x_max):
 def state_row_parts(s, player, is_sel):
     core = s["core"] == player["id"]
     owned = s["owner"] == player["id"]
-    free = s["slots"] - used_slots(s)
+    free = slot_cap(s) - used_slots(s)
     return [(f" {'►' if is_sel else ' '} {fit(s['name'], 22):<23}", curses.A_BOLD),
             (f"{'core' if core else 'owned' if owned else 'occupied':<9}",
              curses.color_pair(2) if core else curses.color_pair(6) if owned else curses.color_pair(3)),
@@ -12085,12 +15156,12 @@ def do_industry(tab, rows, sel, key, player, state):
                 if target == "new":
                     if free <= 0:
                         return "ERROR: No free military factories - take some off another line first."
-                    lines.append({"eq": data, "f": min(free, MAX_FACTORIES_PER_LINE, 3), "eff": START_EFFICIENCY, "acc": 0.0})
+                    lines.append({"eq": data, "f": min(free, MAX_FACTORIES_PER_LINE, 3), "eff": START_EFFICIENCY + rmod(player, "eff_start"), "acc": 0.0})
                     state["sel"] = len(lines) - 1
                     return f"New line: {EQUIPMENT[data]['name']} ({lines[-1]['f']} factories)."
                 line = lines[target]
                 if line["eq"] != data:
-                    line.update({"eq": data, "eff": START_EFFICIENCY, "acc": 0.0})
+                    line.update({"eq": data, "eff": START_EFFICIENCY + rmod(player, "eff_start"), "acc": 0.0})
                 state["sel"] = target
                 return f"Line switched to {EQUIPMENT[data]['name']} (efficiency starts over at 10%)."
             return None
@@ -12548,10 +15619,10 @@ def do_designer(rows, sel, key, player, units, ds):
         elif enter or key in (ord('+'), ord('='), ord('-'), ord('_')):
             step = -1 if key in (ord('-'), ord('_')) else 1
             if c == GRID_COLS:
-                ds["support"][r] = cycle_choice([s for s in SUPPORT_ORDER if s not in ds["support"] or s == ds["support"][r]],
-                                                ds["support"][r], step)
+                ds["support"][r] = cycle_choice([s for s in SUPPORT_ORDER if (s not in ds["support"] or s == ds["support"][r])
+                                                 and unit_unlocked(player, s)], ds["support"][r], step)
             else:
-                opts = [b for b in BATTALION_ORDER if not BATTALIONS[b].get("tech") or BATTALIONS[b]["tech"] in player.get("tech_unlocks", set())]
+                opts = [b for b in BATTALION_ORDER if unit_unlocked(player, b)]
                 ds["grid"][c][r] = cycle_choice(opts, ds["grid"][c][r], step)
         elif key in (curses.KEY_DC, curses.KEY_BACKSPACE, 127, 8):
             if c == GRID_COLS:
@@ -12723,11 +15794,14 @@ def draw_shipyard_tab(stdscr, player, rows, sel, top, H, W, width):
             if data == "CONVOY":
                 text = f" {'►' if is_sel else ' '} {'10 Convoys':<22} {'transport':<14} {CONVOY_BATCH_COST:>6}  (carry trade and invasion troops)"
             else:
-                gen = player["naval_tech"].get(data, 1)
-                st = SHIP_STATS[data][gen]
-                days = st[S_COST] / max(0.1, min(MAX_DOCKS_PER_LINE, player.get("dockyards", 0)) * NAVAL_IC_PER_DOCKYARD * production_multiplier(player))
-                text = (f" {'►' if is_sel else ' '} {SHIP_TYPES[data]['name']:<22} {GEN_LABEL[gen] + ' hull':<14} {st[S_COST]:>6}  {st[S_HP]:>4} {st[S_LG]:>5} "
+                gen = player["naval_tech"].get(data, -1)
+                st = SHIP_STATS[data][max(0, gen)]
+                days = st[S_COST] / max(0.1, min(MAX_DOCKS_PER_LINE, player.get("dockyards", 0)) * NAVAL_IC_PER_DOCKYARD * production_multiplier(player) * (1 + rmod(player, "dock_output")))
+                text = (f" {'►' if is_sel else ' '} {SHIP_TYPES[data]['name']:<22} {GEN_LABEL.get(gen, '-') + ' hull':<14} {st[S_COST]:>6}  {st[S_HP]:>4} {st[S_LG]:>5} "
                         f"{st[S_HG]:>5} {st[S_TP]:>4} {st[S_ARM]:>5} {st[S_KN]:>3}  {days:.0f}" if player.get("dockyards") else "")
+                if gen < 0:
+                    text = f" {'►' if is_sel else ' '} {SHIP_TYPES[data]['name']:<22} no design yet: research it [E] (Naval)"
+                    attr = attr if is_sel else curses.A_DIM
             if is_sel:
                 safe_draw(stdscr, y, 2, " " * width, attr)
             safe_draw(stdscr, y, 2, fit(text, width), attr)
@@ -12738,7 +15812,7 @@ def draw_shipyard_tab(stdscr, player, rows, sel, top, H, W, width):
             y += 1
             item = queue[data]
             name = "Convoys" if item["type"] == "CONVOY" else f"{SHIP_TYPES[item['type']]['name']} ({GEN_LABEL[item['gen']]})"
-            per_day = lines[data] * NAVAL_IC_PER_DOCKYARD * production_multiplier(player)
+            per_day = lines[data] * NAVAL_IC_PER_DOCKYARD * production_multiplier(player) * (1 + rmod(player, "dock_output"))
             eta = f"next in {(item['cost'] - item['progress']) / per_day:.0f}d" if per_day > 0 else "waiting for free dockyards"
             if is_sel:
                 safe_draw(stdscr, y, 2, " " * width, attr)
@@ -12767,9 +15841,10 @@ def draw_shipyard_tab(stdscr, player, rows, sel, top, H, W, width):
     draw_rule(stdscr, H - 5, 0, W - 1)
     kind, data = rows[sel]
     if kind == "build" and data != "CONVOY":
-        gen = player["naval_tech"].get(data, 1)
+        gen = player["naval_tech"].get(data, -1)
         draw_parts(stdscr, H - 4, 2, [(SHIP_TYPES[data]["name"], curses.A_BOLD),
-                                      (f"  {GEN_LABEL[gen]} design. Better hulls come from research [E] and naval focuses.", curses.color_pair(6))], x_max)
+                                      (f"  {GEN_LABEL.get(gen, '-')} design. Better hulls come from research [E] and naval focuses." if gen >= 0
+                                       else "  We have no design: research one in [E] Research, Naval folder.", curses.color_pair(6))], x_max)
         safe_draw(stdscr, H - 3, 2, "[ENTER] Lay down one more (dockyards work the queue from the top)." if player.get("dockyards")
                   else "✗ We have no dockyards.", curses.color_pair(2) if player.get("dockyards") else curses.color_pair(1))
     elif kind == "build":
@@ -12870,7 +15945,8 @@ def do_military(tab, rows, sel, key, player, units, world_map, political_map, st
                 return "ERROR: We have no dockyards."
             if not nation_ports(player, political_map):
                 return "ERROR: We hold no naval base to launch ships from."
-            queue_ship(player, data)
+            if queue_ship(player, data) is False:
+                return f"ERROR: We have no {SHIP_TYPES[data]['name']} design yet - research one in [E] Research (Naval)."
             return f"SUCCESS: {('10 convoys' if data == 'CONVOY' else SHIP_TYPES[data]['name'])} added to the production queue."
         if kind == "queue":
             item = player["naval_queue"].pop(data)
@@ -12928,7 +16004,7 @@ def game_date(tick):
     return f"{tick % 24:02d}:00, {d.day} {MONTHS[d.month - 1]} {d.year}"
 
 
-FOCUS_DAY_SCALE = 1.0  # share of the real HOI4 focus time (most focuses take 35 or 70 days)
+FOCUS_DAY_SCALE = 0.8  # share of the real HOI4 focus time: HOI4's 35 and 70 days become 28 and 56
 
 
 def focus_days(focus):
@@ -12947,7 +16023,7 @@ def req_ids(focus):
 
 def generic_size(n):
     """Generic-tree manpower/tank rewards are sized for a great power; smaller countries get a share."""
-    base = next((d["manpower"] for d in ALL_NATIONS_DATA if d["name"] == n["name"].replace(" (YOU)", "")), 1500)
+    base = next((d["manpower"] for d in ALL_NATIONS_DATA if d["name"] == nation_key(n)), 1500)
     return min(1.0, base / 1500)
 
 
@@ -12996,13 +16072,58 @@ def describe_reward(rw, scale=1.0):
             parts.append(f"{v[2]} joins the fleet")
         elif k == "marines":
             parts.append("A Marine Division")
+        elif k == "research_slot":
+            parts.append(f"+{v} Research Slot{'s' if v > 1 else ''}")
+        elif k == "res":
+            parts += [f"+{a} {r.capitalize()} in our states" for r, a in v.items()]
+        elif k == "mods":
+            parts += [f"{a * 100:+.0f}% {NAT_LABELS.get(m, (m,))[0].capitalize()}" for m, a in v.items()]
+        elif k == "air_xp":
+            parts.append(f"+{v} Air Experience")
+        elif k == "slots":
+            parts.append(f"+{v} building slot{'s' if v > 1 else ''} in our biggest states")
+        elif k == "set_ideology":
+            parts.append(f"A {v} government")
+        elif k == "research":
+            parts += [bonus_text(*b) for b in v]
+        elif k == "research_speed":
+            parts.append(f"{v * 100:+.0f}% Research Speed")
         else:
             parts.append(f"{v:+g} {REWARD_LABELS.get(k, k)}")
     return ", ".join(parts) if parts else "None"
 
 
+def focus_need(n, f):
+    """Why n can't take focus f now (HOI4's 'available'), or None."""
+    nd = f.get("need")
+    if not nd:
+        return None
+    if nd.get("auto"):
+        return "Comes by itself when the civil war begins"
+    cw = nd.get("cw")
+    if cw == "on" and not scw_on():
+        return "Only during the Spanish Civil War"
+    if cw == "off" and "spanish_civil_war" in EVENT_FLAGS:
+        return "Only before the Spanish Civil War"
+    if cw == "over" and "spanish_civil_war_over" not in EVENT_FLAGS:
+        return "Only after the Spanish Civil War"
+    if cw == "notover" and "spanish_civil_war_over" in EVENT_FLAGS:
+        return "Not after the Spanish Civil War"
+    if nd.get("ideology") and n["ideology"] not in nd["ideology"]:
+        return "Needs a " + " or ".join(nd["ideology"]) + " government"
+    if nd.get("not_ideology") and n["ideology"] in nd["not_ideology"]:
+        return "Not for a " + " or ".join(nd["not_ideology"]) + " government"
+    if nd.get("war") is True and not n["at_war_with"]:
+        return "Only at war"
+    if nd.get("war") is False and n["at_war_with"]:
+        return "Only at peace"
+    if nd.get("after") and str(START_DATE + datetime.timedelta(days=EVENT_DAY[0])) < nd["after"]:
+        return "Not before " + nd["after"]
+    return None
+
+
 def get_focus_options(player):
-    p_base_name = player["name"].replace(" (YOU)", "")
+    p_base_name = nation_key(player)
     cur_focus_tree = FOCUS_TREES.get(p_base_name, FOCUS_TREES["Generic"])
 
     # Sort stably by row then col for intuitive navigation
@@ -13023,7 +16144,7 @@ def get_focus_options(player):
                 status = "blocked"
                 blocker = mut_blocker
             else:
-                if reqs_met(f, player["completed_focuses"]):
+                if reqs_met(f, player["completed_focuses"]) and not focus_need(player, f):
                     status = "available"
                     blocker = None
                 else:
@@ -13034,7 +16155,8 @@ def get_focus_options(player):
             "name": f["name"],
             "status": status,
             "focus": f,
-            "blocker": blocker
+            "blocker": blocker,
+            "need": focus_need(player, f) if status == "locked" and reqs_met(f, player["completed_focuses"]) else None
         })
 
     return focus_opts
@@ -13076,7 +16198,11 @@ def alive(key):
 
 
 def short_name(n):
-    return SHORT_NAMES.get(nation_key(n), nation_key(n)) if n else "-"
+    if not n:
+        return "-"
+    if n.get("key"):   # shown under its own name (Nationalist Spain)
+        return n["name"].replace(" (YOU)", "")
+    return SHORT_NAMES.get(nation_key(n), nation_key(n))
 
 
 def leader_of(n):
@@ -13662,53 +16788,581 @@ ev("olympics.news", "The Berlin Olympics",
    "stadium", news_opts("A showcase for the Reich.", "-", "Faster, higher, stronger."), news=True)
 
 
-# -- Spain --
-def spain_war_starts(c):
-    s = alive("Spain")
-    if not s or "spanish_civil_war" in EVENT_FLAGS:
+# ======================= THE SPANISH CIVIL WAR (HOI4: La Resistance) =======================
+import copy
+# On 17 July 1936 the army rises. The road Spain's government took in its focus tree decides who it is: A Great
+# Spain makes it the Nationalists, The Popular Front the Republic (HOI4's AI Spain goes Nationalist). The other side
+# breaks away as a second Spain with the provinces it held at the end of July 1936, the divisions, ships and air
+# wings there and a share of the stockpile and the manpower. Each side's wartime branch of the tree opens.
+# Germany and Italy send the Nationalists the Condor Legion and the CTV, the Soviet Union sends the Republic tanks
+# and planes, and the International Brigades reach Madrid. In a civil war a province simply changes sides when it
+# is taken (both sides count all of Spain as their own: no occupation, no resistance). The war ends when one side
+# capitulates: the winner takes the whole country and becomes Spain.
+SCW_DAY = 198                               # 17 July 1936
+SCW_NATIONALIST = ("Galicia", "León", "Castilla la Vieja", "Navarra", "Aragón", "Andalucía Occidental",
+                   "Spanish Morocco", "Baleares")
+SCW_SIDES = {
+    "nationalist": {"name": "Nationalist Spain", "ideology": "Fascist", "leader": "Francisco Franco",
+                    "capital": ("Burgos", "Castilla la Vieja")},
+    "republic": {"name": "Republican Spain", "ideology": "Democracy", "leader": "Manuel Azaña",
+                 "capital": ("Madrid", "Castilla la Nueva")},
+}
+# each side's wartime branch (HOI4 opens it by itself when the war begins), what it makes the government, and the
+# pre-war focuses that lead to it
+SCW_BRANCHES = {
+    "SPA_unify_the_nationalist_front": ("nationalist", "Fascist", "Francisco Franco", "Franco unites the Nationalists"),
+    "SPA_the_phalanx_ascendant": ("nationalist", "Fascist", "Manuel Hedilla", "the Falange leads the rising"),
+    "SPA_supremacy_of_the_communion": ("nationalist", "Non-Aligned", "Manuel Fal Conde", "the Carlists lead the rising"),
+    "SPR_maintain_the_second_republic": ("republic", "Democracy", "Manuel Azaña", "the government of the Republic holds"),
+    "SPR_the_anti_fascist_workers_revolution": ("republic", "Communist", "Andreu Nin", "the workers' parties take power"),
+    "SPR_regional_defense_council_of_aragon": ("republic", "Non-Aligned", "Buenaventura Durruti", "the anarchists take over"),
+}
+SCW_ROOTS = {"nationalist": "SPA_a_great_spain", "republic": "SPR_the_popular_front"}
+# foreign help, by the day after the rising it arrives: (sender, side, divisions, air wings (family, generation,
+# planes), what it is called) - HOI4's volunteers and the history of 1936
+SCW_AID = (
+    (20, "Kingdom of Italy", "nationalist", [], [("tac_bomber", 0, 24, "Aviazione Legionaria (S.81)"),
+                                                 ("fighter", 0, 24, "Aviazione Legionaria (CR.32)")]),
+    (25, "German Reich", "nationalist", [], [("tac_bomber", 0, 24, "Ju 52 Bomber Group")]),
+    (80, "Soviet Union", "republic", [("arm", "Soviet Tank Brigade")], [("fighter", 1, 40, "Soviet I-16 Group"),
+                                                                       ("tac_bomber", 1, 30, "Soviet SB Group")]),
+    (110, None, "republic", [("inf2", "XI International Brigade"), ("inf2", "XII International Brigade")], []),
+    (100, "German Reich", "nationalist", [("arm", "Legion Condor")], [("fighter", 1, 40, "Jagdgruppe 88"),
+                                                                     ("tac_bomber", 1, 30, "Kampfgruppe 88")]),
+    (140, "Kingdom of Italy", "nationalist", [("inf2", "Divisione Dio lo Vuole"), ("inf2", "Divisione Fiamme Nere"),
+                                              ("inf2", "Divisione Penne Nere")], [("fighter", 0, 40, "Aviazione Legionaria")]),
+)
+
+
+def spain_nation():
+    return alive("Spain")
+
+
+def scw_breakaway():
+    return next((n for n in NATIONS if n.get("dormant") is not None and nation_key(n) in ("Republican Spain", "Nationalist Spain")), None)
+
+
+def scw_side_of(n):
+    """'nationalist' / 'republic' / None: the road this Spain's focus tree has taken."""
+    done = set(n.get("completed_focuses", ())) | {n.get("active_focus")}
+    if SCW_ROOTS["nationalist"] in done:
+        return "nationalist"
+    if SCW_ROOTS["republic"] in done:
+        return "republic"
+    return None
+
+
+def scw_on():
+    return "spanish_civil_war" in EVENT_FLAGS and "spanish_civil_war_over" not in EVENT_FLAGS
+
+
+def scw_branch_for(n, side):
+    """Which wartime branch opens for this side, from the pre-war focuses it took."""
+    done = n.get("completed_focuses", set())
+    if side == "nationalist":
+        if "SPA_sin_paquito" in done:
+            return "SPA_the_phalanx_ascendant"
+        if "SPA_negotiate_carlist_support" in done and "SPA_the_army_of_africa" not in done:
+            return "SPA_supremacy_of_the_communion"
+        return "SPA_unify_the_nationalist_front"
+    if "SPR_secure_the_guardia_civil" in done and "SPR_secure_the_guardia_de_asalto" not in done:
+        return "SPR_the_anti_fascist_workers_revolution"
+    return "SPR_maintain_the_second_republic"
+
+
+def scw_open_branch(n, fid):
+    """Complete the branch focus and everything before it that is still missing (one road through the tree)."""
+    tree = {f["id"]: f for f in FOCUS_TREES["Spain"]}
+    need, todo = [], [fid]
+    while todo:
+        x = todo.pop()
+        if x in n["completed_focuses"] or x in need:
+            continue
+        need.append(x)
+        for r in tree[x].get("req", []):
+            opts = [r] if isinstance(r, str) else r
+            if not any(o in n["completed_focuses"] or o in need for o in opts):
+                pick = next((o for o in opts if not any(m in n["completed_focuses"] for m in tree[o].get("mut_excl", []))), opts[0])
+                todo.append(pick)
+    for x in need:
+        n["completed_focuses"].add(x)
+    if n.get("active_focus") in need or (n.get("active_focus") and any(
+            m in n["completed_focuses"] for m in tree.get(n["active_focus"], {}).get("mut_excl", []))):
+        n["active_focus"], n["focus_progress"] = None, 0
+    n["last_focus"] = fid
+    side, ideo, leader, _ = SCW_BRANCHES[fid]
+    n["scw_branch"] = fid
+    if n["ideology"] != ideo:
+        change_ideology(n, ideo)
+    set_leader(n, leader)
+
+
+def m_is_african(u):
+    s = state_at(u.x, u.y)
+    return bool(s) and s["name"] == "Spanish Morocco"
+
+
+def scw_capital(n, side, pm):
+    """Put the side's wartime capital first in its city list (the Nationalists govern from Burgos)."""
+    city, state = SCW_SIDES[side]["capital"]
+    s = next((s for s in STATES if s["name"] == state), None)
+    if s is None:
         return
+    tile = next((c for c, nm in CITY_NAMES.items() if nm == city), None)
+    if tile is None:
+        tile = (s["x"], s["y"])
+        if pm[tile[1]][tile[0]] != n["id"]:
+            tile = next((t for t in s["tiles"] if pm[t[1]][t[0]] == n["id"]), None)
+            if tile is None:
+                return
+        CITY_NAMES[tile] = city
+        CITY_SIZES[tile] = "capital"
+    if tile in n["cities"]:
+        n["cities"].remove(tile)
+    n["cities"].insert(0, tile)
+
+
+def scw_spawn(n, kind, name, pm, units, near=None):
+    """A division of a given template for n: at a state's main town, else at its capital. Returns it or None."""
+    t = TEMPLATE_BY_KEY.get(kind) or TEMPLATE_BY_KEY["inf"]
+    at = None
+    if near:
+        s = next((s for s in STATES if s["name"] == near and n["id"] in (s["owner"], s["controller"])), None)
+        if s:
+            at = (s["x"], s["y"]) if pm[s["y"]][s["x"]] == n["id"] else next((c for c in s["tiles"] if pm[c[1]][c[0]] == n["id"]), None)
+    if at is None:
+        at = next((c for c in n["cities"] if pm[c[1]][c[0]] == n["id"]), None)
+    if at is None:
+        return None
+    SPAWN_IDS[0] += 1
+    d = Division(SPAWN_IDS[0], n["id"], at[0], at[1], t, name=name)
+    units.append(d)
+    return d
+
+
+SCW_ATTACK = 0.2      # damage done when the civil war begins: militias, few guns, little ammunition, bad roads
+SCW_RAMP_DAYS = 1800   # ... rising to full strength as the armies grow up (the real war lasted almost 3 years)
+
+
+def scw_strength(day, start):
+    return min(1.0, SCW_ATTACK + (1.0 - SCW_ATTACK) * max(0, day - start) / SCW_RAMP_DAYS)
+
+
+def scw_slow(a, b):
+    """How hard Spaniard hits Spaniard (1.0 for everybody else, and for anyone else who joins in)."""
+    na = NATIONS[a]
+    return NATIONS[b].get("scw_atk", 1.0) if "scw_atk" in na and na is not NATIONS[b] else 1.0
+
+
+def scw_look(n, side):
+    """Name and colour of one side of the civil war: the Nationalists are 'Nationalist Spain' in orange; the
+    Republic is Spain (or 'Republican Spain' when it is the side that broke away) in its own colours."""
+    you = " (YOU)" if n["id"] == 0 else ""
+    first = n.get("dormant") is None          # the Spain of 1936 (the other one is the breakaway)
+    own = n.setdefault("own_colour", (n["color_id"], n["city_pair"]))
+    if side == "nationalist":
+        n["name"] = "Nationalist Spain" + you
+        if first:
+            n["key"] = "Spain"                # still Spain to the game: its tree, its data
+        n["color_id"], n["city_pair"] = SCW_COLOUR[0], SCW_COLOUR[1]
+    else:
+        n.pop("key", None)
+        n["name"] = ("Spain" if first else "Republican Spain") + you
+        n["color_id"], n["city_pair"] = own
+    for row in hd_cells:                      # the map is drawn again in the new colours
+        row[:] = [None] * len(row)
+    PUPPET_COLOURS["ver"] += 1
+
+
+def scw_start(spa, side, pm, units):
+    """The rising: Spain splits in two and the war begins."""
+    if "spanish_civil_war" in EVENT_FLAGS or not spa["is_alive"]:
+        return None
+    brk = scw_breakaway()
+    if brk is None:
+        return None
     EVENT_FLAGS.add("spanish_civil_war")
-    s["output_bonus"] = s.get("output_bonus", 0.0) - 0.5
+    spa["scw_start"] = EVENT_DAY[0]
+    other = "republic" if side == "nationalist" else "nationalist"
+    spa["civil_side"], brk["civil_side"] = side, other
+    brk["dormant"], brk["is_alive"], brk["capitulated"] = False, True, False
+    brk["name"] = SCW_SIDES[other]["name"]
+    scw_look(spa, side)
+    scw_look(brk, other)
+    spa["scw_atk"] = brk["scw_atk"] = SCW_ATTACK
+    # the breakaway starts as the same state: laws, techs, templates, research, half the political power
+    for k in ("laws", "techs", "tech_progress", "eq_gen", "eq_q", "air_tech", "naval_tech", "tech_unlocks", "rmods", "umods",
+              "templates", "research_slots", "tech_ver", "r_atk", "r_def", "focus_mods", "research_bonus"):
+        if k in spa:
+            brk[k] = copy.deepcopy(spa[k])
+    brk["research"] = [None] * brk.get("research_slots", 2)
+    brk["research_saved"] = [0.0] * brk.get("research_slots", 2)
+    brk["tech_bonus"] = []
+    brk["pp"] = spa["pp"] = round(spa["pp"] / 2, 1)
+    brk["war_support"] = spa["war_support"]
+    brk["completed_focuses"], brk["active_focus"], brk["focus_progress"] = set(), None, 0
+    brk["ideology"] = SCW_SIDES[other]["ideology"]
+    for o in NATIONS:
+        if o is not brk:
+            brk["relations"][o["id"]] = ideology_opinion(brk["ideology"], o["ideology"])
+            o["relations"][brk["id"]] = ideology_opinion(o["ideology"], brk["ideology"])
+    # the provinces: the front line of late July 1936
+    nat_names = set(SCW_NATIONALIST)
+    mine = [s for s in STATES if s["owner"] == spa["id"]]
+    gone = [s for s in mine if (s["name"] in nat_names) == (other == "nationalist")]
+    gone_ids = {s["id"] for s in gone}
+    for s in gone:
+        transfer_state(s, brk["id"], pm, {spa["id"], -1})
+        s["core"] = brk["id"]
+    pop = {n_["id"]: sum(s["pop"] for s in STATES if s["owner"] == n_["id"]) for n_ in (spa, brk)}
+    share = pop[brk["id"]] / max(1.0, pop[brk["id"]] + pop[spa["id"]])
+    # divisions, ships and planes go with the province they are in
+    for u in units:
+        if u.nation_id == spa["id"] and u.sea is None:
+            s = state_at(u.x, u.y)
+            if s and s["id"] in gone_ids:
+                u.nation_id = brk["id"]
+                u.army_id, u.order, u.is_guarding, u.attacking = None, None, False, None
+                u.path, u.target_x, u.target_y = [], None, None
+                u.apply_template(TEMPLATE_BY_KEY[u.key])
+    # HOI4 splits the regular army half and half (army_ratio 0.5): garrisons that went the other way march over
+    regs = [u for u in units if u.nation_id in (spa["id"], brk["id"]) and u.sea is None]
+    want = len(regs) // 2
+    have = [u for u in regs if u.nation_id == brk["id"]]
+    give, take = (spa, brk) if len(have) < want else (brk, spa)
+    home = next((c for c in take["cities"] if pm[c[1]][c[0]] == take["id"]), None)
+    if home is None:
+        home = next(((s["x"], s["y"]) for s in STATES if s["owner"] == take["id"] and pm[s["y"]][s["x"]] == take["id"]), None)
+    movers = sorted((u for u in regs if u.nation_id == give["id"]),
+                    key=lambda u: abs(u.x - home[0]) + abs(u.y - home[1]) if home else 0)
+    for u in movers[:abs(want - len(have)) if home else 0]:
+        u.nation_id, u.x, u.y = take["id"], home[0], home[1]
+        u.army_id, u.order, u.is_guarding, u.attacking = None, None, False, None
+        u.path, u.target_x, u.target_y = [], None, None
+        u.apply_template(TEMPLATE_BY_KEY[u.key])
+    for f in FLEETS:
+        if f.nation_id == spa["id"]:
+            ps = state_at(PORTS[f.port]["x"], PORTS[f.port]["y"])
+            if ps and ps["id"] in gone_ids:
+                f.nation_id = brk["id"]
+    for w in AIR["wings"]:
+        if w.nation_id == spa["id"] and w.base in gone_ids:
+            w.nation_id = brk["id"]
+    rep_share = 0.7 if side == "republic" and "SPR_enlarge_the_weapon_caches" in spa["completed_focuses"] else 0.5
+    stock = rep_share if other == "republic" else 1 - rep_share   # HOI4: the Republic's weapon caches keep 70%
+    brk["stockpile"] = {}
+    for k, v in spa["stockpile"].items():
+        brk["stockpile"][k] = int(v * stock)
+        spa["stockpile"][k] = v - brk["stockpile"][k]
+    brk["manpower"] = int(spa["manpower"] * share)
+    spa["manpower"] -= brk["manpower"]
+    brk["mp_base"] = int(spa.get("mp_base", 0) * share)   # so the next manpower count adds no windfall
+    spa["mp_base"] = spa.get("mp_base", 0) - brk["mp_base"]
+    brk["convoys"] = brk["convoys_start"] = int(spa.get("convoys", 0) * 0.4)
+    spa["convoys"] = spa.get("convoys", 0) - brk["convoys"]
+    for k in ("naval_queue", "construction", "lines", "training"):
+        brk[k] = []
+    brk["dockyards"] = 0
+    brk["air_xp"], brk["navy_xp"] = spa.get("air_xp", 0.0) / 2, spa.get("navy_xp", 0.0) / 2
+    for k in ("doctrine", "doctrine_level", "doctrine_discount", "raiding", "escort", "repair_bonus", "invasion_bonus",
+              "air_doctrine", "mastery", "milestones", "stock_gen", "naval_bonus", "trade"):
+        if k in spa:
+            brk[k] = copy.deepcopy(spa[k])
+    # each side's capital and its wartime branch of the tree
+    scw_capital(spa, side, pm)
+    scw_capital(brk, other, pm)
+    for n_, sd in ((spa, side), (brk, other)):
+        scw_open_branch(n_, scw_branch_for(n_, sd))
+        n_["templates"] = list(dict.fromkeys(n_.get("templates", []) + [t["key"] for t in TEMPLATES]))
+    # what the conspiracy and the unions prepared in the spring
+    nat, rep = (spa, brk) if side == "nationalist" else (brk, spa)
+    # Madrid's trenches and Bilbao's Iron Ring: the cities the Nationalists could not simply walk into
+    for st, lvl in (("Castilla la Nueva", 3), ("Vascongadas", 2), ("Cataluña", 1)):
+        s = next((s for s in STATES if s["name"] == st and s["owner"] == rep["id"]), None)
+        if s:
+            s["fort"] = max(s["fort"], lvl)
+    for u in units:
+        if u.nation_id == rep["id"]:
+            u.entrench = 5.0
+    # the Army of Africa: German and Italian transport planes fly it to Seville (July-August 1936)
+    sev = next((s for s in STATES if s["name"] == "Andalucía Occidental" and s["owner"] == nat["id"]), None)
+    african = [u for u in units if u.nation_id == nat["id"] and m_is_african(u)]
+    for u in african[1:] if sev else ():
+        u.x, u.y = (sev["x"], sev["y"]) if pm[sev["y"]][sev["x"]] == nat["id"] else next(t for t in sev["tiles"] if pm[t[1]][t[0]] == nat["id"])
+        u.path, u.target_x, u.target_y = [], None, None
+    for u in african:
+        u.xp = max(u.xp, 40.0)     # the Legion and the Regulares: veterans of the Rif war
+    if "SPA_the_army_of_africa" in nat["completed_focuses"]:
+        for i in range(3):
+            d = scw_spawn(nat, "inf2", f"{i + 1}ª División del Ejército de África", pm, units, near="Andalucía Occidental")
+            if d:
+                d.xp = 40.0
+    if "SPA_secure_the_northern_garrisons" in nat["completed_focuses"]:
+        for st in ("Navarra", "Castilla la Vieja"):
+            scw_spawn(nat, "inf", f"Guarnición de {st}", pm, units, near=st)
+    # July 1936: the union militias save the Republic's cities, Carlist and Falangist volunteers join the rising
+    militia = (("Castilla la Nueva", "Columna de Madrid"), ("Castilla la Nueva", "5º Regimiento"),
+               ("Cataluña", "Columna Durruti"), ("Cataluña", "Columna del POUM"), ("Valencia", "Columna de Hierro"),
+               ("Vascongadas", "Euzko Gudarostea"), ("Asturias", "Milicias Asturianas"), ("Andalucía Oriental", "Columna de Málaga"))
+    for st, nm in militia:
+        d = scw_spawn(rep, "inf", nm, pm, units, near=st)
+        if d:
+            d.xp = 0.0          # 'Green': brave, untrained
+    for st, nm in (("Navarra", "Requetés de Navarra"), ("Navarra", "Tercio de Montejurra"), ("Castilla la Vieja", "Falange de Castilla"),
+                   ("Andalucía Occidental", "Falange de Sevilla"), ("Galicia", "Falange de Galicia")):
+        d = scw_spawn(nat, "inf", nm, pm, units, near=st)
+        if d:
+            d.xp = 0.0
+    for n_ in (rep, nat):   # rifles bought abroad and handed out in the first weeks
+        n_["stockpile"]["inf_eq"] = n_["stockpile"].get("inf_eq", 0) + 2500
+    if "SPR_distribute_arms_to_the_people" in rep["completed_focuses"]:
+        for st, nm in (("Castilla la Nueva", "Columna de Madrid"), ("Cataluña", "Columna Durruti"), ("Valencia", "Columna de Hierro")):
+            scw_spawn(rep, "inf", nm, pm, units, near=st)
+    for fid, nm in (("SPR_secure_the_guardia_de_asalto", "Guardia de Asalto"), ("SPR_secure_the_guardia_civil", "Guardia Civil")):
+        if fid in rep["completed_focuses"]:
+            scw_spawn(rep, "inf", nm, pm, units, near="Castilla la Nueva")
+    # war, with nobody else dragged in (the great powers 'don't intervene')
+    set_at_war(brk, spa)
+    w = next((w for w in active_wars() if war_side(w, brk["id"]) is not None and war_side(w, spa["id"]) is not None), None)
+    if w:
+        w["name"] = w["base"] = "Spanish Civil War"
+        w["civil"] = True
     add_wt(3)
+    update_industry(pm)
+    refresh_blocs()
+    return brk
+
+
+def scw_daily(day, pm, units):
+    """While the war lasts: provinces change sides when taken, and foreign help arrives."""
+    if not scw_on():
+        return
+    spa, brk = spain_nation(), scw_breakaway()
+    if not spa or not brk or not brk["is_alive"]:
+        return
+    ids = {spa["id"], brk["id"]}
+    for s in STATES:
+        if s["owner"] in ids and s["controller"] in ids and s["controller"] != s["owner"]:
+            s["owner"] = s["core"] = s["controller"]
+            s["resist"], s["comply"], s["occ_by"] = 0.0, 0.0, None
+    start = spa.get("scw_start", day)
+    spa["scw_atk"] = brk["scw_atk"] = scw_strength(day, start)
+    if day > start and (day - start) % SCW_WAVE_DAYS == 0:   # both sides call up new divisions (HOI4: the militias)
+        for n_ in (spa, brk):
+            scw_call_up(n_, pm, units)
+    sides = {spa["civil_side"]: spa, brk["civil_side"]: brk}
+    for i, (after, sender_key, side, divs, wings) in enumerate(SCW_AID):
+        flag = f"scw_aid_{i}"
+        if flag in EVENT_FLAGS or day < start + after:
+            continue
+        EVENT_FLAGS.add(flag)
+        to = sides.get(side)
+        sender = alive(sender_key) if sender_key else None
+        if to is None or not to["is_alive"] or (sender_key and (sender is None or to["id"] in sender["at_war_with"])):
+            continue
+        if sender is not None and sender["id"] == 0:
+            fire_event("scw.aid", 0, to, {"aid": i})   # the player decides
+            continue
+        scw_send_aid(i, to, pm, units)
+
+
+SCW_WAVE_DAYS, SCW_WAVE_MAX = 20, 2   # every 20 days each side raises up to 2 divisions from its manpower
+
+
+def scw_call_up(n, pm, units):
+    """New conscript and militia divisions, at the side's cities (rifles from the stockpile, or whatever there is)."""
+    t = TEMPLATE_BY_KEY["inf"]
+    held = [c for c in n["cities"] if pm[c[1]][c[0]] == n["id"]]
+    enemy = scw_breakaway() if n is spain_nation() else spain_nation()
+    mine = sum(1 for s in STATES if s["controller"] == n["id"])
+    theirs = sum(1 for s in STATES if enemy and s["controller"] == enemy["id"])
+    most = SCW_WAVE_MAX + (1 if mine < theirs else 0)   # the side with its back to the wall calls up its last reserves
+    k = min(most, n["manpower"] // (t["man_cost"] * 3))
+    for i in range(int(k) if held else 0):
+        c = held[(n.get("scw_waves", 0) + i) % len(held)]
+        SPAWN_IDS[0] += 1
+        d = Division(SPAWN_IDS[0], n["id"], c[0], c[1], t)
+        d.xp = 0.0
+        units.append(d)
+        n["manpower"] -= t["man_cost"]
+        for k_, v in t["eq"].items():
+            n["stockpile"][k_] = max(0, n["stockpile"].get(k_, 0) - v)
+    n["scw_waves"] = n.get("scw_waves", 0) + 1
+
+
+def scw_send_aid(i, to, pm, units):
+    _, sender_key, side, divs, wings = SCW_AID[i]
+    sender = alive(sender_key) if sender_key else None
+    near = "Castilla la Nueva" if side == "republic" else "Andalucía Occidental"
+    got = []
+    for kind, name in divs:
+        if scw_spawn(to, kind, name, pm, units, near=near):
+            got.append(name)
+        if sender is not None:   # the volunteers are the sender's men and equipment
+            t = TEMPLATE_BY_KEY.get(kind) or TEMPLATE_BY_KEY["inf"]
+            sender["manpower"] = max(0, sender["manpower"] - t["man_cost"])
+            for k, v in t["eq"].items():
+                sender["stockpile"][k] = max(0, sender["stockpile"].get(k, 0) - v)
+    base = next((s for s in sorted(STATES, key=lambda s: -s.get("air_base", 0)) if s["controller"] == to["id"]), None)
+    for fam, gen, planes, name in wings:
+        if base is not None:
+            base["air_base"] = max(1, base.get("air_base", 0))
+            AIR["base_day"] = None
+            AIR["wings"].append(AirWing(to["id"], fam, gen, planes, base["id"], name=name, size=planes))
+            to.setdefault("air_tech", {})[fam] = max(to["air_tech"].get(fam, -1), gen)
+            got.append(name)
+    to.setdefault("scw_aid", []).extend(got)   # what arrived (the war screen and the papers tell of it)
+    if got:
+        fire_news("scw.aid_news", to, {"actors": [to["id"]] + ([sender["id"]] if sender else []),
+                                       "who": short_name(sender) if sender else "Volunteers from fifty countries",
+                                       "what": ", ".join(got), "side": short_name(to)})
+    return got
+
+
+def scw_capitulation(n, pm, units):
+    """n has lost its capital and most of its cities. In the civil war that ends the war: returns the new units
+    list, or None when n's surrender is not the civil war's."""
+    if not scw_on() or n.get("civil_side") is None:
+        return None
+    spa, brk = spain_nation(), scw_breakaway()
+    if not spa or not brk or n not in (spa, brk):
+        return None
+    winner = brk if n is spa else spa
+    cx, cy = n["cities"][0]
+    if pm[cy][cx] != winner["id"] and pm[cy][cx] not in friends_of(winner):
+        return None
+    # a civil war is fought to the end: the side gives up when its last city falls (Madrid held out to March 1939)
+    if any(pm[y][x] not in n["at_war_with"] for x, y in n["cities"]):
+        return units
+    return scw_end(winner, n, pm, units)
+
+
+def scw_end(winner, loser, pm, units):
+    """The war is over: the winner takes all of Spain and becomes Spain."""
+    EVENT_FLAGS.add("spanish_civil_war_over")
+    spa, brk = spain_nation(), scw_breakaway()
+    side = winner.get("civil_side")
+    for w in active_wars():
+        if w.get("civil"):
+            w["end"], w["winner"] = EVENT_DAY[0], war_side(w, winner["id"])
+            w["result"].append(f"{short_name(winner)} won the Spanish Civil War.")
+    WAR_VER[0] += 1
+    units = [u for u in units if u.nation_id != loser["id"]]   # the beaten army lays down its arms
+    if loser is spa and spa["id"] == 0:
+        annex_nation(loser, winner, pm, units)
+        GAME_OUT["game_over"] = f"The Spanish Civil War is lost: {short_name(winner)} rules Spain."
+    elif loser is brk:
+        annex_nation(brk, spa, pm, units)
+    else:   # the breakaway won and takes the place of the old Spain: its land, army, ships and planes...
+        fac = brk.get("faction")
+        if fac:
+            leave_faction(brk)
+        annex_nation(brk, spa, pm, units)
+        for k in ("ideology", "leader", "completed_focuses", "active_focus", "focus_progress", "last_focus", "techs",
+                  "tech_progress", "tech_bonus", "eq_gen", "eq_q", "air_tech", "naval_tech", "tech_unlocks", "rmods",
+                  "umods", "tech_ver", "r_atk", "r_def", "research", "research_saved", "research_slots", "research_bonus",
+                  "templates", "laws", "advisors", "pp", "war_support", "civil_side", "scw_branch", "air_xp", "navy_xp",
+                  "focus_mods"):   # ...and its government, its research and its plans
+            if k in brk:
+                spa[k] = copy.deepcopy(brk[k])
+        for o in NATIONS:
+            if o not in (spa, brk):
+                spa["relations"][o["id"]] = brk["relations"].get(o["id"], 0)
+                o["relations"][spa["id"]] = o["relations"].get(brk["id"], 0)
+        if fac and not spa.get("faction"):
+            join_faction(spa, fac)
+        spa["is_alive"], spa["capitulated"] = True, False
+        for u in units:
+            if u.nation_id == spa["id"]:
+                u.apply_template(TEMPLATE_BY_KEY[u.key])
+    for s in STATES:
+        if s["owner"] == spa["id"]:
+            s["core"] = spa["id"]
+    spa.pop("scw_atk", None)
+    brk.pop("scw_atk", None)
+    brk["dormant"], brk["is_alive"] = True, False
+    scw_look(brk, "republic")
+    if spa["is_alive"]:
+        scw_look(spa, spa.get("civil_side") or "republic")   # Nationalist Spain stays so; a winning Republic is Spain
+    brk["at_war_with"].clear()
+    # Madrid is the capital of all Spain again; Burgos goes back to being a provincial town
+    mad = next((c for c, nm in CITY_NAMES.items() if nm == "Madrid"), None)
+    if spa["is_alive"] and mad:
+        if mad in spa["cities"]:
+            spa["cities"].remove(mad)
+        spa["cities"].insert(0, mad)
+        for c, nm in CITY_NAMES.items():
+            if nm == "Burgos":
+                CITY_SIZES[c] = "small"
+    update_industry(pm)
+    refresh_blocs()
+    if spa["is_alive"]:
+        fire_news("spain.end", spa, {"winner": side, "actors": [spa["id"]],
+                                     "country": ("Franco's Nationalists have taken Madrid." if side == "nationalist"
+                                                 else "The Republic has beaten the generals' rebellion.")})
+    return units
+
+
+def scw_begin(spa, pm, units):
+    """17 July 1936: the side Spain's government is on decides who keeps the country."""
+    side = scw_side_of(spa)
+    if side is None and spa["id"] == 0 and not EVENT_AUTO:
+        fire_event("spain.1", spa)          # the player chooses
+    else:
+        brk = scw_start(spa, side or "nationalist", pm, units)   # HOI4's AI Spain takes the Nationalist road
+        if spa["id"] == 0 and brk:
+            fire_event("spain.begin", spa, brk, {"side": side or "nationalist"})
+    fire_news("spain.news", spa, {"actors": [spa["id"]]})
+
+
+def scw_side_lines(side):
+    other = "republic" if side == "nationalist" else "nationalist"
+    return [f"We are {SCW_SIDES[side]['name'].split()[0]} Spain: the provinces that rise against us break away as {SCW_SIDES[other]['name']}",
+            "Divisions, ships and planes stay with the province they are in; the stockpile is split",
+            "Our wartime branch of the focus tree opens", "War with the other Spain until one side capitulates"]
 
 
 ev("spain.1", "The Spanish Civil War",
-   "Generals in Morocco and across the peninsula have risen against the government in Madrid. The army is split, the "
-   "cities are in uproar, and Spain is sliding into a civil war that will decide its future. Which side do we stand with?",
+   "Generals in Morocco and across the peninsula have risen against the government in Madrid. Half the army has "
+   "joined them, the workers' militias are taking up arms, and Spain has split in two. Which side are we?",
    "war",
-   [opt("Defend the Republic.", ["Spain is torn by civil war until spring 1939 (-50% factory output)",
-                                 "If the Republic wins, Spain stays a democracy"],
-        lambda c: (spain_war_starts(c), c["n"].__setitem__("civil_war_side", "republic")), ai=1),
-    opt("Join the Nationalist uprising.", ["Spain is torn by civil war until spring 1939 (-50% factory output)",
-                                           "If the Nationalists win, Spain becomes fascist under Franco"],
-        lambda c: (spain_war_starts(c), c["n"].__setitem__("civil_war_side", "nationalist")), ai=1)])
+   [opt("Defend the Republic.", scw_side_lines("republic"), lambda c: scw_start(c["n"], "republic", c["pm"], c["units"]), ai=1),
+    opt("Join the Nationalist uprising.", scw_side_lines("nationalist"),
+        lambda c: scw_start(c["n"], "nationalist", c["pm"], c["units"]), ai=1)])
+
+ev("spain.begin", "The Rising",
+   lambda c: ("The generals have risen in Morocco and the north, and the provinces they hold have broken away as [FROM]. "
+              "The war that will decide Spain's future has begun." if c["data"].get("side") == "republic" else
+              "Our rising has taken half of Spain, but Madrid, Barcelona and the industrial north hold out for the "
+              "Republic, which fights on as [FROM]. The war that will decide Spain's future has begun."),
+   "war", [opt("To arms!", lambda c: ["War with [FROM] until one side capitulates",
+                                      "Foreign help comes in the autumn", "[F7] Wars"])])
 
 ev("spain.news", "Civil War in Spain",
    "A military uprising against the Spanish Republic has failed to seize power at a stroke, and the country has split "
    "in two. Germany and Italy are sending 'volunteers' to the Nationalists; the Soviet Union arms the Republic.",
    "war", news_opts("We will see this through.", "-", "The rehearsal for a greater war?"), news=True)
 
+ev("scw.aid", "Volunteers for Spain",
+   "[FROM] asks us for help in the Spanish Civil War: aircraft, tanks and men, sent as 'volunteers' so that no one "
+   "has to admit to taking part.",
+   "army",
+   [opt("Send them.", lambda c: ["Divisions and air wings go to [FROM] (our men and equipment)",
+                                 "They fight under [FROM]'s command until the war is over"],
+        lambda c: scw_send_aid(c["data"]["aid"], c["frm"], c["pm"], c["units"]), ai=1),
+    opt("We will not intervene.", ["Nothing happens"], ai=0)])
 
-def spain_war_ends(c):
-    s = alive("Spain")
-    if not s or "spanish_civil_war_over" in EVENT_FLAGS:
-        return
-    EVENT_FLAGS.add("spanish_civil_war_over")
-    s["output_bonus"] = s.get("output_bonus", 0.0) + 0.5
-    if c["data"].get("winner") == "nationalist":
-        change_ideology(s, "Fascist")
-        set_leader(s, "Francisco Franco")
-    else:
-        change_ideology(s, "Democracy")
-        set_leader(s, "Manuel Azaña")
-
+ev("scw.aid_news", "Foreign Help in Spain",
+   lambda c: f"{c['data'].get('who', 'Foreign volunteers')} have reached {c['data'].get('side', 'Spain')}: "
+             f"{c['data'].get('what', '')}. Non-intervention is a dead letter.",
+   "army", [opt("The war in Spain grows.")], news=True)
 
 ev("spain.end", "The Spanish Civil War Ends",
-   "After nearly three years of bitter fighting the guns have fallen silent in Spain. "
+   "After years of bitter fighting the guns have fallen silent in Spain. "
    "[COUNTRY] Hundreds of thousands are dead, and a ruined country must now be rebuilt.", "white_flag",
-   [opt("Spain is at peace.", lambda c: ["Spain: " + ("becomes fascist, led by Francisco Franco" if c["data"].get("winner") == "nationalist"
-                                                      else "stays a democracy, led by Manuel Azaña"),
-                                         "Spain's factories work normally again"], spain_war_ends)], news=True)
+   [opt("Spain is at peace.", lambda c: ["Spain: " + ("Nationalist, led by " if c["data"].get("winner") == "nationalist"
+                                                      else "Republican, led by ") + leader_of(alive("Spain") or NATIONS[0])])],
+   news=True)
 
 
 # -- Britain --
@@ -14244,9 +17898,9 @@ def t_dates(day, pm, units, wt):
         add_wt(3)
         ita["pp"] += 25
         fire_news("ethiopia.news", ita, {"actors": [ita["id"]]})
-    if day >= 198 and spa and once("spain"):
-        fire_event("spain.1", spa)
-        fire_news("spain.news", spa, {"actors": [spa["id"]]})
+    if day >= SCW_DAY and spa and once("spain"):
+        scw_begin(spa, pm, units)
+    scw_daily(day, pm, units)
     if day >= 213 and ger and once("olympics"):
         ger["pp"] += 10
         fire_news("olympics.news", ger, {"actors": [ger["id"]]})
@@ -14259,14 +17913,6 @@ def t_dates(day, pm, units, wt):
     if day >= 553 and once("china"):
         add_wt(3)
         fire_news("china.news")
-    if day >= 1186 and spa and "spanish_civil_war" in EVENT_FLAGS and once("spain_end"):
-        side = spa.get("civil_war_side") if spa["id"] == 0 else ("nationalist" if random.random() < 0.8 else "republic")
-        side = side or "nationalist"
-        fire_news("spain.end", spa, {"winner": side, "actors": [spa["id"]],
-                                     "country": ("Franco's Nationalists have taken Madrid." if side == "nationalist"
-                                                 else "The Republic has beaten the generals' rebellion.")})
-        if spa["id"] != 0:   # the papers only reach the player; Spain itself needs the outcome too
-            spain_war_ends({"data": {"winner": side}})
 
 
 @trigger
@@ -14396,6 +18042,7 @@ AI_EXTRA_TEMPLATES = [  # better divisions the AI adopts as the years go by: (ke
     ("arm2", "Panzer Division (1939)", "Armor 4-4", ["light_armor"] * 4 + ["motorized"] * 4, ["recon", "engineers"], 1000, True),
     ("arm3", "Medium Armored Division", "Armor M4-4", ["medium_armor"] * 4 + ["motorized"] * 4,
      ["recon", "engineers", "support_artillery"], 1200, True),
+    ("mech", "Mechanized Division", "Mech 6", ["mechanized"] * 6, ["recon", "engineers", "support_artillery"], 1400, True),
 ]
 
 
@@ -14569,79 +18216,23 @@ def ai_politics(n, world_tension, day=0):
                 return
 
 
-AI_RESEARCH = {
-    "major": ["Industrial Engineering", "Assembly Lines", "Infantry Weapons", "Sloped Armor", "Medium Tank Designs",
-              "Industrial Engineering", "Infantry Weapons", "Industrial Engineering", "Assembly Lines", "Sloped Armor"],
-    "minor": ["Industrial Engineering", "Sloped Armor", "Infantry Weapons", "Assembly Lines"],
-    "naval": ["Destroyer Designs", "Cruiser Designs", "Submarine Designs", "Capital Ship Designs", "Carrier Designs", "Naval Bomber Designs"],
-    "air": ["Fighter Designs", "Close Air Support Designs", "Tactical Bomber Designs", "Fighter Designs", "Heavy Fighter Designs", "Radar"],
-}
-
-
-def ai_research(n, day):
-    """Spend spare political power on research, the way the AI's country needs it."""
-    reserve = 120 if n["major"] else 90
-    done = n.setdefault("tech_done", {})
-    year = (START_DATE + datetime.timedelta(days=day)).year
-    plan = list(AI_RESEARCH["major" if n["major"] else "minor"])
-    plan[1:1] = AI_RESEARCH["air"] if n["major"] else ["Fighter Designs"]
-    if nation_key(n) in ("British Empire", "German Reich", "Soviet Union", "United States"):
-        plan.insert(4, "Strategic Bomber Designs")
-    if n.get("dockyards", 0) >= 8:
-        plan += AI_RESEARCH["naval"]
-    for want in plan:
-        t = next((t for t in TECH_OPTIONS if t["name"].startswith(want)), None)
-        if t is None or n["pp"] < t["cost_pp"] + reserve:
-            continue
-        if t["buff"] == "naval":
-            nxt, why = naval_research_block(n, t, year)
-            if why:
-                continue
-            n["pp"] -= t["cost_pp"]
-            for ty in t["types"]:
-                n.setdefault("naval_tech", {})[ty] = max(n["naval_tech"].get(ty, 1), nxt)
-            return
-        if t["buff"] == "air":
-            nxt, why = air_research_block(n, t, year)
-            if why:
-                continue
-            n["pp"] -= t["cost_pp"]
-            n["air_tech"][t["family"]] = nxt
-            return
-        cap = t.get("max", 3)
-        if done.get(t["name"], 0) >= cap or (t["buff"] == "unlock" and day < 1000):
-            continue
-        n["pp"] -= t["cost_pp"]
-        done[t["name"]] = done.get(t["name"], 0) + 1
-        if t["buff"] == "atk":
-            n["tech_atk"] += t["val"]
-        elif t["buff"] == "def":
-            n["tech_def"] += t["val"]
-        elif t["buff"] == "ind":
-            n["output_bonus"] = n.get("output_bonus", 0.0) + t["val"]
-        elif t["buff"] == "eff":
-            n["eff_bonus"] = n.get("eff_bonus", 0.0) + t["val"]
-        elif t["buff"] == "unlock":
-            n.setdefault("tech_unlocks", set()).add(t["key"])
-        return
-
-
 def ai_update_templates(n, day):
     """Newer division designs as the years go by (the first ones keep fighting as they are)."""
     have = n.setdefault("templates", [t["key"] for t in TEMPLATES])
     for key, _, _, bats, _, when, majors in AI_EXTRA_TEMPLATES:
         if key in have or day < when or (majors and not n["major"]):
             continue
-        if any(BATTALIONS[b].get("tech") and BATTALIONS[b]["tech"] not in n.get("tech_unlocks", set()) for b in bats):
+        if not template_unlocked(n, TEMPLATE_BY_KEY[key]):
             continue
         have.append(key)
 
 
 def best_template(n, kind):
     """The AI's newest template of a kind ('inf', 'mot', 'arm', ...)."""
-    order = {"inf": ["inf3", "inf2", "inf"], "inf2": ["inf3", "inf2"], "mot": ["mot2", "mot"], "arm": ["arm3", "arm2", "arm"]}.get(kind, [kind])
+    order = {"inf": ["inf3", "inf2", "inf"], "inf2": ["inf3", "inf2"], "mot": ["mech", "mot2", "mot"], "arm": ["arm3", "arm2", "arm"]}.get(kind, [kind])
     have = n.get("templates", [])
-    return next((TEMPLATE_BY_KEY[k] for k in order if k in have and k in TEMPLATE_BY_KEY), TEMPLATE_BY_KEY.get(kind))
+    return next((TEMPLATE_BY_KEY[k] for k in order if k in have and k in TEMPLATE_BY_KEY and template_unlocked(n, TEMPLATE_BY_KEY[k])),
+                TEMPLATE_BY_KEY.get(kind))
 
 
 def ai_pick_focus(n, options, day, world_tension, threats):
@@ -14821,8 +18412,7 @@ def ai_brain_daily(n, day, pm, wm, units, world_tension):
     if (day + n["id"]) % 7 == 0:
         ai_diplomacy(n, day, pm, wm, units, world_tension)
     ai_war_plans(n, day, pm, units)
-    if (day + n["id"]) % 30 == 0:
-        ai_research(n, day)
+    ai_research(n, day)   # every day: an empty slot is filled at once
     if (day + n["id"]) % 60 == 0:
         ai_update_templates(n, day)
     if (day + n["id"]) % 7 == 3:
@@ -17129,7 +20719,8 @@ def radar_level(z, n):
     if not rs:
         return 0
     fr = friends_of(n)
-    return max((s["radar"] for s in rs if s["controller"] in fr and zone_dists(s["id"], z)[0] <= 250 + 50 * s["radar"]), default=0)
+    lvl = lambda s: s["radar"] + int(rmod(NATIONS[s["controller"]], "radar"))   # radar techs: better sets in every station
+    return max((lvl(s) for s in rs if s["controller"] in fr and zone_dists(s["id"], z)[0] <= 250 + 50 * lvl(s)), default=0)
 
 
 def wing_eff(w):
@@ -17173,7 +20764,9 @@ def init_air(world_map, political_map, historical):
         s["bomb"] = 0.0
     for n in NATIONS:
         key = nation_key(n)
-        if historical:
+        if "techs" in n:
+            n["air_tech"] = dict(n["air_tech"])   # from its research (HOI4's 1936 technologies)
+        elif historical:
             n["air_tech"] = dict(AIR_TECH_1936.get(key, {"fighter": 0}))
         else:
             n["air_tech"] = {"fighter": 1, "cas": 1, "tac_bomber": 1} if n["major"] else {"fighter": 0}
@@ -17370,8 +20963,8 @@ def ground_aa(z, fl, pm):
         w = e[0]
         if w.mission != "STRAT_BOMB":
             continue
-        aa = max((STATES[sid].get("aa", 0) for sid in zone["states"] if STATES[sid]["controller"] in NATIONS[w.nation_id]["at_war_with"]),
-                 default=0)
+        aa = max((STATES[sid].get("aa", 0) * (1 + rmod(NATIONS[STATES[sid]["controller"]], "static_aa"))
+                  for sid in zone["states"] if STATES[sid]["controller"] in NATIONS[w.nation_id]["at_war_with"]), default=0)
         if aa:
             lose(e, e[1] * min(0.02, 0.0012 * aa) * random.uniform(0.6, 1.4), "aa")
 
@@ -17408,11 +21001,11 @@ def close_air_support(z, fl, units, by_id, support):
         lost = 0.0
         for d in foes_all:
             red = min(0.75, getattr(d, "aa", 0.0) * 0.0125)            # the division's anti-air takes the edge off
-            hits = share * 0.2 * (1 - red)
+            hits = share * 0.2 * (1 - red) * (1 - rmod(NATIONS[d.nation_id], "air_def")) * scw_slow(nid, d.nation_id)
             arm = 0.7 if d.armor > 0 else 1.0
             before = d.hp
             d.org = max(0.0, d.org - hits * ORG_DAMAGE * arm)
-            d.hp -= hits * STR_DAMAGE * arm * TEMPLATE_BY_KEY[d.key].get("casualty", 1.0)
+            d.hp -= hits * STR_DAMAGE * arm * d.casualty
             war_casualties(nid, d.nation_id, (before - d.hp) / d.max_hp * TEMPLATE_BY_KEY[d.key]["man_cost"])
             lost += getattr(d, "aa", 0.0) * 0.0004 * planes * use / len(foes_all)
         for e in es:
@@ -17436,7 +21029,9 @@ def strategic_bombing(z, fl, pm):
         tot = sum(weights)
         bp = act * st["bomb"] * 2.0                                     # AIR_WING_BOMB_DAMAGE_FACTOR
         for s, wt in zip(targets, weights):
-            dmg = bp * wt / tot * 0.000025 * (1 - 0.12 * s.get("aa", 0))  # AA_INDUSTRY_AIR_DAMAGE_FACTOR
+            vn = NATIONS[s["controller"]]
+            dmg = bp * wt / tot * 0.000025 * max(0.1, 1 - 0.12 * s.get("aa", 0) * (1 + rmod(vn, "static_aa")))  # AA_INDUSTRY_AIR_DAMAGE_FACTOR
+            dmg *= max(0.1, 1 - rmod(vn, "bomb_res"))   # dispersed industry
             size = s["civ"] + s["mil"] + s["dock"] + s["refinery"]
             s["bomb"] = min(0.9, s.get("bomb", 0.0) + dmg / max(1.0, size))
             victim = NATIONS[s["controller"]]
@@ -19341,6 +22936,1130 @@ def air_group(sel, state):
     return g if sel in g else [sel]
 
 
+# ======================= RESEARCH (HOI4: research slots, a tree by year, the ahead-of-time penalty) =================
+# Every country researches up to its number of research slots at once (HOI4 history: 2-4 in 1936). A tech takes
+# BASE_TECH_COST days per point of its research cost at +0% research speed, and +200% more for each year it is
+# researched ahead of its year. An empty slot banks up to 30 days of research for the next tech. Research
+# speed comes from techs (computing), focus rewards and research bonuses (a focus can give +100% to one tech of
+# a kind, or let it be researched a year early). New equipment only reaches the army as the factories build it:
+# a division's stats follow the share of its equipment that is the new model.
+BASE_TECH_COST = 110          # HOI4 1.19 BASE_TECH_COST
+AHEAD_PENALTY = 2.0           # HOI4 BASE_YEAR_AHEAD_PENALTY_FACTOR: +200% research time per year ahead
+RESEARCH_SAVE_DAYS = 30       # HOI4 BASE_RESEARCH_POINTS_SAVED
+MAX_RESEARCH_SLOTS = 6
+LINE_KEEP = 0.9               # a production line moving on to the newer model keeps 90% of its efficiency
+T_NAME, T_FOLDER, T_COL, T_ROW, T_YEAR, T_COST, T_REQ, T_DEPS, T_XOR, T_FX, T_CATS, T_AI = range(12)
+G_SOFT, G_HARD, G_DEF, G_BRK, G_AP, G_ARM, G_HARDNESS, G_AA, G_KMH, G_IC, G_YEAR, G_NAME = range(12)
+REF_GEN = {k: 1 for k in EQUIP_GENS}   # BATTALIONS' stats are those of the first 1936-era model (HOI4 gen 1)
+FIVE = ("soft", "hard", "def", "brk", "ap")
+GEN_STAT = {"soft": G_SOFT, "hard": G_HARD, "def": G_DEF, "brk": G_BRK, "ap": G_AP, "armor": G_ARM, "aa": G_AA, "kmh": G_KMH}
+BATTALION_EQ = {  # the equipment that sets a battalion's combat stats (HOI4: what the battalion is armed with)
+    "infantry": (("inf_eq", FIVE),), "cavalry": (("inf_eq", FIVE),), "mountaineers": (("inf_eq", FIVE),),
+    "marines": (("inf_eq", FIVE),), "motorized": (("inf_eq", FIVE),),
+    "mechanized": (("inf_eq", ("soft", "hard")), ("mechanized", ("def", "brk", "ap", "armor", "kmh"))),
+    "artillery": (("artillery", FIVE),), "anti_tank": (("anti_tank", FIVE),),
+    "rocket_artillery": (("rocket_artillery", FIVE),),
+    "light_armor": (("light_tank", FIVE + ("armor", "kmh")),), "medium_armor": (("medium_tank", FIVE + ("armor", "kmh")),),
+    "heavy_armor": (("heavy_tank", FIVE + ("armor", "kmh")),), "modern_armor": (("modern_tank", FIVE + ("armor", "kmh")),),
+    "support_artillery": (("artillery", FIVE),), "support_at": (("anti_tank", FIVE),),
+    "anti_air": (("anti_air", FIVE + ("aa",)),),
+}
+NAT_LABELS = {  # how a country-wide tech effect reads, and how it is shown (pct = as a percentage)
+    "mil_output": ("military factory output", True), "dock_output": ("dockyard output", True),
+    "slots": ("building slots in our states", True), "eff_cap": ("production efficiency cap", True),
+    "eff_gain": ("production efficiency growth", True), "eff_start": ("starting production efficiency", True),
+    "line_keep": ("efficiency kept when a line changes model", True), "build": ("construction speed", True),
+    "res": ("resources from our states", True), "research": ("research speed", True),
+    "bomb_res": ("less damage to our factories from bombing", True), "static_aa": ("anti-air guns in our states", True),
+    "air_def": ("less damage to our divisions from enemy planes", True), "coord": ("attack (coordination)", True),
+    "reinforce": ("reinforcement rate", True), "night": ("attack (fighting at night)", True),
+    "encrypt": ("encryption level: enemy code-breaking blunted (+2% defence)", False),
+    "decrypt": ("decryption level: we read enemy signals (+2% attack)", False),
+    "fort": ("land forts: +2% defence per fort level", False), "coast_fort": ("coastal forts: landings on our coast are harder", False),
+    "inv_prep": ("days less to prepare a naval invasion", False), "inv_cap": ("more divisions per naval invasion", False),
+    "amph_atk": ("attack when landing from the sea", True), "amph_def": ("defence against naval landings", True),
+    "oil": ("oil from our states", True), "radar": ("radar station range level", False),
+    "ref_oil": ("oil from each synthetic refinery", False), "ref_rubber": ("rubber from each synthetic refinery", False),
+}
+UNIT_LABELS = {"soft": "soft attack", "hard": "hard attack", "def": "defence", "brk": "breakthrough", "ap": "piercing",
+               "aa": "air attack", "org": "organisation", "dig": "digging-in speed", "recon": "recon level",
+               "casualty": "wounded who return", "suppress": "resistance suppression", "initiative": "initiative",
+               "reliab": "equipment saved", "logi": "supply use", "urban": "attack in cities", "fort": "attack on forts"}
+RESEARCH_UI = {"folder": 0, "sel": None, "cam_x": 0, "cam_y": 0, "slot": None, "msg": "", "find": None, "find_from": None}
+
+
+def tech_name(tid):
+    return TECHS[tid][T_NAME]
+
+
+TECH_SHORT = {"basic_encryption": "Encryption I", "improved_encryption": "Encryption II", "advanced_encryption": "Encryption III",
+              "basic_decryption": "Decryption I", "improved_decryption": "Decryption II", "advanced_decryption": "Decryption III",
+              "coastal_fort_tech_1": "Coastal Forts I", "coastal_fort_tech_2": "Coastal Forts II",
+              "basic_fortification_tech": "Basic Forts"}
+TECH_ABBR = (("Electronic Mechanical Engineering", "Electromech. Eng."), ("Close Air Support", "CAS"),
+             ("Pulverized Coal-Firing Boilers", "Coal-Fired Boilers"), ("High-Efficiency", "Hi-Eff."),
+             ("Assembly Line Production", "Assembly Lines"), ("Machine Tools", "Mach. Tools"),
+             ("Equipment", "Eq."), ("Improved", "Imp."), ("Weapons", "Wpns"), ("Advanced", "Adv."), ("Infantry", "Inf."), ("Company", "Co."),
+             ("Anti-Tank", "AT"), ("Anti-tank", "AT"), ("Anti-Air", "AA"), ("Artillery", "Art."), ("Fortifications", "Forts"),
+             ("Fortification", "Forts"), ("Mechanized", "Mech."), ("Motorized", "Mot."), ("Concentrated", "Conc."),
+             ("Dispersed", "Disp."), ("Construction", "Constr."), ("Excavation", "Excav."), ("Processing", "Proc."),
+             ("Experiments", "Exp."), ("Computing", "Comp."), ("Machine", "Mach."), ("Strategic", "Strat."),
+             ("Tactical", "Tac."), ("Battlecruiser", "Battlecr."), ("Special Forces", "Spec. Forces"),
+             ("Environment", "Env."), ("Training", "Trng"), ("Production", "Prod."), ("Upgrade", "Upgr."),
+             ("Heavy", "Hvy"), ("Light", "Lt"), ("Rocket", "Rkt"), ("Maintenance", "Maint."), ("Military", "Mil."),
+             ("Field Hospital", "Field Hosp."), ("Logistics", "Logist."), ("Expanded", "Exp."), ("Program", "Prog."))
+
+
+def tech_short(tid, width):
+    """A tech's name for its box in the grid: abbreviated until it fits."""
+    name = TECH_SHORT.get(tid) or TECHS[tid][T_NAME]
+    if "(" in name and len(name) > width:   # 'Basic Carrier (Carrier II)': HOI4's model name is shorter
+        name = name[name.index("(") + 1:].rstrip(")")
+    for long, short in TECH_ABBR:
+        if len(name) <= width:
+            break
+        name = name.replace(long, short)
+    return fit(name, width)
+
+
+def research_date(day):
+    return START_DATE + datetime.timedelta(days=day)
+
+
+def years_ahead(year, day):
+    """How many years ahead of a tech's year we would be researching it today (0 when it isn't ahead)."""
+    if not year:
+        return 0.0
+    return max(0.0, (datetime.date(year, 1, 1) - research_date(day)).days / 365.0)
+
+
+def research_speed(n):
+    """Daily research progress of a slot: 1.0 = +0% (HOI4's research speed modifiers add to it)."""
+    return max(0.1, 1.0 + n.get("rmods", {}).get("research", 0.0) + n.get("research_bonus", 0.0))
+
+
+def rmod(n, key):
+    return n.get("rmods", {}).get(key, 0.0)
+
+
+def bonus_fits(b, tid):
+    t = TECHS[tid]
+    return any(c == tid or c == t[T_FOLDER] or c in t[T_CATS] for c in b["cats"])
+
+
+def best_bonus(n, tid):
+    """The best research bonus that applies to this tech (HOI4 uses only the best one)."""
+    fits = [b for b in n.get("tech_bonus", ()) if b["uses"] > 0 and bonus_fits(b, tid)]
+    return max(fits, key=lambda b: (b["bonus"] + b.get("ahead", 0.0), b["uses"]), default=None)
+
+
+def tech_cost(n, tid, day, ahead_cut=0.0):
+    """(research points the tech costs today, years ahead after any ahead-of-time bonus)."""
+    t = TECHS[tid]
+    ahead = max(0.0, years_ahead(t[T_YEAR], day) - ahead_cut)
+    return BASE_TECH_COST * t[T_COST] * (1.0 + AHEAD_PENALTY * ahead), ahead
+
+
+def researching(n, tid):
+    return any(s and s["id"] == tid for s in n.get("research", ()))
+
+
+def tech_state(n, tid):
+    """done / active / available / locked (prerequisites missing) / blocked (a rival tech was chosen)."""
+    done = n.get("techs", ())
+    if tid in done:
+        return "done"
+    if researching(n, tid):
+        return "active"
+    t = TECHS[tid]
+    if any(x in done or researching(n, x) for x in t[T_XOR]):
+        return "blocked"
+    if (t[T_REQ] and not any(r in done for r in t[T_REQ])) or any(d not in done for d in t[T_DEPS]):
+        return "locked"
+    return "available"
+
+
+def tech_days(n, tid, day, slot=None):
+    """Days left (or needed) to finish this tech at today's speed."""
+    b = slot.get("bonus", 0.0) if slot else (best_bonus(n, tid) or {}).get("bonus", 0.0)
+    cut = slot.get("ahead", 0.0) if slot else (best_bonus(n, tid) or {}).get("ahead", 0.0)
+    cost, _ = tech_cost(n, tid, day, cut)
+    have = n.get("tech_progress", {}).get(tid, 0.0)
+    return max(0.0, cost - have) / (research_speed(n) + b)
+
+
+# ---- what techs do ----
+
+def tech_refresh(n):
+    """Add up the country-wide and unit effects of every tech the country has."""
+    nat, unit = {}, {}
+    for tid in sorted(n.get("techs", ())):   # a fixed order: the sums come out the same after a load
+        fx = TECHS[tid][T_FX] if tid in TECHS else {}
+        for k, v in fx.get("nat", {}).items():
+            nat[k] = nat.get(k, 0.0) + v
+        for b, mods in fx.get("unit", {}).items():
+            m = unit.setdefault(b, {})
+            for k, v in mods.items():
+                m[k] = m.get(k, 0.0) + v
+    for k, v in n.get("focus_mods", {}).items():   # national modifiers from focuses
+        nat[k] = nat.get(k, 0.0) + v
+    n["rmods"], n["umods"] = nat, unit
+    # land combat: radio coordination, night fighting and code-breaking add to attack, encryption to defence
+    n["r_atk"] = nat.get("coord", 0.0) + nat.get("night", 0.0) + 0.02 * nat.get("decrypt", 0.0)
+    n["r_def"] = 0.02 * nat.get("encrypt", 0.0)
+    n["tech_ver"] = n.get("tech_ver", 0) + 1
+
+
+def give_tech(n, tid, start=False):
+    """n has this tech now: new equipment models, units, buildings and modifiers."""
+    if tid not in TECHS or tid in n["techs"]:
+        return
+    n["techs"].add(tid)
+    n.setdefault("tech_progress", {}).pop(tid, None)
+    fx = TECHS[tid][T_FX]
+    keep = min(1.0, LINE_KEEP + rmod(n, "line_keep"))
+    for key, g in fx.get("eq", ()):
+        old = n["eq_gen"].get(key, -1)
+        if g > old:
+            n["eq_gen"][key] = g
+            if old < 0 or start:
+                n["eq_q"][key] = float(g)    # the first model (or the 1936 army): all of it is this one
+            elif not start:
+                for line in n.get("lines", []):
+                    if line["eq"] == key:
+                        line["eff"] = max(START_EFFICIENCY, line["eff"] * keep)
+    for fam, g in fx.get("plane", ()):
+        if g > n.setdefault("air_tech", {}).get(fam, -1):
+            first = n["air_tech"].get(fam, -1) < 0
+            n["air_tech"][fam] = g
+            if first or start:
+                n.setdefault("stock_gen", {})[fam] = g
+            elif not start:
+                for line in n.get("lines", []):
+                    if line["eq"] == fam:
+                        line["eff"] = max(START_EFFICIENCY, line["eff"] * keep)
+    for st, g in fx.get("ship", ()):
+        nt = n.setdefault("naval_tech", {})
+        nt[st] = max(nt.get(st, -1), g)
+    for u in fx.get("unlock", ()):
+        n.setdefault("tech_unlocks", set()).add(u)
+    if not start:
+        tech_refresh(n)
+
+
+def init_research(n):
+    """HOI4's 1936 technologies and research slots for a country (start of a new game)."""
+    key = nation_key(n)
+    n["techs"], n["tech_progress"], n["tech_bonus"] = set(), {}, []
+    n["eq_gen"], n["eq_q"] = {}, {}
+    n["air_tech"] = {}
+    n["naval_tech"] = {}
+    n["tech_unlocks"] = set()
+    n["research_slots"] = RESEARCH_SLOTS_1936.get(key, 2)
+    n["research"] = [None] * n["research_slots"]
+    n["research_saved"] = [0.0] * n["research_slots"]
+    n["research_bonus"] = 0.0
+    have = START_TECHS.get(key) or START_TECHS["Ireland"]   # countries HOI4 gives nothing: a small country's set
+    todo = list(have)
+    while todo:                                             # what a tech needs comes with it
+        tid = todo.pop()
+        if tid in n["techs"]:
+            continue
+        for r in TECHS[tid][T_REQ][:1] + TECHS[tid][T_DEPS]:
+            if r not in n["techs"] and not any(x in n["techs"] for x in TECHS[tid][T_REQ]):
+                todo.append(r)
+        give_tech(n, tid, start=True)
+    for key2, g in n["eq_gen"].items():
+        n["eq_q"][key2] = float(g)
+    tech_refresh(n)
+
+
+SHIP_FIRST_TECH = {"DD": "early_destroyer", "CL": "early_light_cruiser", "CA": "early_heavy_cruiser", "BC": "early_battlecruiser",
+                   "BB": "early_battleship", "CV": "early_carrier", "SS": "early_submarine"}
+
+
+def sync_model_techs(n):
+    """Planes and ships a country fields in 1936 that its techs don't cover (HOI4's air and naval OOBs):
+    it has the techs for them too."""
+    have_p = {(fam, g) for fam, g0 in n.get("air_tech", {}).items() for g in range(g0 + 1)}
+    have_s = {(t, g) for t, g0 in n.get("naval_tech", {}).items() for g in range(g0 + 1)}
+    got = False
+    for tid, t in TECHS.items():
+        fx = t[T_FX]
+        if tid in n["techs"]:
+            continue
+        if (fx.get("plane") and all(tuple(x) in have_p for x in fx["plane"])) or \
+                (fx.get("ship") and all(tuple(x) in have_s for x in fx["ship"])):
+            n["techs"].add(tid)
+            got = True
+    if got:
+        tech_refresh(n)
+
+
+def research_after_load(units):
+    """A save from before the research tree: its countries get their 1936 techs, its divisions new stats."""
+    NATION_STATS.clear()
+    spa = nation_by_key("Spain")
+    if spa and spa.get("civil_side"):   # a save from before Nationalist Spain was orange
+        if spa["is_alive"] and "key" not in spa and spa["civil_side"] == "nationalist":
+            scw_look(spa, "nationalist")
+        brk = scw_breakaway()
+        if brk and brk["is_alive"] and brk.get("civil_side") == "nationalist" and brk["color_id"] != SCW_COLOUR[0]:
+            scw_look(brk, "nationalist")
+    if all("techs" in n for n in NATIONS):
+        return
+    for n in NATIONS:
+        research_migrate(n)
+    for u in units:
+        if u.key in TEMPLATE_BY_KEY:
+            u.apply_template(TEMPLATE_BY_KEY[u.key])
+
+
+def research_migrate(n):
+    """A game saved before the research tree: give its countries their 1936 techs and keep what they had."""
+    if "techs" in n:
+        return
+    air, naval = dict(n.get("air_tech", {})), dict(n.get("naval_tech", {}))
+    init_research(n)
+    for fam, g in air.items():
+        n["air_tech"][fam] = max(n["air_tech"].get(fam, -1), g)
+    for t, g in naval.items():
+        n["naval_tech"][t] = max(n["naval_tech"].get(t, -1), g)
+
+
+def start_research(n, slot, tid, day):
+    """Put a tech into a research slot (the one there goes back on the shelf, its progress kept)."""
+    if tech_state(n, tid) != "available":
+        return "Can't research " + tech_name(tid) + " now"
+    stop_research(n, slot)
+    b = best_bonus(n, tid)
+    entry = {"id": tid, "bonus": 0.0, "ahead": 0.0, "src": None}
+    if b:
+        b["uses"] -= 1
+        entry.update(bonus=b["bonus"], ahead=b.get("ahead", 0.0), src=b.get("name"), cats=b["cats"])
+    prog = n.setdefault("tech_progress", {})
+    prog[tid] = prog.get(tid, 0.0) + n["research_saved"][slot]
+    n["research_saved"][slot] = 0.0
+    n["research"][slot] = entry
+    if b:
+        n["tech_bonus"] = [x for x in n["tech_bonus"] if x["uses"] > 0]
+    return None
+
+
+def stop_research(n, slot):
+    s = n["research"][slot]
+    if s is None:
+        return
+    if s.get("src") is not None:   # an unused research bonus goes back
+        n["tech_bonus"].append({"name": s["src"], "cats": s.get("cats", []), "bonus": s["bonus"], "ahead": s["ahead"], "uses": 1})
+    n["research"][slot] = None
+
+
+def add_tech_bonus(n, name, cats, bonus=1.0, uses=1, ahead=0.0):
+    n.setdefault("tech_bonus", []).append({"name": name, "cats": list(cats), "bonus": bonus, "uses": uses, "ahead": ahead})
+
+
+CAT_LABELS = {"infantry_weapons": "infantry weapons", "infantry_tech": "infantry", "support_tech": "support company",
+              "artillery": "artillery", "cat_anti_tank": "anti-tank", "cat_anti_air": "anti-air", "armor": "armour",
+              "cat_light_armor": "light tank", "cat_medium_armor": "medium tank", "cat_heavy_armor": "heavy tank",
+              "motorized_equipment": "motorized", "cat_mechanized_equipment": "mechanized", "marine_tech": "marine",
+              "mountaineers_tech": "mountain infantry", "night_vision": "night vision", "air_equipment": "aircraft",
+              "light_fighter": "fighter", "cat_heavy_fighter": "heavy fighter", "cas_bomber": "close air support",
+              "naval_bomber": "naval bomber", "tactical_bomber": "tactical bomber", "cat_strategic_bomber": "strategic bomber",
+              "naval_equipment": "naval", "dd_tech": "destroyer", "ca_tech": "cruiser", "bb_tech": "battleship",
+              "bc_tech": "battlecruiser", "cv_tech": "carrier", "ss_tech": "submarine", "tp_tech": "transport",
+              "industry": "industry", "cat_production": "production", "construction_tech": "construction",
+              "excavation_tech": "excavation", "synth_resources": "synthetic resources", "cat_synth_oil": "synthetic oil",
+              "cat_synth_rubber": "synthetic rubber", "electronics": "electronics", "radar_tech": "radar",
+              "computing_tech": "computing", "encryption_tech": "encryption", "decryption_tech": "decryption",
+              "cat_fortification": "fortification", "nuclear": "nuclear", "rocketry": "rocketry"}
+
+
+def bonus_text(cats, bonus, uses, ahead):
+    """'+100% research for 1 artillery tech, a year early'."""
+    lab = next((CAT_LABELS[c] for c in cats if c in CAT_LABELS), None)
+    if lab is None:
+        lab = TECHS[cats[0]][T_NAME] if cats and cats[0] in TECHS else "matching"
+        if cats and cats[0] in TECHS and any(SHIP_TYPES.get(x) for x, _ in TECHS[cats[0]][T_FX].get("ship", ())):
+            lab = SHIP_TYPES[TECHS[cats[0]][T_FX]["ship"][0][0]]["name"].lower()
+    early = "" if not ahead else (", a year early" if ahead == 1 else f", {ahead:g} years early")
+    return f"+{bonus * 100:.0f}% research for {uses} {lab} tech{'s' if uses > 1 else ''}{early}"
+
+
+def add_research_slot(n, k=1):
+    for _ in range(k):
+        if n["research_slots"] >= MAX_RESEARCH_SLOTS:
+            return
+        n["research_slots"] += 1
+        n["research"].append(None)
+        n["research_saved"].append(0.0)
+
+
+def research_day(n, day):
+    """A day of research in every slot. Returns the techs finished today."""
+    if "techs" not in n:
+        return []
+    speed = research_speed(n)
+    done = []
+    prog = n.setdefault("tech_progress", {})
+    for i, s in enumerate(n["research"]):
+        if s is None:
+            n["research_saved"][i] = min(RESEARCH_SAVE_DAYS, n["research_saved"][i] + speed)
+            continue
+        tid = s["id"]
+        prog[tid] = prog.get(tid, 0.0) + speed + s.get("bonus", 0.0)
+        cost, _ = tech_cost(n, tid, day, s.get("ahead", 0.0))
+        if prog[tid] >= cost:
+            n["research"][i] = None
+            give_tech(n, tid)
+            done.append(tid)
+            for j, o in enumerate(n["research"]):   # a rival tech that was being researched elsewhere stops
+                if o and o["id"] in TECHS[tid][T_XOR]:
+                    stop_research(n, j)
+    return done
+
+
+# ---- equipment: the models a country has, and how much of its army carries the newest one ----
+
+def gen_value(key, q, idx):
+    """A stat of equipment `key` at (possibly fractional) generation q: between the two models around it."""
+    gens = EQUIP_GENS[key]
+    ks = sorted(gens)
+    q = max(ks[0], min(ks[-1], q))
+    lo = max(g for g in ks if g <= q)
+    hi = min(g for g in ks if g >= q)
+    if lo == hi:
+        return gens[lo][idx]
+    f = (q - lo) / (hi - lo)
+    return gens[lo][idx] * (1 - f) + gens[hi][idx] * f
+
+
+def eq_quality(n, key):
+    q = n.get("eq_q", {}).get(key)
+    return REF_GEN.get(key, 1) if q is None else q
+
+
+def nation_bat(n, b, table):
+    """Battalion (or support company) b as country n fields it: its equipment's model and its techs."""
+    base = table[b]
+    out = dict(base)
+    for key, stats in BATTALION_EQ.get(b, ()):
+        q = eq_quality(n, key)
+        for s in stats:
+            i = GEN_STAT[s]
+            ref, cur = gen_value(key, REF_GEN[key], i), gen_value(key, q, i)
+            if ref > 0:
+                out[s] = base.get(s, 0) * cur / ref
+    m = n.get("umods", {}).get(b)
+    if m:
+        for s in ("soft", "hard", "def", "brk", "ap", "aa"):
+            if m.get(s) and s in out:
+                out[s] = out[s] * (1 + m[s])
+        if m.get("org") and "org" in out:
+            out["org"] = out["org"] + m["org"]
+    return out
+
+
+NATION_STATS = {}
+
+
+def nation_template_stats(n, t):
+    """A template's stats for country n (cached until its techs or its equipment change)."""
+    if n is None or "techs" not in n:
+        return t
+    key = (n["id"], n.get("tech_ver", 0), n.get("q_key"), t["key"], tuple(b for col in t["grid"] for b in col), tuple(t["support"]))
+    st = NATION_STATS.get(key)
+    if st is None:
+        if len(NATION_STATS) > 4000:
+            NATION_STATS.clear()
+        st = template_stats(t["grid"], t["support"], n) or t
+        NATION_STATS[key] = st
+    return st
+
+
+def equip_gen_cost(n, key):
+    """IC of the model a country builds now (HOI4: newer models cost more)."""
+    gens = EQUIP_GENS.get(key)
+    if not gens:
+        return EQUIPMENT[key]["cost"]
+    g = n.get("eq_gen", {}).get(key, REF_GEN.get(key, 1))
+    g = g if g in gens else min(gens)
+    ref = gens.get(REF_GEN.get(key, 1)) or gens[min(gens)]
+    return EQUIPMENT[key]["cost"] * gens[g][G_IC] / max(0.01, ref[G_IC])
+
+
+def new_equipment(n, key, k):
+    """k units of the newest model reach the stockpile: the army's share of it grows."""
+    if key not in EQUIP_GENS or k <= 0 or "eq_gen" not in n:
+        return
+    g = n["eq_gen"].get(key, -1)
+    if g < 0:
+        return
+    q = n["eq_q"].get(key, float(g))
+    if q >= g:
+        n["eq_q"][key] = float(g)
+        return
+    pool = max(0, n["stockpile"].get(key, 0)) + n.get("fielded", {}).get(key, 0)
+    n["eq_q"][key] = (q * pool + g * k) / max(1, pool + k)
+
+
+def refit_day(units):
+    """Once a day: how much equipment every army has in the field, and new stats for divisions whose
+    equipment got noticeably better."""
+    fielded = {}
+    for u in units:
+        f = fielded.setdefault(u.nation_id, {})
+        for k, v in TEMPLATE_BY_KEY[u.key]["eq"].items():
+            f[k] = f.get(k, 0) + v
+    changed = set()
+    for n in NATIONS:
+        n["fielded"] = fielded.get(n["id"], {})
+        qk = tuple(sorted((k, round(v * 10)) for k, v in n.get("eq_q", {}).items()))
+        if qk != n.get("q_key"):
+            n["q_key"] = qk
+            changed.add(n["id"])
+        if n.get("tech_ver") != n.get("stats_tech_ver"):
+            n["stats_tech_ver"] = n.get("tech_ver")
+            changed.add(n["id"])
+    if changed:
+        for u in units:
+            if u.nation_id in changed and u.key in TEMPLATE_BY_KEY:
+                u.apply_template(TEMPLATE_BY_KEY[u.key])
+
+
+def unit_unlocked(n, b):
+    """Can country n use this battalion or support company? (HOI4: it needs the tech.)"""
+    d = BATTALIONS.get(b) or SUPPORT.get(b) or {}
+    need = d.get("tech")
+    return not need or need in n.get("tech_unlocks", set())
+
+
+def template_unlocked(n, t):
+    bats = [b for col in t["grid"] for b in col if b] + [s for s in t["support"] if s]
+    return all(unit_unlocked(n, b) for b in bats)
+
+
+# ---- the AI's research ----
+
+AI_FOLDER_WEIGHT = {"major": {"infantry": 1.0, "support": 0.6, "artillery": 1.0, "armour": 1.0, "air": 1.0, "naval": 0.6,
+                              "electronics": 0.9, "industry": 1.3},
+                    "minor": {"infantry": 1.2, "support": 0.5, "artillery": 0.9, "armour": 0.3, "air": 0.6, "naval": 0.3,
+                              "electronics": 0.6, "industry": 1.2}}
+
+
+def ai_tech_weight(n, tid, day):
+    t = TECHS[tid]
+    prof = "major" if n["major"] else "minor"
+    w = AI_FOLDER_WEIGHT[prof][t[T_FOLDER]] * max(0.2, min(5.0, t[T_AI]))
+    fx, cats, key = t[T_FX], t[T_CATS], nation_key(n)
+    docks = n.get("dockyards", 0)
+    if t[T_FOLDER] == "naval":
+        if docks <= 0:
+            return 0.0
+        w *= min(2.0, 0.3 + docks / 25)
+        if not n["major"] and any(s in ("BB", "BC", "CV") for s, _ in fx.get("ship", ())):
+            w *= 0.2 if docks < 15 else 0.6
+    if fx.get("plane"):
+        fam = fx["plane"][0][0]
+        w *= {"fighter": 1.6, "cas": 1.0, "tac_bomber": 0.8, "nav_bomber": 0.6 if docks else 0.1, "heavy_fighter": 0.4,
+              "strat_bomber": 0.9 if key in ("British Empire", "German Reich", "Soviet Union", "United States") else 0.05}[fam]
+    if "radar_tech" in cats:
+        w *= 1.0 if n["major"] else 0.3
+    if "computing_tech" in cats or fx.get("nat", {}).get("research"):
+        w *= 1.6
+    if "encryption_tech" in cats or "decryption_tech" in cats or "night_vision" in cats:
+        w *= 0.4
+    if "cat_special_forces_generic" in cats or "marine_tech" in cats or "mountaineers_tech" in cats:
+        w *= 0.8 if key in ("Switzerland", "Kingdom of Italy", "Austria", "Yugoslavia", "Greece") and "mountaineers_tech" in cats else 0.3
+    if "cat_fortification" in cats:
+        w *= 1.0 if key in ("French Republic", "Czechoslovakia", "Finland", "Belgium", "Switzerland") else 0.3
+    if "cat_synth_oil" in cats or "cat_synth_rubber" in cats:
+        w *= 1.5 if n.get("res_prod", {}).get("oil", 0) < 8 else 0.3
+    if fx.get("nat", {}).get("oil") or tid.startswith("fuel_refining"):
+        w *= 0.4
+    if "concentrated_industry_category" in cats:
+        w *= 1.4 if n["major"] else 0.6
+    if "dispersed_industry_category" in cats:
+        w *= 0.6 if n["major"] else 1.4
+    if tid == "flexible_line":
+        w *= 0.5
+    if any(u in ("heavy_armor", "modern_armor") for u in fx.get("unlock", ())) or any(k in ("heavy_tank",) for k, _ in fx.get("eq", ())):
+        w *= 0.5 if n["major"] else 0.1
+    if t[T_FOLDER] == "armour" and not n["major"] and not n.get("eq_gen", {}).get("light_tank", -1) >= 0:
+        w *= 0.3
+    # HOI4's AI: newer techs wait, older ones catch up, and short research is preferred
+    ahead = years_ahead(t[T_YEAR], day)
+    behind = max(0.0, -((datetime.date(t[T_YEAR], 1, 1) - research_date(day)).days / 365.0)) if t[T_YEAR] else 0.0
+    w *= (1.0 + 0.2 * min(5.0, behind)) / (1.0 + AHEAD_PENALTY * ahead) ** 2
+    days = tech_days(n, tid, day)
+    return w * 200.0 / (days + 60.0)
+
+
+def ai_research(n, day):
+    """Fill every empty research slot with what this country needs most (HOI4's AI weights, simplified)."""
+    if "techs" not in n:
+        return
+    free = [i for i, s in enumerate(n["research"]) if s is None]
+    if not free:
+        return
+    opts = [tid for tid in TECHS if tech_state(n, tid) == "available"]
+    scored = sorted(((ai_tech_weight(n, tid, day), tid) for tid in opts), reverse=True)
+    scored = [x for x in scored if x[0] > 0]
+    for i in free:
+        if not scored:
+            return
+        top = scored[0][0]
+        pool = [tid for w, tid in scored if w >= 0.75 * top]   # HOI4: a random pick among the best
+        tid = random.choice(pool)
+        start_research(n, i, tid, day)
+        scored = [x for x in scored if x[1] != tid and x[1] not in TECHS[tid][T_XOR]]
+
+
+# ---- describing techs ----
+
+def describe_tech(tid):
+    """Readable effects of a tech, one line each."""
+    fx = TECHS[tid][T_FX]
+    out = []
+    for key, g in fx.get("eq", ()):
+        gens = EQUIP_GENS[key]
+        st = gens[g]
+        ref = gens.get(g - 1)
+        line = f"New model: {st[G_NAME]}"
+        if ref:
+            bits = []
+            for lab, i in (("soft", G_SOFT), ("hard", G_HARD), ("def", G_DEF), ("brk", G_BRK), ("pierce", G_AP),
+                           ("armour", G_ARM), ("air", G_AA)):
+                if st[i] != ref[i] and (st[i] or ref[i]):
+                    bits.append(f"{lab} {ref[i]:g}>{st[i]:g}")
+            if bits:
+                line += " (" + ", ".join(bits[:5]) + ")"
+        out.append(line)
+    for fam, g in fx.get("plane", ()):
+        st = PLANE_STATS[fam][g]
+        out.append(f"New plane: {PLANE_GENERIC_NAMES.get(f'{fam}_{g}', fam)} ({st[2]} km/h, range {st[1]} km)")
+    for s, g in fx.get("ship", ()):
+        out.append(f"New hull: {GEN_LABEL[g]} {SHIP_TYPES[s]['name']}s for the shipyards")
+    for u in fx.get("unlock", ()):
+        d = BATTALIONS.get(u) or SUPPORT.get(u)
+        if d:
+            out.append(f"Unlocks: {d['name']} ({'battalion' if u in BATTALIONS else 'support company'})")
+        elif u in BUILDINGS:
+            out.append(f"Unlocks: {BUILDINGS[u]['name']} (building)")
+    for b, mods in fx.get("unit", {}).items():
+        d = BATTALIONS.get(b) or SUPPORT.get(b)
+        if not d:
+            continue
+        bits = []
+        for s, v in mods.items():
+            if s == "org":
+                bits.append(f"{v:+g} {UNIT_LABELS[s]}")
+            elif s in ("dig", "recon"):
+                bits.append(f"{v:+g} {UNIT_LABELS[s]}")
+            elif s in UNIT_LABELS:
+                bits.append(f"{v * 100:+.0f}% {UNIT_LABELS[s]}")
+        if bits:
+            out.append(f"{d['name']}: " + ", ".join(bits))
+    for k, v in fx.get("nat", {}).items():
+        lab, pct = NAT_LABELS.get(k, (k, False))
+        out.append(f"{v * 100:+.0f}% {lab}" if pct else f"{v:+g} {lab}")
+    return out or ["(no effect in this game)"]
+
+
+def merge_unit_lines(lines):
+    """Several battalions with the same bonus read as one line."""
+    groups, order = {}, []
+    for ln in lines:
+        if ": " in ln and not ln.startswith(("New ", "Unlocks")):
+            who, what = ln.split(": ", 1)
+            if what not in groups:
+                groups[what] = []
+                order.append(("u", what))
+            groups[what].append(who)
+        else:
+            order.append(("l", ln))
+    out = []
+    for kind, v in order:
+        out.append(v if kind == "l" else f"{', '.join(groups[v])}: {v}")
+    return out
+
+
+# ---- the research screen ([E]) ----
+# HOI4's research screen in a terminal: the research slots on top, the folders as tabs (F1-F8), each folder's
+# lines of techs as titled sections above the grid (PgUp/PgDn jump between them), the grid by year, and the
+# selected tech below with what it needs, what it leads to and what it does. [/] finds a tech by name, [R] goes
+# to the next tech being researched.
+
+TECH_BOX_W, TECH_COL_W, TECH_ROW_H = 19, 21, 3
+TECH_STATE_ATTR = {"done": (22, 2), "active": (23, 3), "available": (7, 0), "locked": (0, 6), "blocked": (20, 1)}
+TECH_STATE_WORD = {"done": "Researched", "active": "Researching", "available": "Can be researched",
+                   "locked": "Locked", "blocked": "Other path taken"}
+# each folder's lines, as HOI4's screen groups them: (title, first grid column, last grid column)
+RESEARCH_SECTIONS = {
+    "infantry": [("Infantry Weapons", 0, 1), ("Motorized & Mechanized", 3, 4), ("Support Weapons", 6, 6),
+                 ("Marines", 8, 8), ("Mountaineers", 10, 10), ("Special Forces", 12, 14), ("Night Vision", 16, 16)],
+    "support": [("Engineers", 0, 0), ("Recon", 1, 1), ("Military Police", 2, 2), ("Maintenance", 3, 3),
+                ("Field Hospital", 4, 4), ("Logistics", 5, 5), ("Signal", 6, 6)],
+    "artillery": [("Anti-Air", 0, 0), ("Artillery", 1, 1), ("Rocket Artillery", 2, 2), ("Anti-Tank", 3, 3)],
+    "armour": [("Light Tanks", 0, 0), ("Medium Tanks", 1, 1), ("Modern Tank", 2, 2), ("Heavy Tanks", 3, 3)],
+    "air": [("Close Air Support", 0, 0), ("Fighters", 1, 1), ("Naval Bombers", 2, 2), ("Heavy Fighters", 4, 4),
+            ("Tactical Bombers", 5, 5), ("Strategic Bombers", 7, 7)],
+    "naval": [("Cruisers", 0, 1), ("Capital Ships", 3, 4), ("Destroyers", 6, 6), ("Carriers", 8, 8),
+              ("Submarines", 10, 10), ("Transports & Landings", 12, 12)],
+    "electronics": [("Radio", 0, 0), ("Radar", 1, 1), ("Encryption", 2, 2), ("Computing", 3, 3), ("Decryption", 4, 4),
+                    ("Fortifications", 6, 8), ("Atomic Research", 10, 10)],
+    "industry": [("Production", 0, 3), ("Concentrated / Dispersed", 4, 5), ("Synthetics & Fuel", 7, 10),
+                 ("Construction & Excavation", 12, 13)],
+}
+SECTION_CACHE = {}
+
+
+def folder_techs(fk):
+    return [tid for tid, t in TECHS.items() if t[T_FOLDER] == fk]
+
+
+def research_sections(fk):
+    """[(title, first column, last column, techs)] of a folder, left to right."""
+    got = SECTION_CACHE.get(fk)
+    if got is None:
+        ids = folder_techs(fk)
+        spec = RESEARCH_SECTIONS.get(fk) or [(dict(TECH_FOLDERS)[fk], 0, max(TECHS[t][T_COL] for t in ids))]
+        got = [(title, c0, c1, [t for t in ids if c0 <= TECHS[t][T_COL] <= c1]) for title, c0, c1 in spec]
+        orphans = [t for t in ids if not any(t in s[3] for s in got)]   # (anything the titles don't cover joins the nearest)
+        for t in orphans:
+            k = min(range(len(got)), key=lambda i: abs(TECHS[t][T_COL] - got[i][1]))
+            got[k][3].append(t)
+        got = [s for s in got if s[3]]
+        SECTION_CACHE[fk] = got
+    return got
+
+
+def section_index(tid):
+    return next((i for i, s in enumerate(research_sections(TECHS[tid][T_FOLDER])) if tid in s[3]), 0)
+
+
+def tech_short_status(n, tid, day):
+    st = tech_state(n, tid)
+    if st == "done":
+        return st, "researched"
+    if st == "active":
+        slot = next(s for s in n["research"] if s and s["id"] == tid)
+        cost, _ = tech_cost(n, tid, day, slot.get("ahead", 0.0))
+        return st, f"{min(99, int(100 * n['tech_progress'].get(tid, 0.0) / cost))}%  {tech_days(n, tid, day, slot):.0f} d"
+    if st == "blocked":
+        return st, "other path taken"
+    if st == "locked":
+        return st, "locked"
+    _, ahead = tech_cost(n, tid, day, (best_bonus(n, tid) or {}).get("ahead", 0.0))
+    days = tech_days(n, tid, day)
+    return st, (f"{days:.0f} d  +{AHEAD_PENALTY * ahead * 100:.0f}%" if ahead > 0.05 else f"{days:.0f} days")
+
+
+def best_pick(n, ids):
+    """The tech to select in a group: the first one that can be researched, else the first one."""
+    avail = [t for t in ids if tech_state(n, t) == "available"]
+    return min(avail or ids, key=lambda t: (TECHS[t][T_COL], TECHS[t][T_ROW]))
+
+
+def research_select_default(n, fk):
+    return best_pick(n, folder_techs(fk))   # the leftmost one: the camera starts left
+
+
+def research_goto(n, tid, at_left=False):
+    """Select a tech (any folder); with at_left its section starts at the left of the view."""
+    rs = RESEARCH_UI
+    fk = TECHS[tid][T_FOLDER]
+    if fk != TECH_FOLDERS[rs["folder"]][0]:
+        rs["folder"] = [k for k, _ in TECH_FOLDERS].index(fk)
+        rs["cam_y"] = 0
+    rs["sel"] = tid
+    if at_left:
+        rs["cam_x"] = research_sections(fk)[section_index(tid)][1] * TECH_COL_W
+        rs["cam_y"] = max(0, min(rs["cam_y"], TECHS[tid][T_ROW] * TECH_ROW_H))
+
+
+def research_jump_section(n, step):
+    """The next (+1) or previous (-1) section, on into the next or previous folder at the ends."""
+    rs = RESEARCH_UI
+    fk = TECH_FOLDERS[rs["folder"]][0]
+    secs = research_sections(fk)
+    i = section_index(rs["sel"]) + step if rs["sel"] in TECHS else 0
+    if i >= len(secs) or i < 0:
+        rs["folder"] = (rs["folder"] + step) % len(TECH_FOLDERS)
+        fk = TECH_FOLDERS[rs["folder"]][0]
+        secs = research_sections(fk)
+        i = 0 if step > 0 else len(secs) - 1
+    title, _, _, ids = secs[i]
+    research_goto(n, best_pick(n, ids), at_left=True)
+    return f"{dict(TECH_FOLDERS)[fk]}: {title}"
+
+
+def research_matches(text):
+    """Techs whose name (or short name) holds the text, in folder order."""
+    q = text.strip().lower()
+    if not q:
+        return []
+    order = {k: i for i, (k, _) in enumerate(TECH_FOLDERS)}
+    def rank(tid):   # the name starting with it first, then a word starting with it, then anywhere
+        names = (tech_name(tid).lower(), tech_short(tid, 40).lower())
+        if any(nm.startswith(q) for nm in names):
+            return 0
+        if any(w.startswith(q) for nm in names for w in nm.replace("-", " ").split()):
+            return 1
+        return 2 if any(q in nm for nm in names) else None
+    hits = [(rank(tid), tid) for tid in TECHS]
+    return [t for r, t in sorted((h for h in hits if h[0] is not None),
+                                 key=lambda h: (h[0], order[TECHS[h[1]][T_FOLDER]], TECHS[h[1]][T_ROW], TECHS[h[1]][T_COL]))]
+
+
+def draw_research(stdscr, n, day, term_h, term_w, alert=""):
+    rs = RESEARCH_UI
+    H, W = term_h, term_w
+    fk = TECH_FOLDERS[rs["folder"]][0]
+    if rs["sel"] not in TECHS or TECHS[rs["sel"]][T_FOLDER] != fk:
+        rs["sel"] = research_select_default(n, fk)
+    sel = rs["sel"]
+    for ctl in ("[ARROWS] Move  [TAB/F1-F8] Folder  [PGUP/PGDN] Section  [/] Find  [R] In progress  "
+                "[ENTER] Research/stop  [1-6] Into slot  [ESC] Map",
+                "[TAB/F1-F8] Folder  [PGUP/PGDN] Section  [/] Find  [R] Ongoing  [ENTER] Research  [ESC] Map",
+                "[TAB] Folder [PGDN] Section [/] Find [ENTER] Go [ESC]"):
+        if len(ctl) + 8 <= W:
+            break
+    draw_frame(stdscr, H, W, "RESEARCH", ctl)
+    speed = research_speed(n)
+    free = sum(1 for s in n["research"] if s is None)
+    bonuses = [b for b in n.get("tech_bonus", ()) if b["uses"] > 0]
+    head = [("Research speed ", curses.color_pair(6)), (f"{(speed - 1) * 100:+.0f}%", curses.A_BOLD),
+            ("   Slots ", curses.color_pair(6)), (f"{n['research_slots']}", curses.A_BOLD),
+            (f" ({free} free)" if free else "", curses.color_pair(1) | curses.A_BOLD),
+            ("   Researched ", curses.color_pair(6)), (f"{len(n['techs'])}/{len(TECHS)}", curses.A_BOLD)]
+    if bonuses:
+        head += [("   Bonuses ", curses.color_pair(6)), (str(sum(b["uses"] for b in bonuses)), curses.color_pair(2) | curses.A_BOLD)]
+    head += [("   ", 0), (research_date(day).strftime("%d %b %Y").lstrip("0"), curses.color_pair(3) | curses.A_BOLD)]
+    draw_parts(stdscr, 1, 2, head, W - 2)
+    # the research slots: two to a line on short screens
+    y = 2
+    per = 2 if H < 34 and len(n["research"]) > 1 else 1
+    slot_w = (W - 4) // per
+    for i, s in enumerate(n["research"]):
+        sx, sy = 2 + (i % per) * slot_w, y + i // per
+        small = slot_w < 70
+        bw = max(5, min(16, slot_w - (34 if small else 58)))
+        nw = max(8, min(30, slot_w - bw - 20)) if small else 30
+        if s is None:
+            parts = [(f" {i + 1} ", curses.color_pair(7)), (" empty", curses.color_pair(1) | curses.A_BOLD),
+                     (" - pick a tech, ENTER" if small else " - pick a tech and press ENTER or " + str(i + 1), curses.color_pair(6))]
+            if n["research_saved"][i] >= 1:
+                parts.append((f"  ({n['research_saved'][i]:.0f} days banked)", curses.color_pair(6)))
+        else:
+            tid = s["id"]
+            cost, ahead = tech_cost(n, tid, day, s.get("ahead", 0.0))
+            frac = min(1.0, n["tech_progress"].get(tid, 0.0) / cost)
+            parts = [(f" {i + 1} ", curses.color_pair(23)), (" " + fit(tech_name(tid), nw).ljust(nw + 1), curses.A_BOLD),
+                     (bar(frac, bw), curses.color_pair(3)), (f" {frac * 100:3.0f}%", curses.A_BOLD),
+                     (f" {tech_days(n, tid, day, s):.0f}d", curses.color_pair(6)),
+                     ("" if small else f"  {dict(TECH_FOLDERS)[TECHS[tid][T_FOLDER]]}", curses.color_pair(6) | curses.A_DIM)]
+            if ahead > 0.05:
+                parts.append((f"  ahead +{AHEAD_PENALTY * ahead * 100:.0f}%", curses.color_pair(1)))
+            if s.get("bonus"):
+                parts.append((f"  bonus +{s['bonus'] * 100:.0f}%", curses.color_pair(2)))
+        draw_parts(stdscr, sy, sx, parts, sx + slot_w - 1)
+    y += (len(n["research"]) + per - 1) // per
+    draw_rule(stdscr, y, 0, W - 1)
+    y += 1
+    # the folders, with their keys
+    labs = []
+    for i, (k, title) in enumerate(TECH_FOLDERS):
+        ids = folder_techs(k)
+        labs.append((f"F{i + 1}", title, f"{sum(1 for t in ids if t in n['techs'])}/{len(ids)}"))
+    for style in (0, 1, 2, 3):   # whatever fits the width (the F-keys stay as long as they can)
+        tabs = [(f" {f} {t} {c} " if style == 0 else f" {f} {t} " if style == 1 else f" {f} {t[:3]} " if style == 2 else f" {t[:3]} ")
+                for f, t, c in labs]
+        if sum(len(t) + 1 for t in tabs) <= W - 4:
+            break
+    x = 2
+    for i, lab in enumerate(tabs):
+        safe_draw(stdscr, y, x, lab, curses.color_pair(21) | curses.A_BOLD if i == rs["folder"] else curses.color_pair(6))
+        x += len(lab) + 1
+    y += 1
+    draw_rule(stdscr, y, 0, W - 1)
+    sec_y = y + 1                         # the section titles, lined up with their columns
+    top = sec_y + 1
+    panel_h = 8 if H >= 44 else 6 if H >= 32 else 4
+    bottom = H - 2 - panel_h              # last grid row
+    gx0 = 8                               # left of the grid (the year labels are left of it)
+    view_w, view_h = max(TECH_COL_W, W - gx0 - 2), max(TECH_ROW_H, bottom - top)
+    ids = folder_techs(fk)
+    rows = TECH_ROWS[fk]
+    full_w = (max(TECHS[t][T_COL] for t in ids) + 1) * TECH_COL_W - (TECH_COL_W - TECH_BOX_W)
+    # keep the selected tech on screen
+    sx, sy = TECHS[sel][T_COL] * TECH_COL_W, TECHS[sel][T_ROW] * TECH_ROW_H
+    if sx - rs["cam_x"] < 0:
+        rs["cam_x"] = sx
+    elif sx + TECH_BOX_W - rs["cam_x"] > view_w:
+        rs["cam_x"] = sx + TECH_BOX_W - view_w
+    rs["cam_x"] = max(0, min(rs["cam_x"], max(0, full_w - view_w)))
+    if sy - rs["cam_y"] < 0:
+        rs["cam_y"] = sy
+    elif sy + TECH_ROW_H - rs["cam_y"] > view_h:
+        rs["cam_y"] = sy + TECH_ROW_H - view_h
+    rs["cam_x"], rs["cam_y"] = max(0, rs["cam_x"]), max(0, rs["cam_y"])
+    # section titles: the one we are in stands out; the ones off screen are named at the edges
+    cur = section_index(sel)
+    left_off, right_off = [], []
+    for i, (title, c0, c1, _) in enumerate(research_sections(fk)):
+        x0 = gx0 + c0 * TECH_COL_W - rs["cam_x"]
+        width = (c1 - c0) * TECH_COL_W + TECH_BOX_W
+        if x0 + width <= gx0:
+            left_off.append(title)
+            continue
+        if x0 >= W - 2:
+            right_off.append(title)
+            continue
+        label = f"{'─' * 1} {title} " + "─" * max(0, width - len(title) - 3)
+        lx = max(gx0, x0)
+        attr = curses.color_pair(3) | curses.A_BOLD if i == cur else curses.color_pair(6)
+        safe_draw(stdscr, sec_y, lx, label[lx - x0:][:max(0, W - 2 - lx)], attr)
+    if left_off:
+        safe_draw(stdscr, sec_y, 1, "◄", curses.color_pair(6) | curses.A_BOLD)
+    if right_off:
+        more = f" {right_off[0]} ►" if len(right_off) == 1 else f" +{len(right_off)} more ►"
+        safe_draw(stdscr, sec_y, W - 2 - len(more), more, curses.color_pair(6) | curses.A_BOLD)
+    # the year rows: this year lit up, the years still to come dimmer
+    this_year = research_date(day).year
+    for r, year in enumerate(rows):
+        yy = top + r * TECH_ROW_H - rs["cam_y"]
+        if top <= yy <= bottom:
+            attr = (curses.color_pair(23) if year == this_year else curses.color_pair(2) if year < this_year
+                    else curses.color_pair(6)) | curses.A_BOLD
+            safe_draw(stdscr, yy, 2, f"{year}", attr)
+            if year > this_year:
+                safe_draw(stdscr, yy + 1, 2, f"+{year - this_year}y", curses.color_pair(6) | curses.A_DIM)
+    pos = {tid: (gx0 + TECHS[tid][T_COL] * TECH_COL_W - rs["cam_x"], top + TECHS[tid][T_ROW] * TECH_ROW_H - rs["cam_y"]) for tid in ids}
+    A = curses.color_pair(6) | curses.A_DIM
+    for tid in ids:   # lines from a tech up to the one before it in the same column
+        bx, by = pos[tid]
+        for r in TECHS[tid][T_REQ]:
+            if r in pos and TECHS[r][T_COL] == TECHS[tid][T_COL] and TECHS[r][T_ROW] < TECHS[tid][T_ROW]:
+                cx = bx + TECH_BOX_W // 2
+                for yy in range(pos[r][1] + 2, by):
+                    if top <= yy <= bottom and gx0 <= cx < W - 2:
+                        safe_draw(stdscr, yy, cx, "│", A)
+    needs = set(TECHS[sel][T_REQ]) | set(TECHS[sel][T_DEPS])
+    leads = {t for t in ids if sel in TECHS[t][T_REQ] or sel in TECHS[t][T_DEPS]}
+    for tid in ids:
+        bx, by = pos[tid]
+        if not (gx0 - TECH_BOX_W < bx < W - 2 and top <= by <= bottom):
+            continue
+        st, sub = tech_short_status(n, tid, day)
+        bg, fgp = TECH_STATE_ATTR[st]
+        a1 = curses.color_pair(bg) | curses.A_BOLD if bg else curses.color_pair(fgp) | curses.A_DIM
+        a2 = curses.color_pair(fgp) | (curses.A_BOLD if st != "locked" else curses.A_DIM)
+        if tid == sel:
+            a1, a2 = curses.color_pair(21) | curses.A_BOLD, curses.color_pair(6) | curses.A_BOLD
+        name = (">" if tid == sel else " ") + tech_short(tid, TECH_BOX_W - 2).ljust(TECH_BOX_W - 1)
+        lx = max(gx0, bx)
+        cut = lx - bx
+        safe_draw(stdscr, by, lx, name[cut:][:max(0, W - 2 - lx)], a1)
+        if by + 1 <= bottom:
+            safe_draw(stdscr, by + 1, lx, (" " + sub).ljust(TECH_BOX_W)[cut:][:max(0, W - 2 - lx)], a2)
+        if (tid in needs or tid in leads) and gx0 <= bx - 1 < W - 2:   # what the selected tech needs, and opens up
+            safe_draw(stdscr, by, bx - 1, "»" if tid in needs else "›", curses.color_pair(6) | curses.A_BOLD)
+    # the scroll bar: where the view is in the folder
+    draw_rule(stdscr, bottom + 1, 0, W - 1)
+    if full_w > view_w:
+        track = W - 4
+        a = int(track * rs["cam_x"] / full_w)
+        b = max(a + 1, int(track * min(full_w, rs["cam_x"] + view_w) / full_w))
+        safe_draw(stdscr, bottom + 1, 2 + a, "═" * (b - a), curses.color_pair(6) | curses.A_BOLD)
+    # the selected tech
+    py = bottom + 2
+    t = TECHS[sel]
+    st = tech_state(n, sel)
+    cost, ahead = tech_cost(n, sel, day, (best_bonus(n, sel) or {}).get("ahead", 0.0))
+    sec_title = research_sections(fk)[cur][0]
+    word = TECH_STATE_WORD[st] + (f" ({tech_short_status(n, sel, day)[1]})" if st == "active" else "")
+    line = [(tech_name(sel), curses.A_BOLD | curses.color_pair(3)),
+            (f"   {t[T_YEAR]}" if t[T_YEAR] else "   (any year)", curses.color_pair(6)),
+            (f"   {dict(TECH_FOLDERS)[fk]} › {sec_title}", curses.color_pair(6)),
+            (f"   {word}", curses.color_pair(TECH_STATE_ATTR[st][1] or 2) | curses.A_BOLD)]
+    draw_parts(stdscr, py, 2, line, W - 2)
+    py += 1
+    timing = [(f"Research cost {t[T_COST]:g} = {BASE_TECH_COST * t[T_COST]:.0f} days at +0%", curses.color_pair(6))]
+    if st in ("available", "active", "locked", "blocked"):
+        timing.append((f"   now {tech_days(n, sel, day):.0f} days at {(speed - 1) * 100:+.0f}% speed", curses.A_BOLD))
+        if ahead > 0.05:
+            timing.append((f"   {ahead:.1f} years ahead of its time: +{AHEAD_PENALTY * ahead * 100:.0f}%", curses.color_pair(1) | curses.A_BOLD))
+    b = best_bonus(n, sel)
+    if b and st != "done":
+        timing.append((f"   bonus +{b['bonus'] * 100:.0f}%" + (f", {b['ahead']:g} year early" if b.get("ahead") else "") +
+                       f" from {b['name']}", curses.color_pair(2) | curses.A_BOLD))
+    draw_parts(stdscr, py, 2, timing, W - 2)
+    py += 1
+    rel = []
+    if t[T_REQ] or t[T_DEPS]:
+        rel.append(("» Needs ", curses.color_pair(6) | curses.A_BOLD))
+        rel.append((" or ".join(tech_name(r) for r in t[T_REQ]) + (" and " + ", ".join(tech_name(r) for r in t[T_DEPS]) if t[T_DEPS] else ""),
+                    curses.color_pair(1 if st == "locked" else 2) | (curses.A_BOLD if st == "locked" else 0)))
+    nxt = [x for x in TECHS if sel in TECHS[x][T_REQ] or sel in TECHS[x][T_DEPS]]
+    if nxt:
+        rel.append((("   " if rel else "") + "› Leads to ", curses.color_pair(6) | curses.A_BOLD))
+        rel.append((", ".join(tech_name(x) for x in nxt), curses.color_pair(6)))
+    if t[T_XOR]:
+        rel.append((("   " if rel else "") + "Either/or with ", curses.color_pair(6) | curses.A_BOLD))
+        rel.append((", ".join(tech_name(r) for r in t[T_XOR]), curses.color_pair(1 if st == "blocked" else 6)))
+    if rel:
+        draw_parts(stdscr, py, 2, rel, W - 2)
+        py += 1
+    # what it does: two columns on wide screens
+    fx = [p for ln in merge_unit_lines(describe_tech(sel)) for p in wrap_text(ln, (W - 10) // 2 if W >= 150 else W - 6)]
+    last = H - 3 if (alert or rs.get("find") is not None) else H - 2
+    room = max(0, last - py + 1)
+    cols = 2 if W >= 150 and len(fx) > room else 1
+    colw = (W - 6) // cols
+    for k, part in enumerate(fx[:room * cols]):
+        safe_draw(stdscr, py + k % room, 4 + (k // room) * colw, part[:colw - 1], curses.color_pair(2) if st == "done" else 0)
+    if rs.get("find") is not None:   # the find prompt
+        hits = research_matches(rs["find"])
+        shown = ", ".join(tech_name(h) for h in hits[:4]) + (f" (+{len(hits) - 4})" if len(hits) > 4 else "")
+        draw_parts(stdscr, H - 2, 2, [("Find: ", curses.color_pair(3) | curses.A_BOLD), (rs["find"] + "_", curses.A_BOLD),
+                                      (f"   {len(hits)} found: {shown}" if hits else ("   nothing found" if rs["find"] else
+                                                                                         "   type part of a tech's name"),
+                                       curses.color_pair(6)),
+                                      ("   [ENTER] keep  [TAB] next  [ESC] back", curses.color_pair(6) | curses.A_DIM)], W - 2)
+    elif alert:
+        good = any(w in alert for w in ("Started", "COMPLETE", "Stopped")) or ":" in alert[:24] and "ERROR" not in alert
+        safe_draw(stdscr, H - 2, 2, fit(alert, W - 4), (curses.color_pair(2) if good else curses.color_pair(1)) | curses.A_BOLD)
+
+
+def research_move(n, sel, dx, dy):
+    ids = folder_techs(TECHS[sel][T_FOLDER])
+    c0, r0 = TECHS[sel][T_COL], TECHS[sel][T_ROW]
+    best = None
+    for tid in ids:
+        if tid == sel:
+            continue
+        c, r = TECHS[tid][T_COL], TECHS[tid][T_ROW]
+        if dx and (c - c0) * dx <= 0:
+            continue
+        if dy and (r - r0) * dy <= 0:
+            continue
+        d = abs(c - c0) + 3 * abs(r - r0) if dx else abs(r - r0) + 2 * abs(c - c0)
+        if best is None or d < best[0]:
+            best = (d, tid)
+    return best[1] if best else sel
+
+
+def research_find_keys(key, n):
+    """Keys while the find prompt is open."""
+    rs = RESEARCH_UI
+    if key == 27:
+        rs["find"] = None
+        if rs.get("find_from") in TECHS:
+            research_goto(n, rs["find_from"])
+        return "Find cancelled."
+    if key in (10, 13, curses.KEY_ENTER):
+        rs["find"] = None
+        return f"{tech_name(rs['sel'])}: {dict(TECH_FOLDERS)[TECHS[rs['sel']][T_FOLDER]]}." if rs["sel"] in TECHS else ""
+    if key in (curses.KEY_BACKSPACE, 127, 8):
+        rs["find"] = rs["find"][:-1]
+    elif key in (9, curses.KEY_DOWN):
+        hits = research_matches(rs["find"])
+        if hits:
+            k = (hits.index(rs["sel"]) + 1) % len(hits) if rs["sel"] in hits else 0
+            research_goto(n, hits[k])
+        return ""
+    elif key == curses.KEY_UP:
+        hits = research_matches(rs["find"])
+        if hits:
+            k = (hits.index(rs["sel"]) - 1) % len(hits) if rs["sel"] in hits else 0
+            research_goto(n, hits[k])
+        return ""
+    elif 32 <= key < 127 and len(rs["find"]) < 30:
+        rs["find"] += chr(key)
+    else:
+        return ""
+    hits = research_matches(rs["find"])   # the selection follows the typing
+    if hits:
+        research_goto(n, hits[0])
+    return ""
+
+
+def research_keys(key, n, day):
+    """Keys on the research screen. Returns 'exit', a message, or ''."""
+    rs = RESEARCH_UI
+    if rs["sel"] not in TECHS:
+        rs["sel"] = research_select_default(n, TECH_FOLDERS[rs["folder"]][0])
+    if rs.get("find") is not None:
+        return research_find_keys(key, n)
+    sel = rs["sel"]
+    if key in (27, ord('e'), ord('E'), ord('q'), ord('Q')):
+        return "exit"
+    if key in (9, ord(']')):
+        rs["folder"] = (rs["folder"] + 1) % len(TECH_FOLDERS)
+        rs["sel"], rs["cam_x"], rs["cam_y"] = None, 0, 0
+        return ""
+    if key in (getattr(curses, "KEY_BTAB", 353), ord('[')):
+        rs["folder"] = (rs["folder"] - 1) % len(TECH_FOLDERS)
+        rs["sel"], rs["cam_x"], rs["cam_y"] = None, 0, 0
+        return ""
+    if curses.KEY_F1 <= key < curses.KEY_F1 + len(TECH_FOLDERS):
+        rs["folder"] = key - curses.KEY_F1
+        rs["sel"], rs["cam_x"], rs["cam_y"] = None, 0, 0
+        return ""
+    if key in (curses.KEY_NPAGE, ord('.'), ord('>')):
+        return research_jump_section(n, 1)
+    if key in (curses.KEY_PPAGE, ord(','), ord('<')):
+        return research_jump_section(n, -1)
+    if key in (curses.KEY_HOME, curses.KEY_END):
+        secs = research_sections(TECH_FOLDERS[rs["folder"]][0])
+        research_goto(n, best_pick(n, secs[0 if key == curses.KEY_HOME else -1][3]), at_left=True)
+        return ""
+    if key in (ord('/'), ord('f'), ord('F')):
+        rs["find"], rs["find_from"] = "", sel
+        return ""
+    if key in (ord('r'), ord('R')):
+        going = [s["id"] for s in n["research"] if s]
+        if not going:
+            return "Nothing is being researched: pick a tech and press ENTER."
+        k = (going.index(sel) + 1) % len(going) if sel in going else 0
+        research_goto(n, going[k], at_left=True)
+        return f"In progress {k + 1}/{len(going)}: {tech_name(going[k])}."
+    moves = {curses.KEY_LEFT: (-1, 0), curses.KEY_RIGHT: (1, 0), curses.KEY_UP: (0, -1), curses.KEY_DOWN: (0, 1),
+             ord('a'): (-1, 0), ord('d'): (1, 0), ord('w'): (0, -1), ord('s'): (0, 1)}
+    if key in moves:
+        rs["sel"] = research_move(n, sel, *moves[key])
+        return ""
+    st = tech_state(n, sel)
+    if key in (10, 13, curses.KEY_ENTER):
+        if st == "active":
+            i = next(i for i, s in enumerate(n["research"]) if s and s["id"] == sel)
+            stop_research(n, i)
+            return f"Stopped researching {tech_name(sel)} (progress is kept)."
+        if st != "available":
+            return {"done": f"{tech_name(sel)} is already researched.",
+                    "blocked": f"{tech_name(sel)}: we chose " + ", ".join(tech_name(x) for x in TECHS[sel][T_XOR] if x in n['techs'] or researching(n, x)) + " instead.",
+                    "locked": f"{tech_name(sel)} needs " + " or ".join(tech_name(r) for r in TECHS[sel][T_REQ]) +
+                              (" and " + ", ".join(tech_name(r) for r in TECHS[sel][T_DEPS]) if TECHS[sel][T_DEPS] else "") + " first."}[st]
+        free = next((i for i, s in enumerate(n["research"]) if s is None), None)
+        if free is None:
+            return f"All {n['research_slots']} slots are busy: press 1-{n['research_slots']} to put {tech_name(sel)} into one."
+        start_research(n, free, sel, day)
+        return f"Started {tech_name(sel)} in slot {free + 1}: {tech_days(n, sel, day, n['research'][free]):.0f} days."
+    if ord('1') <= key <= ord('9'):
+        i = key - ord('1')
+        if i >= n["research_slots"]:
+            return f"We have {n['research_slots']} research slots."
+        if st == "active":
+            return f"{tech_name(sel)} is already being researched."
+        if st != "available":
+            return f"{tech_name(sel)} can't be researched now."
+        old = n["research"][i]
+        start_research(n, i, sel, day)
+        return (f"Started {tech_name(sel)} in slot {i + 1}" + (f" instead of {tech_name(old['id'])} (its progress is kept)." if old else "."))
+    return ""
+
+
 # ---- ICONS: Nerd Font icons or standard symbols ---------------------------------------------------------------
 # The ship, port, submarine, convoy, battle, plane and air base icons come from a Nerd Font. Without one (Windows,
 # most terminals and fonts) they show as boxes, so there is a second set made only of symbols every common terminal
@@ -19442,7 +24161,7 @@ SAVE_SKIP = (   # changed while playing too, but caches, the screen, the icon se
     "AIR_SEA_DIM", "ASTAR_NB", "BATTLE_FRAMES", "DIM_SHADES", "EVENTS", "EVENT_TRIGGERS", "GLYPH_AIRBASE",
     "GLYPH_ANCHOR", "GLYPH_BURST", "GLYPH_CONVOY", "GLYPH_FIRE", "GLYPH_FLASH", "GLYPH_PLANE", "GLYPH_SHIP",
     "GLYPH_SUBS", "GLYPH_SWORDS", "HD", "HD_MEMO", "ICONS", "MAP_PAINT", "PASS_MEMO", "PLANE_STATS_CACHE",
-    "PUPPET_COLOURS", "ROUTE", "SAVE_UI", "STATE_HL", "city_pairs", "hd_cells", "hd_pair_use", "hd_pairs",
+    "NATION_STATS", "PUPPET_COLOURS", "RESEARCH_UI", "ROUTE", "SAVE_UI", "SECTION_CACHE", "UPDATE", "STATE_HL", "city_pairs", "hd_cells", "hd_pair_use", "hd_pairs",
     "hd_shades", "hd_solid")
 SAVE_LOCALS = ("world_map", "political_map", "units", "unit_id_counter", "near_land", "game_tick", "tick_budget",
                "world_tension", "game_speed", "active_army_id", "map_type", "game_over_msg", "cam_x", "cam_y",
@@ -19582,6 +24301,8 @@ def reset_screen_state():
     DIM_SHADES.clear()
     AIR_SEA_DIM.clear()
     PLANE_STATS_CACHE.clear()
+    NATION_STATS.clear()
+    RESEARCH_UI.update(folder=0, sel=None, cam_x=0, cam_y=0, find=None)
     PASS_MEMO["on"] = False
     PASS_MEMO["regions"].clear()
     PASS_MEMO["routes"].clear()
@@ -19621,6 +24342,7 @@ def draw_game_menu(stdscr, term_h, term_w, sel, country, date):
         style = curses.color_pair(21) | curses.A_BOLD if i == sel else curses.A_NORMAL
         safe_draw(stdscr, cy + 3 + i * 2, cx, f"> {opt:<20}" if i == sel else f"  {opt:<20}", style)
     safe_draw(stdscr, cy + 4 + len(GAME_MENU_OPTIONS) * 2, cx, "Quit Game saves first (as Autosave).", curses.A_DIM)
+    draw_update_notice(stdscr, cy + 6 + len(GAME_MENU_OPTIONS) * 2, W)
 
 
 def draw_save_list(stdscr, H, W, y0, sel):
@@ -19811,7 +24533,7 @@ def main(stdscr):
                     for n2 in NATIONS:
                         if n1["id"] != n2["id"]:
                             n1["relations"][n2["id"]] = ideology_opinion(n1["ideology"], n2["ideology"])
-                by_name = {n["name"].replace(" (YOU)", ""): n for n in NATIONS}
+                by_name = {nation_key(n): n for n in NATIONS}
                 if map_type == "HISTORICAL":
                     for f_name, members in STARTING_FACTIONS.items():
                         founders = [by_name[m] for m in members if m in by_name]
@@ -19829,6 +24551,9 @@ def main(stdscr):
                 init_ai_templates()
                 build_states(world_map, political_map, map_type == "HISTORICAL")
                 init_wars()
+                for n in NATIONS:
+                    init_research(n)
+                RESEARCH_UI.update(folder=0, sel=None, cam_x=0, cam_y=0, find=None)
                 update_industry(political_map)
                 city_tiles = {c for n in NATIONS for c in n["cities"]}
                 for n in NATIONS:
@@ -19843,6 +24568,8 @@ def main(stdscr):
                         unit_id_counter = place_start_armies(n, keys, political_map, world_map, units, unit_id_counter, city_tiles)
                 init_economy(units, political_map)
                 init_air(world_map, political_map, map_type == "HISTORICAL")
+                for n in NATIONS:
+                    sync_model_techs(n)
                 selected_wing = None
 
                 init_player_armies(player_data['name'], [u for u in units if u.nation_id == 0])
@@ -19950,6 +24677,7 @@ def main(stdscr):
                     selected_units = [u for u in units if u.nation_id == 0 and u.army_id == active_army_id]
                     selected_unit = selected_units[0] if selected_units else None
                     route_lib(world_map)
+                    research_after_load(units)
                     autosave_month = month_key(game_tick)
                     ui_state, is_paused, was_paused, menu_idx = "MAP", True, False, 0
                     menu_alert = (f"Loaded '{meta.get('name', '?')}': {meta.get('country', '?')}, {game_date(game_tick)}. "
@@ -20728,7 +25456,7 @@ def main(stdscr):
             elif key == ord('v') or key == ord('V'):
                 ui_state, menu_idx, menu_alert, was_paused, is_paused = "POLITICS_MENU", 0, "", is_paused, True
             elif key == ord('e') or key == ord('E'):
-                ui_state, menu_idx, menu_alert, was_paused, is_paused = "TECH_MENU", 0, "", is_paused, True
+                ui_state, menu_idx, menu_alert, was_paused, is_paused = "RESEARCH", 0, "", is_paused, True
             elif key == ord('b') or key == ord('B'):
                 here = state_at(cam_x + cursor_x, cam_y + cursor_y)
                 ind_state = {"cursor_state": here["id"] if here and here["controller"] == 0 else None}
@@ -20937,7 +25665,7 @@ def main(stdscr):
                 elif key in [ord('g'), ord('G')]:
                     if PLAYER_ARMIES and 0 <= menu_idx < len(PLAYER_ARMIES):
                         sel_army = PLAYER_ARMIES[menu_idx]
-                        country_clean = player["name"].replace(" (YOU)", "").strip()
+                        country_clean = nation_key(player)
                         g_pool = GENERALS_POOL.get(country_clean, GENERALS_POOL["Generic"])
                         cur_g = sel_army.general
                         cur_idx = g_pool.index(cur_g) if cur_g in g_pool else -1
@@ -20947,7 +25675,7 @@ def main(stdscr):
                 elif key in [ord('n'), ord('N')]:
                     new_id = max([a.id for a in PLAYER_ARMIES], default=0) + 1
                     if new_id <= 9:
-                        country_clean = player["name"].replace(" (YOU)", "").strip()
+                        country_clean = nation_key(player)
                         g_pool = GENERALS_POOL.get(country_clean, GENERALS_POOL["Generic"])
                         gen = g_pool[(new_id - 1) % len(g_pool)]
                         new_army = ArmyGroup(new_id, f"Army Group {new_id}", general=gen, color_id=(new_id % 6) + 1)
@@ -21087,6 +25815,13 @@ def main(stdscr):
                     map_mode = "STATES"
                     ui_state, is_paused = "MAP", was_paused
 
+        elif ui_state == "RESEARCH":
+            got = research_keys(key, NATIONS[0], game_tick // 24)
+            if got == "exit":
+                ui_state, is_paused, menu_alert = "MAP", was_paused, ""
+            elif got or key != -1:
+                menu_alert = got
+
         elif ui_state in ["TECH_MENU", "FOCUS_MENU"]:
             player = NATIONS[0]
 
@@ -21138,15 +25873,13 @@ def main(stdscr):
             elif key in [curses.KEY_UP, ord('w'), ord('W')] and ui_state != "FOCUS_MENU":
                 menu_idx, menu_alert = max(0, menu_idx - 1), ""
             elif key in [curses.KEY_DOWN, ord('s'), ord('S')] and ui_state != "FOCUS_MENU":
-                if ui_state == "TECH_MENU":
-                    menu_idx = min(len(TECH_OPTIONS) - 1, menu_idx + 1)
                 menu_alert = ""
             elif key == 10:
                 if ui_state == "FOCUS_MENU":
                     if focus_opts and 0 <= menu_idx < len(focus_opts):
                         action = focus_opts[menu_idx]
                         f_data = action["focus"]
-                        cur_tree = FOCUS_TREES.get(player["name"].replace(" (YOU)", ""), FOCUS_TREES["Generic"])
+                        cur_tree = FOCUS_TREES.get(nation_key(player), FOCUS_TREES["Generic"])
                         if action["status"] == "available":
                             if player.get("active_focus"):
                                 menu_alert = "ERROR: Already researching a focus. Cancel it first to switch."
@@ -21163,6 +25896,8 @@ def main(stdscr):
                             b_obj = next((x for x in cur_tree if x["id"] == b_id), None)
                             b_name = b_obj["name"] if b_obj else b_id
                             menu_alert = f"ERROR: Blocked! '{b_name}' was already completed."
+                        elif action["status"] == "locked" and action.get("need"):
+                            menu_alert = f"ERROR: {action['need']}."
                         elif action["status"] == "locked":
                             missing = [r for r in f_data.get("req", []) if not reqs_met({"req": [r]}, player["completed_focuses"])]
                             m_names = [" or ".join(next((x["name"] for x in cur_tree if x["id"] == o), o)
@@ -21173,47 +25908,6 @@ def main(stdscr):
                                 menu_alert = "ERROR: Prerequisites not met."
                         elif action["status"] == "completed":
                             menu_alert = f"NOTICE: '{f_data['name']}' is already completed."
-                elif ui_state == "TECH_MENU" and TECH_OPTIONS[menu_idx]["buff"] == "air":
-                    action = TECH_OPTIONS[menu_idx]
-                    nxt, why = air_research_block(player, action, (START_DATE + datetime.timedelta(days=game_tick // 24)).year)
-                    if why:
-                        menu_alert = f"LOCKED: {why}."
-                    else:
-                        player["pp"] -= action["cost_pp"]
-                        player["air_tech"][action["family"]] = nxt
-                        menu_alert = (f"RESEARCH COMPLETE: {action['name']} - our factories now build the "
-                                      f"{plane_name(player, action['family'], nxt)}.")
-                elif ui_state == "TECH_MENU" and TECH_OPTIONS[menu_idx]["buff"] == "naval":
-                    action = TECH_OPTIONS[menu_idx]
-                    nxt, why = naval_research_block(player, action, (START_DATE + datetime.timedelta(days=game_tick // 24)).year)
-                    if why:
-                        menu_alert = f"LOCKED: {why}."
-                    else:
-                        player["pp"] -= action["cost_pp"]
-                        for t in action["types"]:
-                            player["naval_tech"][t] = max(player["naval_tech"].get(t, 1), nxt)
-                        menu_alert = f"RESEARCH COMPLETE: {action['name']} - new ships use {GEN_LABEL[nxt]} hulls."
-                elif ui_state == "TECH_MENU":
-                    action = TECH_OPTIONS[menu_idx]
-                    done = player.setdefault("tech_done", {}).get(action["name"], 0)
-                    if action.get("max") and done >= action["max"]:
-                        menu_alert = f"NOTICE: {action['name']} is fully researched."
-                    elif player["pp"] >= action["cost_pp"]:
-                        player["tech_done"][action["name"]] = done + 1
-                        player["pp"] -= action["cost_pp"]
-                        if action["buff"] == "atk":
-                            player["tech_atk"] += action["val"]
-                        elif action["buff"] == "def":
-                            player["tech_def"] += action["val"]
-                        elif action["buff"] == "ind":
-                            player["output_bonus"] = player.get("output_bonus", 0.0) + action["val"]
-                        elif action["buff"] == "eff":
-                            player["eff_bonus"] = player.get("eff_bonus", 0.0) + action["val"]
-                        elif action["buff"] == "unlock":
-                            player.setdefault("tech_unlocks", set()).add(action["key"])
-                        menu_alert = f"RESEARCH COMPLETE: {action['name']}"
-                    else:
-                        menu_alert = "ERROR: Insufficient PP."
             elif key == ord('q'):
                 break
 
@@ -21269,6 +25963,31 @@ def main(stdscr):
                                     n["stockpile"][item] = n["stockpile"].get(item, 0) + rw[item] * scale
                             if "infra" in rw:
                                 add_infrastructure(n, rw["infra"])
+                            for r_, v_ in rw.get("res", {}).items():
+                                own = [s_ for s_ in STATES if s_["owner"] == n["id"] and s_["controller"] == n["id"]]
+                                if own:
+                                    best = max(own, key=lambda s_: (s_["res"].get(r_, 0), s_["pop"]))
+                                    best["res"][r_] = best["res"].get(r_, 0) + v_
+                            if rw.get("mods"):
+                                fm = n.setdefault("focus_mods", {})
+                                for k_, v_ in rw["mods"].items():
+                                    fm[k_] = fm.get(k_, 0.0) + v_
+                                tech_refresh(n)
+                            if rw.get("air_xp"):
+                                n["air_xp"] = n.get("air_xp", 0.0) + rw["air_xp"]
+                            if rw.get("slots"):
+                                own = sorted((s_ for s_ in STATES if s_["owner"] == n["id"] and s_["controller"] == n["id"]),
+                                             key=lambda s_: -s_["pop"])
+                                for s_ in own[:rw["slots"]]:
+                                    s_["slots"] += 1
+                            if rw.get("set_ideology") and rw["set_ideology"] != n["ideology"]:
+                                change_ideology(n, rw["set_ideology"])
+                            if rw.get("research_slot"):
+                                add_research_slot(n, rw["research_slot"])
+                            for bn in rw.get("research", ()):
+                                add_tech_bonus(n, current_focus["name"], bn[0], bn[1], bn[2], bn[3])
+                            if rw.get("research_speed"):
+                                n["research_bonus"] = n.get("research_bonus", 0.0) + rw["research_speed"]
                             if "wt" in rw:
                                 world_tension = min(100.0, max(
                                     0.0, world_tension + rw["wt"]))
@@ -21294,7 +26013,7 @@ def main(stdscr):
                                     if target["id"] == 0:
                                         warning = f"WARNING: {n['name']} gained a wargoal against us via Focus!"
                             for t_name in rw.get("guarantee", []):
-                                other = next((x for x in NATIONS if x["name"].replace(" (YOU)", "") == t_name
+                                other = next((x for x in NATIONS if nation_key(x) == t_name
                                               and x["is_alive"] and x["id"] != n["id"]), None)
                                 if other:
                                     n["guaranteeing"].add(other["id"])
@@ -21350,7 +26069,7 @@ def main(stdscr):
                             for claim in ("annex", "border_claims"):
                                 targets = rw.get(claim, [])
                                 for t_name in ([targets] if isinstance(targets, str) else targets):
-                                    victim = next((x for x in NATIONS if x["name"].replace(" (YOU)", "") == t_name
+                                    victim = next((x for x in NATIONS if nation_key(x) == t_name
                                                    and x["is_alive"] and x["id"] != n["id"]), None)
                                     if not victim or n.get("overlord") is not None:
                                         continue
@@ -21375,12 +26094,12 @@ def main(stdscr):
                         available_focuses = []
                         coastal = bool(nation_ports(n, political_map))
                         for f in tree:
-                            if f["id"] not in n["completed_focuses"] and reqs_met(f, n["completed_focuses"]) and not any(m in n["completed_focuses"] for m in f["mut_excl"]):
+                            if f["id"] not in n["completed_focuses"] and reqs_met(f, n["completed_focuses"]) and not any(m in n["completed_focuses"] for m in f["mut_excl"]) and not focus_need(n, f):
                                 if coastal or not (f["reward"] and all(k in NAVAL_REWARD_KEYS for k in f["reward"])):
                                     available_focuses.append(f)
                         if available_focuses:
                             # Majors follow their historical order; everyone else picks at random
-                            order = AI_FOCUS_ORDER.get(n["name"].replace(" (YOU)", ""), [])
+                            order = AI_FOCUS_ORDER.get(nation_key(n), [])
                             preferred = [f for fid in order for f in available_focuses if f["id"] == fid]
                             # minors take the generic naval branch only once the original branches are done
                             land = [f for f in available_focuses if not (f["reward"] and all(k in NAVAL_REWARD_KEYS for k in f["reward"]))]
@@ -21691,8 +26410,8 @@ def main(stdscr):
                     continue
                 if any(0 in s for s in rep["nations"]) or sum(len(s) for s in rep["sunk"]) >= 4:
                     menu_alert = battle_news(rep)
-            if len(units) != n_before or any(u not in units for u in selected_units):
-                alive_ids = {u.id for u in units}
+            if len(units) != n_before or any(u not in units or u.nation_id != 0 for u in selected_units):
+                alive_ids = {u.id for u in units if u.nation_id == 0}   # (a civil war can take divisions away)
                 selected_units = [u for u in selected_units if u.id in alive_ids]
                 selected_unit = selected_units[0] if selected_units else None
                 for a in PLAYER_ARMIES:
@@ -21716,7 +26435,8 @@ def main(stdscr):
                         lost = sum(w for w, (cx, cy) in zip(worth, n["cities"]) if political_map[cy][cx] in n["at_war_with"])
                         cap_x, cap_y = n["cities"][0]
                         if political_map[cap_y][cap_x] in n["at_war_with"] and lost / sum(worth) >= 0.6:
-                            units = capitulate(n, political_map, units)
+                            got = scw_capitulation(n, political_map, units)   # the Spanish Civil War ends differently
+                            units = got if got is not None else capitulate(n, political_map, units)
 
             if game_tick % 24 == 0:
                 world_tension = max(0.0, world_tension - WT_DECAY_PER_DAY)
@@ -21740,6 +26460,11 @@ def main(stdscr):
                         if n["id"] == 0:
                             menu_alert = f"CONSTRUCTION: a new {BUILDINGS[kind]['name']} is finished in {s['name']}."
                     production_day(n)
+                    for tid in research_day(n, day_no):
+                        if n["id"] == 0:
+                            left = sum(1 for x in n["research"] if x is None)
+                            menu_alert = f"RESEARCH COMPLETE: {tech_name(tid)}." + (
+                                f" {left} research slot{'s are' if left > 1 else ' is'} free - [E] Research." if left else "")
                 for n in NATIONS[1:]:
                     if n["is_alive"]:
                         ai_brain_daily(n, day_no, political_map, world_map, units, world_tension)
@@ -21754,6 +26479,7 @@ def main(stdscr):
                 for msg in navy_daily(world_map, political_map):
                     menu_alert = msg
                 reinforce_divisions(units, political_map)
+                refit_day(units)   # new equipment reaches the divisions
                 # our divisions in training
                 me = NATIONS[0]
                 for item in list(me.get("training", [])):
@@ -21828,6 +26554,7 @@ def main(stdscr):
 
         if ui_state == "START_MENU":
             cx, cy = term_w // 2 - 25, term_h // 2 - 5
+            draw_update_notice(stdscr, max(0, cy - 5), term_w)
             safe_draw(stdscr, cy - 2, cx, "==================================================",
                       curses.color_pair(7) | curses.A_BOLD)
             safe_draw(stdscr, cy - 1, cx, "||                 T . O . I . 4                ||",
@@ -22552,6 +27279,9 @@ def main(stdscr):
         elif ui_state == "AIR_VIEW":
             draw_air_view(stdscr, NATIONS[0], air_view, air_view_rows(NATIONS[0], air_view), menu_idx, menu_alert)
 
+        elif ui_state == "RESEARCH":
+            draw_research(stdscr, NATIONS[0], game_tick // 24, term_h, term_w, menu_alert)
+
         elif ui_state in ["TECH_MENU", "FOCUS_MENU"]:
             player = NATIONS[0]
 
@@ -22570,39 +27300,14 @@ def main(stdscr):
 
             # --- Menu Item Rendering ---
             if ui_state == "TECH_MENU":
-                year = (START_DATE + datetime.timedelta(days=game_tick // 24)).year
-                for i, t in enumerate(TECH_OPTIONS):
-                    col = curses.color_pair(2) if player["pp"] >= t["cost_pp"] else curses.color_pair(1)
-                    label = f"{t['name']}  (PP:{t['cost_pp']})"
-                    if t.get("max"):
-                        done = player.get("tech_done", {}).get(t["name"], 0)
-                        label += f"  [{done}/{t['max']}]"
-                        if done >= t["max"]:
-                            col = curses.color_pair(6)
-                    if t["buff"] == "air":
-                        nxt, why = air_research_block(player, t, year)
-                        cur = best_gen(player, t["family"])
-                        now = plane_name(player, t["family"], cur) if cur >= 0 else "none"
-                        label = (f"{t['name']}: {now}" + (f" -> {plane_name(player, t['family'], nxt)}  (PP:{t['cost_pp']})" if nxt != cur else " (best)")
-                                 + (f"  - {why}" if why and nxt != cur else ""))
-                        col = curses.color_pair(1) if why else curses.color_pair(2)
-                    if t["buff"] == "naval":
-                        nxt, why = naval_research_block(player, t, year)
-                        now = min(player["naval_tech"].get(x, 1) for x in t["types"])
-                        label = (f"{t['name']}: {GEN_LABEL[now]} hulls" + (f" -> {GEN_LABEL[nxt]}  (PP:{t['cost_pp']})" if nxt <= 3 else " (best)")
-                                 + (f"  - {why}" if why else ""))
-                        col = curses.color_pair(1) if why else curses.color_pair(2)
-                    if i == menu_idx:
-                        col = curses.color_pair(21)
-                    safe_draw(stdscr, 6 + i * (2 if len(TECH_OPTIONS) * 2 <= term_h - 12 else 1), 2, f" {'>' if i==menu_idx else ' '} {label}", col)
-
+                pass
             elif ui_state == "FOCUS_MENU":
                 focus_opts = get_focus_options(player)
                 if not focus_opts:
                     safe_draw(stdscr, 6, 2, " No national focuses available.", curses.color_pair(1))
                 else:
                     menu_idx = max(0, min(len(focus_opts) - 1, menu_idx))
-                    cur_focus_tree = FOCUS_TREES.get(player["name"].replace(" (YOU)", ""), FOCUS_TREES["Generic"])
+                    cur_focus_tree = FOCUS_TREES.get(nation_key(player), FOCUS_TREES["Generic"])
                     id_to_opt = {opt["focus"]["id"]: opt for opt in focus_opts}
 
                     # Node & Grid dimensions
@@ -22961,7 +27666,7 @@ def main(stdscr):
         time.sleep(max(0.0, min(FRAME_PAUSE, FRAME_PAUSE + FRAME_WORK - (time.perf_counter() - frame_start))))
 
 
-# ---- COMMAND LINE: toi4 --help, --icons, --install, --uninstall ---------------------------------------------------
+# ---- COMMAND LINE: toi4 --help, --icons, --install, --uninstall, --update ------------------------------------------
 # install.sh (Linux, macOS) and install.bat (Windows) find Python and run "toi4.py --install": that writes a small
 # launcher called toi4 - into ~/.local/bin, or on Windows into %LOCALAPPDATA%\Programs\toi4, which goes on the
 # user's PATH - that starts this file wherever it is.
@@ -22980,6 +27685,8 @@ Usage:
                        with --tidy: that also deletes .git, LICENSE and
                        README.md from the game's folder)
   toi4 --uninstall     remove the toi4 command (the game stays where it is)
+  toi4 --update        replace this toi4.py with the newest one from GitHub;
+                       only the game file changes: saves and settings stay
 
 Needs Python 3.8 or newer with curses (on Windows: py -m pip install
 windows-curses) and a terminal of at least 80x24 - the bigger the better,
@@ -22994,6 +27701,9 @@ Keys:
   Screens        N focus tree, E research, V politics, P diplomacy, B industry,
                  Y military, R navy, TAB recruit, F7 wars, F8 territory and
                  puppets; ESC closes a screen
+  Research       arrows pick a tech, ENTER research or stop, 1-6 put it into
+                 that slot; TAB or F1-F8 folders, PGUP/PGDN (or , .) sections,
+                 / find a tech by name, R the techs being researched
   F1             switches between political and army controls
   Army controls  1-5 army, G front line, O offensive, K launch / hold, H halt,
                  I invade, F4 convoy, T fleets, M mission, X watch a battle
@@ -23003,7 +27713,10 @@ Keys:
 
 Icons: kitty, WezTerm and Ghostty show Nerd Font icons, other terminals
 standard symbols, Windows always standard symbols. TOI4_ICONS=nerd or
-TOI4_ICONS=plain overrides the choice."""
+TOI4_ICONS=plain overrides the choice.
+
+Updates: when the game starts it asks GitHub whether there is a newer
+toi4.py, and the title screen says so. TOI4_NO_UPDATE_CHECK=1 turns that off."""
 
 LAUNCHER_MARK = "made by toi4 --install"
 
@@ -23191,6 +27904,178 @@ def uninstall_command():
     return 0
 
 
+# ---- UPDATES: toi4 --update, and a notice when a newer toi4.py is on GitHub ----------------------------------------
+# When the game starts it asks GitHub, in the background, whether its toi4.py is the same as this one (GitHub gives
+# every file a fingerprint, git's "blob" hash, which can be worked out here too). If not, it reads the first few KB
+# of GitHub's copy for its TOI4_VERSION: a higher (or the same) number means an update, and the title screen and the
+# game menu say so. A lower one means this copy is newer (it is being worked on), and nothing is said.
+# toi4 --update downloads GitHub's toi4.py, checks it matches GitHub's fingerprint and compiles, and puts it in
+# place of this file. Nothing else in the folder changes: saves, toi4_settings.txt and the rest stay as they are.
+# TOI4_NO_UPDATE_CHECK=1 stops the check.
+TOI4_REPO = "redrandomcoreguy/TOI4"
+UPDATE_API = "https://api.github.com/repos/" + TOI4_REPO
+UPDATE = {"state": None, "version": None, "date": None, "note": None}   # state: None, same, older, new or offline
+
+
+def http_get(url, timeout, headers=None, limit=-1):
+    """The body of a web page (at most limit bytes). Raises OSError when it can't be had."""
+    import urllib.request
+    req = urllib.request.Request(url, headers={"User-Agent": "toi4-update", **(headers or {})})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return r.read(limit)
+
+
+def blob_sha(data):
+    """git's (and GitHub's) fingerprint of a file's contents."""
+    return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()
+
+
+def release_of(data):
+    """The TOI4_VERSION written near the top of a game file (0 for the versions from before it)."""
+    import re
+    m = re.search(rb"^TOI4_VERSION = (\d+)", data[:8192], re.M)
+    return int(m.group(1)) if m else 0
+
+
+def github_file(timeout):
+    """GitHub's toi4.py: {"sha", "url", "size"}."""
+    import json
+    info = json.loads(http_get(UPDATE_API + "/contents/toi4.py", timeout, {"Accept": "application/vnd.github+json"}))
+    return {"sha": info["sha"], "url": info["download_url"], "size": info.get("size") or 0}
+
+
+def github_change(timeout):
+    """(date, first line of the message) of the last change to toi4.py on GitHub."""
+    import json
+    c = json.loads(http_get(UPDATE_API + "/commits?path=toi4.py&per_page=1", timeout,
+                            {"Accept": "application/vnd.github+json"}))[0]["commit"]
+    y, mo, d = (int(x) for x in c["committer"]["date"][:10].split("-"))
+    return f"{d} {MONTHS[mo - 1]} {y}", c["message"].strip().split("\n")[0][:60]
+
+
+def this_game():
+    with open(os.path.abspath(__file__), "rb") as f:
+        return f.read()
+
+
+def check_for_update(timeout=8):
+    """Is there a newer toi4.py on GitHub? Fills in UPDATE (the background thread runs this)."""
+    try:
+        gh = github_file(timeout)
+        if gh["sha"] == blob_sha(this_game()):
+            UPDATE["state"] = "same"
+            return
+        version = release_of(http_get(gh["url"], timeout, {"Range": "bytes=0-8191"}, 8192))
+        if version < TOI4_VERSION:
+            UPDATE["state"] = "older"        # GitHub's is older: this copy is newer than the published one
+            return
+        try:
+            UPDATE["date"], UPDATE["note"] = github_change(timeout)
+        except Exception:
+            pass
+        UPDATE["version"] = version
+        UPDATE["state"] = "new"              # (last: the screen never sees half an answer)
+    except Exception:                        # offline, GitHub busy, ... - the game doesn't mind
+        UPDATE["state"] = "offline"
+
+
+def update_check_wanted():
+    return os.environ.get("TOI4_NO_UPDATE_CHECK", "").strip().lower() in ("", "0", "no", "false", "off")
+
+
+def start_update_check():
+    if update_check_wanted():
+        import threading
+        threading.Thread(target=check_for_update, daemon=True).start()
+
+
+def update_command():
+    """How this player starts the game: 'toi4' when our launcher starts this very file, else 'python3 toi4.py'."""
+    _, path = launcher_path()
+    try:
+        with open(path, encoding="utf-8", errors="replace") as f:
+            text = f.read(4000)
+        if LAUNCHER_MARK in text and os.path.abspath(__file__) in text:
+            return "toi4"
+    except OSError:
+        pass
+    py = os.path.splitext(os.path.basename(sys.executable or "python3"))[0] or "python3"
+    return f"{py} {os.path.basename(__file__)}"
+
+
+def update_notice():
+    """The lines that tell the player a new version is out ([] when there isn't one, or nobody knows yet)."""
+    if UPDATE["state"] != "new":
+        return []
+    what = ", ".join(x for x in (f"version {UPDATE['version']}" if UPDATE["version"] else "", UPDATE["date"]) if x)
+    return [f"A new version of TOI4 is on GitHub" + (f" ({what})" if what else "") + ".",
+            f"Quit and run:  {update_command()} --update   (saves and settings are kept)"]
+
+
+def draw_update_notice(stdscr, y, W, centre=True, x=0):
+    for i, line in enumerate(update_notice()):
+        line = fit(line, W - 2)
+        safe_draw(stdscr, y + i, max(0, (W - len(line)) // 2) if centre else x, line,
+                  curses.color_pair(3) | curses.A_BOLD if i == 0 else curses.color_pair(6))
+
+
+def update_game():
+    """toi4 --update: put GitHub's toi4.py in place of this file. Only this file changes; the one it replaces is
+    kept as toi4.py.previous. Returns the exit code."""
+    game = os.path.abspath(__file__)
+    print("Asking GitHub for the newest toi4.py ...")
+    try:
+        here = this_game()
+        gh = github_file(20)
+        if gh["sha"] == blob_sha(here):
+            print(f"toi4 is up to date (version {TOI4_VERSION}).")
+            return 0
+        print(f"Downloading it ({gh['size'] / 1e6:.1f} MB) ...")
+        new = http_get(gh["url"], 120)
+    except Exception as e:
+        print(f"toi4: couldn't get the update from GitHub ({e}). Nothing was changed.", file=sys.stderr)
+        return 1
+    if blob_sha(new) != gh["sha"]:
+        print("toi4: the download doesn't match GitHub's copy (cut short?). Nothing was changed - try again.",
+              file=sys.stderr)
+        return 1
+    try:
+        compile(new, game, "exec")
+    except (SyntaxError, ValueError) as e:
+        print(f"toi4: the new version won't run on this Python {sys.version.split()[0]} ({e}). Nothing was changed.",
+              file=sys.stderr)
+        return 1
+    version = release_of(new)
+    if version < TOI4_VERSION:
+        print(f"GitHub has {f'version {version}' if version else 'an older version'}; this one is version "
+              f"{TOI4_VERSION}, which is newer, so it was left as it is.")
+        return 0
+    try:
+        when, note = github_change(20)
+    except Exception:
+        when = note = None
+    tmp = game + ".download"
+    try:
+        with open(tmp, "wb") as f:
+            f.write(new)
+        shutil.copymode(game, tmp)
+        shutil.copy2(game, game + ".previous")
+        os.replace(tmp, game)
+    except OSError as e:
+        try:
+            os.remove(tmp)
+        except OSError:
+            pass
+        print(f"toi4: couldn't write the new version ({e}). Nothing was changed.", file=sys.stderr)
+        return 1
+    print("Updated toi4" + (f" from version {TOI4_VERSION} to version {version}" if version != TOI4_VERSION
+                            else f" (version {version})" if version else "")
+          + (f" - {when}: {note}" if when and note else "") + ".")
+    print("Your saves and settings were not touched. The old game is kept as "
+          f"{os.path.basename(game)}.previous (delete it if you like).")
+    return 0
+
+
 def start(args):
     """The command line first, then the game. Returns the exit code."""
     if args and args[0].startswith("--icons="):
@@ -23204,6 +28089,8 @@ def start(args):
             return install_command(tidy=len(args) == 2)
         if flag == "--uninstall" and len(args) == 1:
             return uninstall_command()
+        if flag == "--update" and len(args) == 1:
+            return update_game()
         if flag == "--icons" and len(args) == 2 and args[1].lower() in ICON_SETS:
             mode = args[1].lower()
             if mode == "nerd" and not ICONS_CAN_SWITCH:
@@ -23214,7 +28101,10 @@ def start(args):
         else:
             print(f"toi4: unknown option: {' '.join(args)}  (toi4 --help shows the options)", file=sys.stderr)
             return 2
+    start_update_check()
     curses.wrapper(main)
+    for line in update_notice():   # once more in the terminal, after the game
+        print(line)
     return 0
 
 
