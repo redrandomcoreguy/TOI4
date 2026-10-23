@@ -46,10 +46,11 @@ then run `sh install.sh` again.
 
 #### Doing it by hand instead
 
-If you would rather install the packages yourself, install Python 3 and a C compiler with your package manager before running `sh install.sh`; the script sees Python is already there and skips that step. It still adds `~/.local/bin` to your `PATH`, but you can do that yourself too by adding this line to your shell's startup file (`.zshrc`, `.bashrc`, `~/.bash_profile` on macOS, or `~/.profile`):
+Install Python 3 and a C compiler with your package manager before running `sh install.sh`; the script skips that step when it finds them. It also adds `~/.local/bin` to your `PATH`. To do that yourself, put this line in your shell's startup file (`.zshrc`, `.bashrc`, `~/.bash_profile` on macOS, or `~/.profile`):
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
 ```
+On fish, run `fish_add_path $HOME/.local/bin` once instead. If the line is already there, the script leaves your startup file alone.
 ---
 
 ## Installation for Windows 
