@@ -27,65 +27,20 @@ git clone https://github.com/redrandomcoreguy/TOI4.git
 cd TOI4
 ```
 
-### 2. Install Python and its dependencies
+### 2. Run the install script
 
-#### MacOS
-```bash
-xcode-select --install
-```
-#### Debian/Ubuntu based
-```bash
-sudo apt update && sudo apt install python3 build-essential
-```
-#### Fedora based 
-```bash
-sudo dnf install python3 gcc
-```
-#### RHEL/Rocky
-```bash
-sudo dnf install python3.12 gcc
-```
-#### Arch based
-```bash
-sudo pacman -S --needed python gcc
-```
-#### OpenSUSE Tumbleweed
-```bash
-sudo zypper install python3 python3-curses gcc
-```
-#### Apline
-```bash
-doas apk add python3 build-base
-```
-#### Void 
-```bash
-sudo xbps-install -S python3 base-devel
-```
-#### Gentoo
-```bash
-sudo emerge --ask --noreplace dev-lang/python
-```
-##### For Nixos add python3 and gcc to environment.systemPackages and run:
-```bash
-sudo nixos-rebuild switch
-```
-### 3. Run the Install Script 
-
-```bash
-sh install.sh
-```
-#### If it does not work run 
 ```bash
 chmod +x install.sh
 ./install.sh
 ```
-### 4. (FOR MACOS USERS) Add ~/.local/bin to the PATH
-> **Run in a new terminal**
-```bash
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
-```
----
 
+**NixOS:** Add `python3` and `gcc` to `environment.systemPackages`, run:
+```bash
+sudo nixos-rebuild switch
+```
+then run `sh install.sh` again.
+
+---
 ## Installation for Windows 
 
 ### 1. Install Python 
