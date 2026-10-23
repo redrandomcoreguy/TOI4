@@ -40,12 +40,6 @@ sudo nixos-rebuild switch
 ```
 then run `sh install.sh` again.
 
-#### Doing it by hand instead
-
-Install Python 3 and a C compiler with your package manager before running `sh install.sh`; the script skips that step when it finds them. It also adds `~/.local/bin` to your `PATH`. To do that yourself, put this line in your shell's startup file (`.zshrc`, `.bashrc`, `~/.bash_profile` on macOS, or `~/.profile`):
-```bash
-export PATH="$HOME/.local/bin:$PATH"
-```
 ---
 ## Installation for Windows 
 
