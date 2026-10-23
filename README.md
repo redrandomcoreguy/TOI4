@@ -27,49 +27,7 @@ git clone https://github.com/redrandomcoreguy/TOI4.git
 cd TOI4
 ```
 
-### 2. Install Python and its dependencies
-
-#### MacOS
-```bash
-xcode-select --install
-```
-#### Debian/Ubuntu based
-```bash
-sudo apt update && sudo apt install python3 build-essential
-```
-#### Fedora based 
-```bash
-sudo dnf install python3 gcc
-```
-#### RHEL/Rocky
-```bash
-sudo dnf install python3.12 gcc
-```
-#### Arch based
-```bash
-sudo pacman -S --needed python gcc
-```
-#### OpenSUSE Tumbleweed
-```bash
-sudo zypper install python3 python3-curses gcc
-```
-#### Apline
-```bash
-doas apk add python3 build-base
-```
-#### Void 
-```bash
-sudo xbps-install -S python3 base-devel
-```
-#### Gentoo
-```bash
-sudo emerge --ask --noreplace dev-lang/python
-```
-##### For Nixos add python3 and gcc to environment.systemPackages and run:
-```bash
-sudo nixos-rebuild switch
-```
-### 3. Run the Install Script 
+### 2. Run the install script
 
 ```bash
 sh install.sh
@@ -79,10 +37,40 @@ sh install.sh
 chmod +x install.sh
 ./install.sh
 ```
-### 4. (FOR MACOS USERS) Add ~/.local/bin to the PATH
-> **Run in a new terminal**
+
+That is everything. The script finishes the setup for you:
+
+* It checks for **Python 3.8 or newer** and installs Python and a C compiler with your distribution's package manager if they are missing. This can ask for your password (`sudo`, or `doas` on Alpine).
+* It creates the `toi4` command in `~/.local/bin`.
+* It adds `~/.local/bin` to your `PATH` in your shell's startup file (`.zshrc`, `.bashrc` or `.bash_profile` on macOS, fish's `config.fish`, or `~/.profile`).
+
+Then **open a new terminal window** and run `toi4`.
+
+#### What the script installs
+
+| System | Command |
+| :--- | :--- |
+| macOS | `xcode-select --install` |
+| Debian/Ubuntu based | `sudo apt update && sudo apt install python3 build-essential` |
+| Fedora based | `sudo dnf install python3 gcc` |
+| RHEL/Rocky | `sudo dnf install python3.12 gcc` |
+| Arch based | `sudo pacman -S --needed python gcc` |
+| OpenSUSE Tumbleweed | `sudo zypper install python3 python3-curses gcc` |
+| Alpine | `doas apk add python3 build-base` |
+| Void | `sudo xbps-install -S python3 base-devel` |
+| Gentoo | `sudo emerge --ask --noreplace dev-lang/python` |
+
+**NixOS** is the exception: its packages come from `configuration.nix`, so the script can't install them. Add `python3` and `gcc` to `environment.systemPackages`, run:
 ```bash
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+sudo nixos-rebuild switch
+```
+then run `sh install.sh` again.
+
+#### Doing it by hand instead
+
+If you would rather install the packages yourself, run the command for your system from the table above before running `sh install.sh`; the script sees Python is already there and skips that step. It still adds `~/.local/bin` to your `PATH`, but you can do that yourself too by adding this line to your shell's startup file (`.zshrc`, `.bashrc`, `~/.bash_profile` on macOS, or `~/.profile`):
+```bash
+export PATH="$HOME/.local/bin:$PATH"
 ```
 ---
 
