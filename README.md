@@ -30,15 +30,11 @@ cd TOI4
 ### 2. Run the install script
 
 ```bash
-sh install.sh
-```
-#### If it does not work run 
-```bash
 chmod +x install.sh
 ./install.sh
 ```
 
-**NixOS:** its packages come from `configuration.nix`, so install them there. Add `python3` and `gcc` to `environment.systemPackages`, run:
+**NixOS:** Add `python3` and `gcc` to `environment.systemPackages`, run:
 ```bash
 sudo nixos-rebuild switch
 ```
