@@ -50,9 +50,7 @@ Install Python 3 and a C compiler with your package manager before running `sh i
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
 ```
-On fish, run `fish_add_path $HOME/.local/bin` once instead. If the line is already there, the script leaves your startup file alone.
 ---
-
 ## Installation for Windows 
 
 ### 1. Install Python 
